@@ -60,7 +60,7 @@ public class AxelrodNetwork {
 		this.init_adj_matrix();
 //		this.bubble_random_starting_distribution(48, State.random_node_state(
 //				features, traits));
-		 this.striped_starting_distribution();
+		 this.random_starting_distribution();
 	}
 
 	private void init_adj_matrix() {
