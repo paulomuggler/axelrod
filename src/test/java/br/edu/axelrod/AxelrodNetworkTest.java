@@ -22,7 +22,7 @@ public class AxelrodNetworkTest {
 		System.out.println(String.format("Network size = %d, features = %d, traits = %d.", size, features, traits));
 		AxelrodNetwork nw = new AxelrodNetwork(size, features, traits);
 		for (int nd  = 0; nd < size; nd ++) {
-				Assert.assertTrue(nw.is_state_valid(nw.state(nd)));
+				Assert.assertTrue(nw.is_state_valid(nw.states[nd]));
 		}
 		System.out.println(nw.network_state_to_string());
 		System.out.println();

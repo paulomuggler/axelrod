@@ -31,7 +31,7 @@ public class AxelrodSimulation {
 	int interactions = 0;
 
 	//
-	final AxelrodNetwork nw; // ~300KB
+	final AxelrodNetwork nw;
 	SimulationObserver obs;
 	int state = 2; // 2 => stopped; 1 => running; 0 => finished
 
@@ -42,7 +42,7 @@ public class AxelrodSimulation {
 
 	/**
 	 * Performs a single step of the axelrod simulation
-	 * @throws InterruptedException 
+	 * @throws InterruptedException
 	 */
 	public void sim_step() throws InterruptedException {
 		if (this.nw.interactive_nodes().size() == 0) {
@@ -52,7 +52,7 @@ public class AxelrodSimulation {
 		int node = nw.random_interactive_node();
 		this.networkDynamic(node);
 		this.iterations++;
-		obs.simulationStep(nw);
+//		obs.simulationStep(nw);
 //		Thread.sleep(100);
 	}
 
@@ -72,21 +72,21 @@ public class AxelrodSimulation {
 		int nbr = -1;
 		int nbr_idx = rand.nextInt(nw.degree(node));
 		
-		boolean interactive;
-		do {
+//		boolean interactive;
+//		do {
 			nbr = nw.node_neighbor(node, nbr_idx);
-			interactive = nw.is_interaction_possible(nw.state(node), nw.state(nbr));
-			nbr_idx = (nbr_idx+1)%nw.degree(node);
+//			interactive = nw.is_interaction_possible(nw.state(node), nw.state(nbr));
+//			nbr_idx = (nbr_idx+1)%nw.degree(node);
 //			nbr_idx = rand.nextInt(nw.degree(node));
-		} while (!interactive);
+//		} while (!interactive);
 
 		int rand_f = rand.nextInt(nw.features);
 
-		if (nw.state(node)[rand_f] == nw.state(nbr)[rand_f]) {
+		if (nw.states[node][rand_f] == nw.states[nbr][rand_f]) {
 			int[] diff_features = new int[nw.features];
 			int diff_count = 0;
 			for (int f = 0; f < nw.features; f++) {
-				if (nw.state(node)[f] != nw.state(nbr)[f]) {
+				if (nw.states[node][f] != nw.states[nbr][f]) {
 					diff_features[diff_count++] = f;
 				}
 			}
@@ -95,15 +95,15 @@ public class AxelrodSimulation {
 				int i = rand.nextInt(diff_count);
 				int f = diff_features[i];
 				
-//				nw.setFeature(node, f, nw.state(nbr)[f]);
-//				nw.update_representations(node);
-//				obs.nodeInteraction(node / nw.size, node % nw.size, nw
-//						.state(node));
+				nw.states[node][f] = nw.states[nbr][f];
+				nw.update_representations(node);
+				obs.nodeInteraction(node / nw.size, node % nw.size, nw
+						.states[node]);
 				
-				nw.setFeature(nbr, f, nw.state(node)[f]);
-				nw.update_representations(nbr);
-				obs.nodeInteraction(nbr / nw.size, nbr % nw.size, nw
-						.state(nbr));
+//				nw.setFeature(nbr, f, nw.state(node)[f]);
+//				nw.update_representations(nbr);
+//				obs.nodeInteraction(nbr / nw.size, nbr % nw.size, nw
+//						.state(nbr));
 				
 				interactions++;
 			}
@@ -157,10 +157,11 @@ public class AxelrodSimulation {
 	}
 
 	public static void visual_representation() throws InterruptedException {
-		int size = 32;
+		int size = 64;
 		int f = 2;
 		int q = 2;
 		AxelrodSimulation sim = new AxelrodSimulation(size, f, q);
+//		sim.nw.bubble_random_starting_distribution(24, State.random_node_state(f, q));
 		final AxelrodCanvas opc = new AxelrodCanvas(640, sim.nw, false);
 		SimulationObserver obs = new SimulationObserver() {
 			public void simulationStep(AxelrodNetwork nw) {
@@ -187,7 +188,7 @@ public class AxelrodSimulation {
 		sim.run();
 		sim.print_execution_statistics();
 
-		List<Integer> cSizes = new ArrayList<Integer>(sim.nw.cultureSizes()
+		List<Integer> cSizes = new ArrayList<Integer>(sim.nw.count_cultures()
 				.values());
 		Collections.sort(cSizes);
 		while (cSizes.contains(new Integer(0))) {
@@ -259,8 +260,7 @@ public class AxelrodSimulation {
 				AxelrodSimulation sim = new AxelrodSimulation(size, f, q);
 				sim.run();
 				sim.print_execution_statistics();
-				Integer[] culture_sizes = new ArrayList<Integer>(sim.nw
-						.cultureSizes().values()).toArray(new Integer[0]);
+				Integer[] culture_sizes = new ArrayList<Integer>(sim.nw.count_cultures().values()).toArray(new Integer[0]);
 				Arrays.sort(culture_sizes);
 				Integer largest_culture = (Integer) culture_sizes[culture_sizes.length - 1];
 				cSizes[0][i] = q; // current q

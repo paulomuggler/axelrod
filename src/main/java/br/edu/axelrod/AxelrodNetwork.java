@@ -43,7 +43,8 @@ public class AxelrodNetwork {
 	final boolean[] is_node_active;
 
 	/** Keep track of culture sizes on the network */
-	final Map<Integer, Integer> cultureSizes = new HashMap<Integer, Integer>();
+	// final Map<Integer, Integer> cultureSizes = new HashMap<Integer,
+	// Integer>();
 
 	public AxelrodNetwork(int size, int features, int traits) {
 		super();
@@ -57,7 +58,9 @@ public class AxelrodNetwork {
 		this.is_node_active = new boolean[this.n_nodes];
 		this.degree = new int[this.n_nodes];
 		this.init_adj_matrix();
-		this.random_starting_distribution();
+		this.bubble_random_starting_distribution(24, State.random_node_state(
+				features, traits));
+		// this.striped_starting_distribution();
 	}
 
 	private void init_adj_matrix() {
@@ -75,10 +78,10 @@ public class AxelrodNetwork {
 				adj_matrix[nd][degree[nd]++] = (j + 1) + (i * size); // right
 
 			if (i > 0) // not on line 0
-				adj_matrix[nd][degree[nd]++] = j + (i - 1) * size; // above
+				adj_matrix[nd][degree[nd]++] = j + (i - 1) * size; // up
 
 			if (i < size - 1) // not on last line
-				adj_matrix[nd][degree[nd]++] = j + (i + 1) * size; // below
+				adj_matrix[nd][degree[nd]++] = j + (i + 1) * size; // down
 
 		}
 	}
@@ -102,35 +105,36 @@ public class AxelrodNetwork {
 		}
 	}
 
-	private void initCultureSizes() {
-		this.cultureSizes.clear();
+	public Map<Integer, Integer> count_cultures() {
+		Map<Integer, Integer> cultureSizes = new HashMap<Integer, Integer>();
 		for (int nd = 0; nd < n_nodes; nd++) {
-			cultureSizes.put(Arrays.hashCode(states[nd]),
-					(cultureSizes.get(Arrays.hashCode(states[nd])) == null ? 0 : cultureSizes
-							.get(Arrays.hashCode(states[nd]))) + 1);
+			cultureSizes.put(Arrays.hashCode(states[nd]), (cultureSizes
+					.get(Arrays.hashCode(states[nd])) == null ? 0
+					: cultureSizes.get(Arrays.hashCode(states[nd]))) + 1);
 		}
+		return cultureSizes;
 	}
 
 	public void update_representations(int nd) {
 
-		int[] nd_state = this.state(nd);
+		int[] nd_state = this.states[nd];
 
 		is_node_active[nd] = false;
 		interactiveNodes.remove(new Integer(nd));
-		
+
 		for (int k0 = 0; k0 < degree[nd]; k0++) {
 
 			int nbr = this.adj_matrix[nd][k0];
-			int[] nbr_state = this.state(nbr);
+			int[] nbr_state = this.states[nbr];
 
 			is_node_active[nbr] = false;
 			interactiveNodes.remove(new Integer(nbr));
-			
+
 			if (is_node_active[nd] == false) {
 				if (is_interaction_possible(nd_state, nbr_state)) {
 					is_node_active[nd] = true;
 					interactiveNodes.add(nd);
-					
+
 					is_node_active[nbr] = true;
 					interactiveNodes.add(nbr);
 					continue;
@@ -140,7 +144,7 @@ public class AxelrodNetwork {
 			for (int k1 = 0; k1 < degree[nbr] && is_node_active[nbr] == false; k1++) {
 
 				int nbr_nbr = this.adj_matrix[nbr][k1];
-				int[] nbr_nbr_state = this.state(nbr_nbr);
+				int[] nbr_nbr_state = this.states[nbr_nbr];
 
 				if (is_interaction_possible(nbr_state, nbr_nbr_state)) {
 					is_node_active[nbr] = true;
@@ -169,19 +173,16 @@ public class AxelrodNetwork {
 		return false;
 	}
 
-
-	public Map<Integer, Integer> cultureSizes() {
-		return Collections.unmodifiableMap(this.cultureSizes);
-	}
-
 	public String interaction_list_to_string() {
-		StringBuilder sb = new StringBuilder("Interactive node count: "+interactiveNodes.size()+"\n");
+		StringBuilder sb = new StringBuilder("Interactive node count: "
+				+ interactiveNodes.size() + "\n");
 		sb.append("Interactive nodes:\n");
 		Object[] values = this.interactiveNodes.toArray();
 		Arrays.sort(values);
 		for (Object o : values) {
 			Integer nd = (Integer) o;
-			sb.append(String.format("Node %d/(%d, %d)\n",nd, nd/size, nd%size));
+			sb.append(String.format("Node %d/(%d, %d)\n", nd, nd / size, nd
+					% size));
 		}
 		return sb.toString();
 	}
@@ -189,11 +190,12 @@ public class AxelrodNetwork {
 	public String network_state_to_string() {
 		StringBuilder sb = new StringBuilder("Network state:\n");
 		for (int nd = 0; nd < this.n_nodes; nd++) {
-				sb.append(String.format("Node %d/(%d, %d): ", nd, nd/size, nd%size));
-				for (int f = 0; f < features; f++) {
-					sb.append(states[nd][f]);
-				}
-				sb.append("\n");
+			sb.append(String.format("Node %d/(%d, %d): ", nd, nd / size, nd
+					% size));
+			for (int f = 0; f < features; f++) {
+				sb.append(states[nd][f]);
+			}
+			sb.append("\n");
 		}
 		return sb.toString();
 	}
@@ -202,10 +204,12 @@ public class AxelrodNetwork {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Adjacency matrix:\n");
 		for (int nd = 0; nd < this.n_nodes; nd++) {
-			sb.append(String.format("node %d/(%d,%d):\t", nd, nd/size, nd%size));
+			sb.append(String.format("node %d/(%d,%d):\t", nd, nd / size, nd
+					% size));
 			for (int j = 0; j < degree[nd]; j++) {
 				int nbr = adj_matrix[nd][j];
-				sb.append(String.format("%d/(%d,%d)\t", nbr, nbr/size, nbr%size));
+				sb.append(String.format("%d/(%d,%d)\t", nbr, nbr / size, nbr
+						% size));
 			}
 			sb.append("\n");
 		}
@@ -214,91 +218,145 @@ public class AxelrodNetwork {
 
 	public void random_starting_distribution() {
 		for (int nd = 0; nd < this.n_nodes; nd++) {
-				states[nd] = State.random_node_state(features, traits);
+			states[nd] = State.random_node_state(features, traits);
 		}
 		this.initInteractionList();
-		this.initCultureSizes();
 	}
-	
-	public void bubble_random_starting_distribution(int bubble_radius, int[] state){
+
+	public void bubble_random_starting_distribution(int bubble_radius,
+			int[] state) {
+
+		 for (int nd = 0; nd < this.n_nodes; nd++) {
+		 states[nd] = State.random_node_state(features, traits);
+		 }
+
+		int lin_centro = this.size / 2;
+		int col_centro = this.size / 2;
+		int no_centro = col_centro + lin_centro * this.size;
+
+		System.arraycopy(state, 0, this.states[no_centro], 0, this.features);
+
 		bubble_radius -= bubble_radius % 2;
-		for (int nd = 0; nd < n_nodes; nd++) {
-			
+		int step_size = 1;
+		int lin_atual = lin_centro;
+		int col_atual = col_centro;
+		int no_atual = col_atual + lin_atual * this.size;
+
+		while (true) {
+
+			// cima
+			int to = lin_atual - step_size;
+			while (lin_atual > to) {
+				lin_atual--;
+				no_atual = col_atual + lin_atual * this.size;
+				System.arraycopy(state, 0, this.states[no_atual], 0,
+						this.features);
+			}
+
+			// esquerda
+			to = col_atual - step_size;
+			while (col_atual > to) {
+				col_atual--;
+				no_atual = col_atual + lin_atual * this.size;
+				System.arraycopy(state, 0, this.states[no_atual], 0,
+						this.features);
+			}
+
+			if (bubble_radius > 2 && step_size < bubble_radius - 1)
+				step_size++;
+
+			// baixo
+			to = lin_atual + step_size;
+			while (lin_atual < to) {
+				lin_atual++;
+				no_atual = col_atual + lin_atual * this.size;
+				System.arraycopy(state, 0, this.states[no_atual], 0,
+						this.features);
+			}
+
+			if (step_size == bubble_radius - 1)
+				break;
+
+			// direita
+			to = col_atual + step_size;
+			while (col_atual < to) {
+				col_atual++;
+				no_atual = col_atual + lin_atual * this.size;
+				System.arraycopy(state, 0, this.states[no_atual], 0,
+						this.features);
+			}
+
+			step_size++;
+
 		}
+		this.initInteractionList();
 	}
-	
+
 	public void striped_starting_distribution() {
-		int[] state1 = new int [features];
-		int[] state2 = new int [features];
-		state1[0] = state2[0] = traits-1;
+		int[] state1 = new int[features];
+		int[] state2 = new int[features];
+		state1[0] = state2[0] = traits - 1;
 		for (int i = 1; i < state1.length; i++) {
 			state1[i] = 0;
 			state2[i] = traits - 1;
 		}
 		for (int nd = 0; nd < n_nodes; nd++) {
-			if(nd%2 == 0){
+			if (nd % 2 == 0) {
 				System.arraycopy(state1, 0, states[nd], 0, state1.length);
-			}else{
+			} else {
 				System.arraycopy(state2, 0, states[nd], 0, state2.length);
 			}
 		}
 		this.initInteractionList();
-		this.initCultureSizes();
 	}
-	
-	public void homogeneous_distribution(){
-		int [] randst = State.random_node_state(features, traits);
+
+	public void homogeneous_distribution() {
+		int[] randst = State.random_node_state(features, traits);
 		for (int nd = 0; nd < n_nodes; nd++) {
 			System.arraycopy(randst, 0, states[nd], 0, randst.length);
 		}
 		this.initInteractionList();
-		this.initCultureSizes();
 	}
 
 	public boolean is_state_valid(int[] state) {
 		for (int i = 0; i < features; i++) {
-			if (state[i] < 0 || state[i] >= traits) return false;
+			if (state[i] < 0 || state[i] >= traits)
+				return false;
 		}
 		return true;
 	}
 
-	public int[] state(int node) {
-		return this.states[node];
-	}
-
-//	public void setState(int node, int[] state) {
-//		int[] old_state = this.states[node];
-//		if (!state.equals(old_state)) {
-//			this.states[node] = state;
-//			this.update_representations(node);
-//			Integer old_state_cSize = cultureSizes.get(Arrays.hashCode(old_state));
-//			Integer state_cSize = cultureSizes.get(Arrays.hashCode(state));
-//			cultureSizes.put(Arrays.hashCode(old_state), (old_state_cSize == null ? 0
-//					: old_state_cSize) - 1);
-//			cultureSizes
-//					.put(Arrays.hashCode(state), (state_cSize == null ? 0 : state_cSize) + 1);
-//		}
-//	}
-	
-	public void setFeature(int node, int f_pos, int f_val){
-		states[node][f_pos] = f_val;
-	}
+	// public void setState(int node, int[] state) {
+	// int[] old_state = this.states[node];
+	// if (!state.equals(old_state)) {
+	// this.states[node] = state;
+	// this.update_representations(node);
+	// Integer old_state_cSize = cultureSizes.get(Arrays.hashCode(old_state));
+	// Integer state_cSize = cultureSizes.get(Arrays.hashCode(state));
+	// cultureSizes.put(Arrays.hashCode(old_state), (old_state_cSize == null ? 0
+	// : old_state_cSize) - 1);
+	// cultureSizes
+	// .put(Arrays.hashCode(state), (state_cSize == null ? 0 : state_cSize) +
+	// 1);
+	// }
+	// }
 
 	public Integer random_interactive_node() {
 		Integer idx = rand.nextInt(this.interactiveNodes.size());
-		return (Integer) this.interactiveNodes.get(idx);
+		return this.interactiveNodes.get(idx);
 	}
 
 	public List<Integer> interactive_nodes() {
 		return Collections.unmodifiableList(interactiveNodes);
 	}
-	
-	public int degree(int node){
+
+	public int degree(int node) {
 		return degree[node];
 	}
 
 	public int node_neighbor(int node, int nbrIdx) {
-		if(nbrIdx > degree[node]) return -1;
+		if (nbrIdx > degree[node])
+			return -1;
 		return adj_matrix[node][nbrIdx];
 	}
 

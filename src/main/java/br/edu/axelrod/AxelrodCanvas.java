@@ -43,8 +43,6 @@ public class AxelrodCanvas extends JPanel {
 		this.rp = new RgbPartitioner(nw.features, nw.traits);
 		this.borders = borders;
 		
-//		this.setToolTipText("Olá, Mundo!");
-
 		this.addMouseListener(new MouseListener() {
 
 			public void mouseClicked(MouseEvent e) {
@@ -53,7 +51,7 @@ public class AxelrodCanvas extends JPanel {
 				int i = (mouseY / AxelrodCanvas.this.siteWidth);
 				int j = (mouseX / AxelrodCanvas.this.siteWidth);
 				int node = i*AxelrodCanvas.this.nw.size+ j;
-				String out = String.format("node: %d, %d, state %s", i, j, State.toString(AxelrodCanvas.this.nw.state(node)));
+				String out = String.format("node: %d, %d, state %s", i, j, State.toString(AxelrodCanvas.this.nw.states[node]));
 				System.out.println(out);
 //				AxelrodCanvas.this.setToolTipText(out);
 			}
@@ -84,7 +82,7 @@ public class AxelrodCanvas extends JPanel {
 	 */
 	public void initCanvas(AxelrodNetwork nw) {
 		for (int nd = 0; nd < nw.n_nodes; nd++) {
-			this.updateSite(nd / nw.size, nd % nw.size, nw.state(nd));
+			this.updateSite(nd / nw.size, nd % nw.size, nw.states[nd]);
 		}
 	}
 
