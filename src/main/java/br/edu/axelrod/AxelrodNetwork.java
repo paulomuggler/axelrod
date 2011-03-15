@@ -58,9 +58,9 @@ public class AxelrodNetwork {
 		this.is_node_active = new boolean[this.n_nodes];
 		this.degree = new int[this.n_nodes];
 		this.init_adj_matrix();
-		this.bubble_random_starting_distribution(24, State.random_node_state(
-				features, traits));
-		// this.striped_starting_distribution();
+//		this.bubble_random_starting_distribution(48, State.random_node_state(
+//				features, traits));
+		 this.striped_starting_distribution();
 	}
 
 	private void init_adj_matrix() {

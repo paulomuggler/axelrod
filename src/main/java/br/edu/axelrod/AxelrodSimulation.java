@@ -158,10 +158,10 @@ public class AxelrodSimulation {
 
 	public static void visual_representation() throws InterruptedException {
 		int size = 64;
-		int f = 2;
+		int f = 3;
 		int q = 2;
 		AxelrodSimulation sim = new AxelrodSimulation(size, f, q);
-//		sim.nw.bubble_random_starting_distribution(24, State.random_node_state(f, q));
+		sim.nw.bubble_random_starting_distribution(36, State.random_node_state(f, q));
 		final AxelrodCanvas opc = new AxelrodCanvas(640, sim.nw, false);
 		SimulationObserver obs = new SimulationObserver() {
 			public void simulationStep(AxelrodNetwork nw) {
