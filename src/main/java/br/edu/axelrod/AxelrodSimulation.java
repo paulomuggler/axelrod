@@ -39,6 +39,11 @@ public class AxelrodSimulation implements Runnable{
 		this.obs = new BaseSimulationObserver();
 		this.nw = new AxelrodNetwork(size, features, traits);
 	}
+	
+	public AxelrodSimulation(AxelrodNetwork nw) {
+		this.obs = new BaseSimulationObserver();
+		this.nw = nw;
+	}
 
 	/**
 	 * Performs a single step of the axelrod simulation

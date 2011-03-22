@@ -3,6 +3,10 @@
  */
 package br.edu.axelrod;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -47,7 +51,6 @@ public class AxelrodNetwork {
 	// Integer>();
 
 	public AxelrodNetwork(int size, int features, int traits) {
-		super();
 		this.size = size;
 		this.n_nodes = size * size;
 		this.features = features;
@@ -58,9 +61,62 @@ public class AxelrodNetwork {
 		this.is_node_active = new boolean[this.n_nodes];
 		this.degree = new int[this.n_nodes];
 		this.init_adj_matrix();
-//		this.bubble_random_starting_distribution(48, State.random_node_state(
-//				features, traits));
-		 this.random_starting_distribution();
+		this.random_starting_distribution();
+	}
+	
+	public AxelrodNetwork(File f) throws IOException{
+		if(!f.exists()) f.createNewFile();
+		if(f.canRead()){
+			StringBuilder line = new StringBuilder();
+			FileReader fr = new FileReader(f);
+			
+			int c = fr.read();
+			while(c != '\n'){
+				line.append((char) c );
+				c = fr.read();
+			}
+			
+			String[] params = line.toString().split(":");
+			
+			this.size = Integer.parseInt(params[0]);
+			this.n_nodes = size * size;
+			this.features = Integer.parseInt(params[1]);
+			this.traits = Integer.parseInt(params[2]);
+			this.states = new int[this.n_nodes][this.features];
+			this.adj_matrix = new int[this.n_nodes][MAX_DEGREE];
+			this.is_node_active = new boolean[this.n_nodes];
+			this.degree = new int[this.n_nodes];
+			
+			line = new StringBuilder();
+			for (int i = 0; i < this.n_nodes; i++) {
+				c = fr.read();
+				while(c != '\n'){
+					line.append((char)c);
+					c = fr.read();
+				}
+				String[] stateStr = line.toString().split(":");
+				line = new StringBuilder();
+				int[] state = new int [stateStr.length];
+				for (int j = 0; j < stateStr.length; j++) {
+					state[j] = Integer.parseInt(stateStr[j]);
+				}
+				System.arraycopy(state, 0, this.states[i], 0, this.features);
+			}
+		}else {
+			this.size = 64;
+			this.n_nodes = size * size;
+			this.features = 3;
+			this.traits = 3;
+
+			this.states = new int[this.n_nodes][this.features];
+			this.adj_matrix = new int[this.n_nodes][MAX_DEGREE];
+			this.is_node_active = new boolean[this.n_nodes];
+			this.degree = new int[this.n_nodes];
+			this.init_adj_matrix();
+			this.random_starting_distribution();
+		}
+		this.init_adj_matrix();
+		this.initInteractionList();
 	}
 
 	private void init_adj_matrix() {
@@ -340,5 +396,26 @@ public class AxelrodNetwork {
 			return -1;
 		return adj_matrix[node][nbrIdx];
 	}
-
+	
+	public void save_to_file(File f) throws IOException{
+		if(f.exists() && f.canWrite()){
+			FileWriter fw = new FileWriter(f);
+			fw.write(String.valueOf(this.size));
+			fw.write(':');
+			fw.write(String.valueOf(this.features));
+			fw.write(':');
+			fw.write(String.valueOf(this.traits));
+			fw.write('\n');
+			for (int i = 0; i < states.length; i++) {
+				int [] state = states[i];
+				for (int j = 0; j < state.length; j++) {
+					fw.write(String.valueOf(state[j]));
+					if(j != state.length -1) fw.write(':');
+				}
+				fw.write('\n');
+			}
+			fw.close();
+		}
+	}
+	
 }
