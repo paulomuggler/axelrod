@@ -92,7 +92,7 @@ public class State {
 		for (int i = 0; i < state.length; i++) {
 			sb.append('%');
 			sb.append('d');
-			sb.append('.');
+			sb.append(':');
 		}
 		sb.deleteCharAt(sb.length() - 1);
 		return String.format(sb.toString(), args);

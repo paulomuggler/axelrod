@@ -9,8 +9,10 @@ import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 /**
@@ -28,73 +30,52 @@ public class AxelrodCanvas extends JPanel {
 	private final AxelrodNetwork nw;
 
 	protected Insets thickness;
-
 	protected Color lineColor;
-
 	protected Insets gap;
-
 	private final boolean borders;
+	
+	public int[] stateStroke;
+	
+	public final List<int[]> dirtySites = Collections.synchronizedList(new ArrayList<int[]>());
 
 	public AxelrodCanvas(int canvasWidth, AxelrodNetwork nw, boolean borders) {
 		super();
 		this.nw = nw;
 		this.canvasWidth = canvasWidth - (canvasWidth % this.nw.size);
 		this.siteWidth = (int) canvasWidth / this.nw.size;
+		
 		this.rp = new RgbPartitioner(nw.features, nw.traits);
 		this.borders = borders;
 		
-		this.addMouseListener(new MouseListener() {
-
-			public void mouseClicked(MouseEvent e) {
-				int mouseX = e.getX();
-				int mouseY = e.getY();
-				int i = (mouseY / AxelrodCanvas.this.siteWidth);
-				int j = (mouseX / AxelrodCanvas.this.siteWidth);
-				int node = i*AxelrodCanvas.this.nw.size+ j;
-				String out = String.format("node: %d, %d, state %s", i, j, State.toString(AxelrodCanvas.this.nw.states[node]));
-				System.out.println(out);
-//				AxelrodCanvas.this.setToolTipText(out);
-			}
-
-			public void mouseEntered(MouseEvent e) {}
-			public void mouseExited(MouseEvent e) {}
-			public void mousePressed(MouseEvent e) {}
-			public void mouseReleased(MouseEvent e) {}
-		});
+		this.stateStroke = new int[nw.features];
+		for (int i = 0; i < stateStroke.length; i++) {
+			stateStroke[i] = 0;
+		}
+		
+		this.addMouseListener(stateInspector);
+		this.addMouseListener(statePen);
+		this.addMouseListener(stateRect);
 		
 		this.setPreferredSize(new Dimension(this.canvasWidth, this.canvasWidth));
-		JFrame frame = new JFrame("Axelrod Simulation");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.add(this);
-		frame.pack();
-		frame.setVisible(true);
 		
 		lineColor = new Color(0,0,0);
 		this.thickness = new Insets(1, 1, 1, 1);
 		this.gap = new Insets(1, 1, 1, 1);
 
-		this.initCanvas(nw);
-
 	}
-
-	/**
-	 * @param nw
-	 */
-	public void initCanvas(AxelrodNetwork nw) {
+	
+	public void paintComponent(Graphics g){
 		for (int nd = 0; nd < nw.n_nodes; nd++) {
-			this.updateSite(nd / nw.size, nd % nw.size, nw.states[nd]);
-		}
-	}
-
-	public void updateSite(int i, int j, int[] state) {
-		Graphics g = getGraphics();
-		int y = i * this.siteWidth;
-		int x = j * this.siteWidth;
-		int color = this.rp.color(state);
-		g.setColor(new Color(color));
-		g.fillRect(x, y, this.siteWidth, this.siteWidth);
-		if(borders){
-			this.paintBorder(g, x, y, this.siteWidth, this.siteWidth);
+			int[] site = {nd / nw.size, nd % nw.size};
+			int node = site[0] * nw.size + site[1];
+			int y = site[0] * this.siteWidth;
+			int x = site[1] * this.siteWidth;
+			int color = this.rp.color(this.nw.states[node]);
+			g.setColor(new Color(color));
+			g.fillRect(x, y, this.siteWidth, this.siteWidth);
+			if(borders){
+				this.paintBorder(g, x, y, this.siteWidth, this.siteWidth);
+			}
 		}
 	}
 
@@ -127,5 +108,91 @@ public class AxelrodCanvas extends JPanel {
 	 */
 	public int getCanvasWidth() {
 		return canvasWidth;
+	}
+	
+	private MouseListener stateInspector = new MouseListener() {
+		public void mouseClicked(MouseEvent e) {
+			if(e.getButton() == MouseEvent.BUTTON1){
+				int node = getClickedNode(e);
+				System.arraycopy(AxelrodCanvas.this.nw.states[node], 0, stateStroke, 0, nw.features);
+				int[] coords = networkCoordsForClick(e);
+				String out = String.format("node: %d, %d, state %s", coords[0], coords[1], State.toString(AxelrodCanvas.this.nw.states[node]));
+				System.out.println(out);
+	//			AxelrodCanvas.this.setToolTipText(out);
+			}
+		}
+		public void mouseEntered(MouseEvent e) {}
+		public void mouseExited(MouseEvent e) {}
+		public void mousePressed(MouseEvent e) {}
+		public void mouseReleased(MouseEvent e) {}
+	};
+	
+	private MouseListener statePen = new MouseListener() {
+		public void mouseClicked(MouseEvent e) {
+			if(e.getButton() == MouseEvent.BUTTON3){
+				int node = getClickedNode(e);
+				setNwState(node, stateStroke);
+			}
+		}
+		public void mouseEntered(MouseEvent e) {}
+		public void mouseExited(MouseEvent e) {}
+		public void mousePressed(MouseEvent e) {}
+		public void mouseReleased(MouseEvent e) {}
+	};
+	
+	private MouseListener stateRect = new MouseListener() {
+		int[] dragStarted;
+		int[] dragEnded;
+		public void mouseClicked(MouseEvent e) {}
+		public void mouseEntered(MouseEvent e) {}
+		public void mouseExited(MouseEvent e) {}
+		public void mousePressed(MouseEvent e) {
+			dragStarted = networkCoordsForClick(e);
+		}
+		public void mouseReleased(MouseEvent e) {
+			dragEnded = networkCoordsForClick(e);
+			int startX, startY, endX, endY;
+			if(dragStarted[0] < dragEnded[0]){
+				startX = dragStarted[0];
+				endX = dragEnded[0];
+			}else{
+				endX = dragStarted[0];
+				startX = dragEnded[0];
+			}
+			if(dragStarted[1] < dragEnded[1]){
+				startY = dragStarted[1];
+				endY = dragEnded[1];
+			}else{
+				endY = dragStarted[1];
+				startY = dragEnded[1];
+			}
+			for (int i = startX; i <= endX; i++) {
+				for (int j = startY; j <= endY; j++) {
+					if(i < nw.size && j < nw.size){
+						setNwState(i*nw.size + j, stateStroke);
+					}
+				}
+			}
+		}
+	};
+	
+	private void setNwState(int node, int[] state){
+		System.arraycopy(state, 0, nw.states[node], 0, nw.features);
+		nw.update_representations(node);
+		AxelrodCanvas.this.repaint();
+	}
+	
+	private int getClickedNode(MouseEvent e) {
+		int mouseX = e.getX();
+		int mouseY = e.getY();
+		int i = (mouseY / AxelrodCanvas.this.siteWidth);
+		int j = (mouseX / AxelrodCanvas.this.siteWidth);
+		int node = i*AxelrodCanvas.this.nw.size+ j;
+		return node;
+	}
+	
+	private int[] networkCoordsForClick(MouseEvent e){
+		int[] coords = {e.getY() / AxelrodCanvas.this.siteWidth, e.getX() / AxelrodCanvas.this.siteWidth};
+		return coords;
 	}
 }

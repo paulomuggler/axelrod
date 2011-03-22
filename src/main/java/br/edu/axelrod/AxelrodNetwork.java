@@ -142,7 +142,6 @@ public class AxelrodNetwork {
 			}
 
 			for (int k1 = 0; k1 < degree[nbr] && is_node_active[nbr] == false; k1++) {
-
 				int nbr_nbr = this.adj_matrix[nbr][k1];
 				int[] nbr_nbr_state = this.states[nbr_nbr];
 
@@ -152,7 +151,6 @@ public class AxelrodNetwork {
 					break;
 				}
 			}
-
 		}
 	}
 
@@ -285,9 +283,7 @@ public class AxelrodNetwork {
 				System.arraycopy(state, 0, this.states[no_atual], 0,
 						this.features);
 			}
-
 			step_size++;
-
 		}
 		this.initInteractionList();
 	}
@@ -325,21 +321,6 @@ public class AxelrodNetwork {
 		}
 		return true;
 	}
-
-	// public void setState(int node, int[] state) {
-	// int[] old_state = this.states[node];
-	// if (!state.equals(old_state)) {
-	// this.states[node] = state;
-	// this.update_representations(node);
-	// Integer old_state_cSize = cultureSizes.get(Arrays.hashCode(old_state));
-	// Integer state_cSize = cultureSizes.get(Arrays.hashCode(state));
-	// cultureSizes.put(Arrays.hashCode(old_state), (old_state_cSize == null ? 0
-	// : old_state_cSize) - 1);
-	// cultureSizes
-	// .put(Arrays.hashCode(state), (state_cSize == null ? 0 : state_cSize) +
-	// 1);
-	// }
-	// }
 
 	public Integer random_interactive_node() {
 		Integer idx = rand.nextInt(this.interactiveNodes.size());

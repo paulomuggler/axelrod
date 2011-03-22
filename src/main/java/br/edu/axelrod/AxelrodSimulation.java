@@ -18,7 +18,7 @@ import org.jfree.chart.plot.XYPlot;
  * @author muggler
  * 
  */
-public class AxelrodSimulation {
+public class AxelrodSimulation implements Runnable{
 	final Random rand = new Random();
 
 	// Configurations
@@ -31,9 +31,9 @@ public class AxelrodSimulation {
 	int interactions = 0;
 
 	//
-	final AxelrodNetwork nw;
+	public final AxelrodNetwork nw;
 	SimulationObserver obs;
-	int state = 2; // 2 => stopped; 1 => running; 0 => finished
+	public int state = 2; // 2 => stopped; 1 => running; 0 => finished
 
 	public AxelrodSimulation(int size, int features, int traits) {
 		this.obs = new BaseSimulationObserver();
@@ -44,7 +44,7 @@ public class AxelrodSimulation {
 	 * Performs a single step of the axelrod simulation
 	 * @throws InterruptedException
 	 */
-	public void sim_step() throws InterruptedException {
+	public void sim_step() {
 		if (this.nw.interactive_nodes().size() == 0) {
 			this.state = 0; // absorbent state
 			return;
@@ -52,19 +52,22 @@ public class AxelrodSimulation {
 		int node = nw.random_interactive_node();
 		this.networkDynamic(node);
 		this.iterations++;
-//		obs.simulationStep(nw);
-//		Thread.sleep(100);
 	}
 
-	public void run() throws InterruptedException {
-
+	public void run() {
 		this.iterations = 0;
 		this.sim_start_ms = System.currentTimeMillis();
 		while (!(this.state == 0)) {
+			if(state == 2){
+				try {
+					Thread.sleep(33);
+				} catch (InterruptedException e) {}
+				continue;
+			}
 			this.sim_step();
 		}
 		this.sim_finish_ms = System.currentTimeMillis();
-
+		print_execution_statistics();
 	}
 
 	private void networkDynamic(int node) {
@@ -72,12 +75,12 @@ public class AxelrodSimulation {
 		int nbr = -1;
 		int nbr_idx = rand.nextInt(nw.degree(node));
 		
-//		boolean interactive;
-//		do {
+		boolean interactive;
+		do {
 			nbr = nw.node_neighbor(node, nbr_idx);
-//			interactive = nw.is_interaction_possible(nw.states[node], nw.states[nbr]);
-//			nbr_idx = (nbr_idx+1)%nw.degree(node);
-//		} while (!interactive);
+			interactive = nw.is_interaction_possible(nw.states[node], nw.states[nbr]);
+			nbr_idx = (nbr_idx+1)%nw.degree(node);
+		} while (!interactive);
 
 		int rand_f = rand.nextInt(nw.features);
 
@@ -94,20 +97,19 @@ public class AxelrodSimulation {
 				int i = rand.nextInt(diff_count);
 				int f = diff_features[i];
 				
-				nw.states[node][f] = nw.states[nbr][f];
-				nw.update_representations(node);
-				obs.nodeInteraction(node / nw.size, node % nw.size, nw
-						.states[node]);
+//				nw.states[node][f] = nw.states[nbr][f];
+//				nw.update_representations(node);
+//				obs.nodeInteraction(node / nw.size, node % nw.size, nw
+//						.states[node]);
 				
-//				nw.states[nbr][f] = nw.states[node][f];
-//				nw.update_representations(nbr);
-//				obs.nodeInteraction(nbr / nw.size, nbr % nw.size, nw
-//						.states[nbr]);
+				nw.states[nbr][f] = nw.states[node][f];
+				nw.update_representations(nbr);
+				obs.nodeInteraction(nbr / nw.size, nbr % nw.size, nw
+						.states[nbr]);
 				
 				interactions++;
 			}
 		}
-
 	}
 
 	public void print_execution_statistics() {
@@ -150,15 +152,15 @@ public class AxelrodSimulation {
 
 	public static void main(String[] args) throws IOException,
 			InterruptedException {
-		 q_crit_plot();
+//		 q_crit_plot();
 //		 culture_distribution_plot();
-//		visual_representation();
+		visual_representation();
 	}
 
 	public static void visual_representation() throws InterruptedException {
-		int size = 64;
+		int size = 100;
 		int f = 2;
-		int q = 4;
+		int q = 2;
 		int bolha = 20;
 		AxelrodSimulation sim = new AxelrodSimulation(size, f, q);
 //		int[] bubble_state = {0,0,0};
@@ -171,13 +173,13 @@ public class AxelrodSimulation {
 //				opc.repaint();
 			}
 
-			public void nodeInteraction(int i, int j, int[] newState) {
-				opc.updateSite(i, j, newState);
+			public void nodeInteraction(final int i, final int j, final  int[] newState) {
+				opc.repaint();
 			}
 		};
+		
 		sim.setObserver(obs);
 		sim.run();
-		sim.print_execution_statistics();
 	}
 
 	public static void culture_distribution_plot() throws InterruptedException {
@@ -266,7 +268,7 @@ public class AxelrodSimulation {
 				int bolha = 20;
 				int[] bubble_state = State.random_node_state(f, q);
 				AxelrodSimulation sim = new AxelrodSimulation(size, f, q);
-//				sim.nw.bubble_random_starting_distribution(bolha, bubble_state);
+				sim.nw.bubble_random_starting_distribution(bolha, bubble_state);
 				sim.run();
 				sim.print_execution_statistics();
 				Integer[] culture_sizes = new ArrayList<Integer>(sim.nw.count_cultures().values()).toArray(new Integer[0]);
@@ -289,6 +291,18 @@ public class AxelrodSimulation {
 			}
 			plotter.setSeries(series);
 		}
+	}
+
+	public void stop() {
+		this.state = 2;
+	}
+
+	public void start() {
+		this.state = 1;
+	}
+
+	public void quit() {
+		this.state = 0;
 	}
 
 }
