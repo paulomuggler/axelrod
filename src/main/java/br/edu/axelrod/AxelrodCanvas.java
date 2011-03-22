@@ -166,10 +166,12 @@ public class AxelrodCanvas extends JPanel {
 				endY = dragStarted[1];
 				startY = dragEnded[1];
 			}
-			for (int i = startX; i <= endX; i++) {
-				for (int j = startY; j <= endY; j++) {
-					if(i < nw.size && j < nw.size){
-						setNwState(i*nw.size + j, stateStroke);
+			if(startX != endX || startY != endY){
+				for (int i = startX; i <= endX; i++) {
+					for (int j = startY; j <= endY; j++) {
+						if(i < nw.size && j < nw.size){
+							setNwState(i*nw.size + j, stateStroke);
+						}
 					}
 				}
 			}
