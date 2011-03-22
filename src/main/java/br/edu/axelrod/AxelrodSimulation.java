@@ -84,7 +84,7 @@ public class AxelrodSimulation implements Runnable{
 		do {
 			nbr = nw.node_neighbor(node, nbr_idx);
 			interactive = nw.is_interaction_possible(nw.states[node], nw.states[nbr]);
-			nbr_idx = (nbr_idx+1)%nw.degree(node);
+			nbr_idx = rand.nextInt(nw.degree(node));
 		} while (!interactive);
 
 		int rand_f = rand.nextInt(nw.features);

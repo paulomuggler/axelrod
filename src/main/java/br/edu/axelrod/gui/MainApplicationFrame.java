@@ -35,7 +35,9 @@ public class MainApplicationFrame extends JFrame {
 	/** */
 	private static final long serialVersionUID = -2360890643572400835L;
 
+	@SuppressWarnings("unused")
 	private static final int FRAME_WIDTH = 1000;
+	@SuppressWarnings("unused")
 	private static final int FRAME_HEIGHT = 800;
 	private static final int CANVAS_WIDTH = 800;
 	private static final boolean BORDERS = false;
