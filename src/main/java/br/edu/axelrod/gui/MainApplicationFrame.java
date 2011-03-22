@@ -68,6 +68,7 @@ public class MainApplicationFrame extends JFrame {
 	JPanel line4 = new JPanel();
 	JButton resetBtn = new JButton("Reset");
 	JButton toggleSimBtn = new JButton("Start");
+	JButton stepSimBtn = new JButton("Step");
 
 	JTextArea out = new JTextArea(5, 30);
 
@@ -90,6 +91,7 @@ public class MainApplicationFrame extends JFrame {
 		
 		resetBtn.addActionListener(resetSim);
 		toggleSimBtn.addActionListener(toggleSim);
+		stepSimBtn.addActionListener(stepSim);
 		resetSim.actionPerformed(null);
 		
 		fileMenu.add(loadFromFile);
@@ -128,6 +130,7 @@ public class MainApplicationFrame extends JFrame {
 		
 		line4.add(resetBtn);
 		line4.add(toggleSimBtn);
+		line4.add(stepSimBtn);
 		
 		controls.add(line0);
 		controls.add(line1);
@@ -163,6 +166,7 @@ public class MainApplicationFrame extends JFrame {
 		sim.setObserver(obs);
 		simThr = new Thread(sim);
 		toggleSimBtn.setText("Start");
+		stepSimBtn.setEnabled(true);
 		lTxtIn.setText(String.valueOf(sim.nw.size));
 		fTxtIn.setText(String.valueOf(sim.nw.features));
 		qTxtIn.setText(String.valueOf(sim.nw.traits));
@@ -191,11 +195,19 @@ public class MainApplicationFrame extends JFrame {
 			if (sim.state == 1){
 				sim.stop();
 				toggleSimBtn.setText("Start");
+				stepSimBtn.setEnabled(true);
 			} else {
 				System.out.println("starting simulation thread...");
 				sim.start();
 				toggleSimBtn.setText("Stop");
+				stepSimBtn.setEnabled(false);
 			}
+		}
+	};
+	
+	private ActionListener stepSim = new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+			sim.sim_step();
 		}
 	};
 
