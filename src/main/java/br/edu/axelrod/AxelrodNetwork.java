@@ -65,8 +65,7 @@ public class AxelrodNetwork {
 	}
 	
 	public AxelrodNetwork(File f) throws IOException{
-		if(!f.exists()) f.createNewFile();
-		if(f.canRead()){
+		if(f.exists() && f.canRead()){
 			StringBuilder line = new StringBuilder();
 			FileReader fr = new FileReader(f);
 			
@@ -398,7 +397,8 @@ public class AxelrodNetwork {
 	}
 	
 	public void save_to_file(File f) throws IOException{
-		if(f.exists() && f.canWrite()){
+		if(!f.exists()) f.createNewFile();
+		if(f.canWrite()){
 			FileWriter fw = new FileWriter(f);
 			fw.write(String.valueOf(this.size));
 			fw.write(':');
