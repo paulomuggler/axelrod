@@ -179,6 +179,7 @@ public class MainApplicationFrame extends JFrame {
 				byte[] bs = new byte[1];
 				bs[0] = (byte) b;
 				ta.append(new String(bs));
+				ta.setCaretPosition(ta.getDocument().getLength());
 			}
 		};
 	}
