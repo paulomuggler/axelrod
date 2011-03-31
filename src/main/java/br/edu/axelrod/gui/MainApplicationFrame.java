@@ -14,6 +14,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -31,6 +32,7 @@ import javax.swing.event.ChangeListener;
 import br.edu.axelrod.AxelrodCanvas;
 import br.edu.axelrod.AxelrodNetwork;
 import br.edu.axelrod.AxelrodSimulation;
+import br.edu.axelrod.ScatterPlotter;
 import br.edu.axelrod.AxelrodSimulation.SimulationObserver;
 
 public class MainApplicationFrame extends JFrame {
@@ -51,6 +53,7 @@ public class MainApplicationFrame extends JFrame {
 	
 	JMenuBar menuBar = new JMenuBar();
 	JMenu fileMenu = new JMenu("File");
+	JMenu plotMenu = new JMenu("Plot");
 	
 	JPanel controls = new JPanel();
 
@@ -69,6 +72,7 @@ public class MainApplicationFrame extends JFrame {
 	JButton resetBtn = new JButton("Reset");
 	JButton toggleSimBtn = new JButton("Start");
 	JButton stepSimBtn = new JButton("Step");
+	JCheckBox enableVisualOut = new JCheckBox("Enable visual representation");
 
 	JPanel line0 = new JPanel();
 	JPanel line1 = new JPanel();
@@ -76,9 +80,9 @@ public class MainApplicationFrame extends JFrame {
 	JPanel line3 = new JPanel();
 	JPanel line4 = new JPanel();
 	JPanel line5 = new JPanel();
+	JPanel line6 = new JPanel();
 	
-	JSlider speedSlider = new JSlider(JSlider.HORIZONTAL,
-	                                      0, 100, 100);
+	JSlider speedSlider = new JSlider(JSlider.HORIZONTAL, 0, 100, 100);
 
 	JTextArea out = new JTextArea(5, 30);
 
@@ -102,19 +106,31 @@ public class MainApplicationFrame extends JFrame {
 		resetBtn.addActionListener(resetSim);
 		toggleSimBtn.addActionListener(toggleSim);
 		stepSimBtn.addActionListener(stepSim);
+		enableVisualOut.setSelected(true);
 		resetSim.actionPerformed(null);
 		
 		fileMenu.add(loadFromFile);
 		fileMenu.add(saveToFile);
 		fileMenu.add(quit);
 		
+		plotMenu.add(interactionListSize);
+		plotMenu.add(interactionListSize_log);
+		
 		menuBar.add(fileMenu);
+		menuBar.add(plotMenu);
 		
 		lTxtIn.setPreferredSize(new Dimension(36, 18));
 		fTxtIn.setPreferredSize(new Dimension(36, 18));
 		qTxtIn.setPreferredSize(new Dimension(36, 18));
 		
-		paintTxtIn.setPreferredSize(new Dimension(100, 18));
+		resetBtn.setPreferredSize(new Dimension(80,20));
+		toggleSimBtn.setPreferredSize(new Dimension(80,20));
+		stepSimBtn.setPreferredSize(new Dimension(80,20));
+		
+		enableVisualOut.setPreferredSize(new Dimension(240, 36));
+		speedSlider.setPreferredSize(new Dimension(240,36));
+		
+		paintTxtIn.setPreferredSize(new Dimension(240, 18));
 		paintTxtIn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int[] state = parseState(paintTxtIn.getText());
@@ -148,14 +164,16 @@ public class MainApplicationFrame extends JFrame {
 		line3.add(paintLbl);
 		line3.add(paintTxtIn);
 		
-		line4.add(resetBtn);
-		line4.add(toggleSimBtn);
-		line4.add(stepSimBtn);
+		line4.add(enableVisualOut);
 		
-		line5.add(speedSlider);
+		line5.add(resetBtn);
+		line5.add(toggleSimBtn);
+		line5.add(stepSimBtn);
+		
+		line6.add(speedSlider);
 		
 		controls.setLayout(new BoxLayout(controls, BoxLayout.PAGE_AXIS));
-		controls.setPreferredSize(new Dimension(300, 120));
+		controls.setPreferredSize(new Dimension(400, 800));
 		
 		controls.add(line0);
 		controls.add(line1);
@@ -163,6 +181,7 @@ public class MainApplicationFrame extends JFrame {
 		controls.add(line3);
 		controls.add(line4);
 		controls.add(line5);
+		controls.add(line6);
 		
 		Container pane = this.getContentPane();
 		pane.add(menuBar, BorderLayout.NORTH);
@@ -179,17 +198,19 @@ public class MainApplicationFrame extends JFrame {
 		if (canvas != null) {
 			pane.remove(canvas);
 		}
-		canvas = new AxelrodCanvas(CANVAS_WIDTH, sim.nw, BORDERS);
-		pane.add(canvas, BorderLayout.CENTER);
+		if (enableVisualOut.isSelected()){
+			canvas = new AxelrodCanvas(CANVAS_WIDTH, sim.nw, BORDERS);
+			pane.add(canvas, BorderLayout.CENTER);
+			SimulationObserver obs = new SimulationObserver() {
+				public void simulationStep(AxelrodNetwork nw) {}
+				public void nodeInteraction(int i, int j, int[] newState) {
+					canvas.repaint();
+				}
+			};
+			sim.setObserver(obs);
+		}
 		this.pack();
 		this.repaint();
-		SimulationObserver obs = new SimulationObserver() {
-			public void simulationStep(AxelrodNetwork nw) {}
-			public void nodeInteraction(int i, int j, int[] newState) {
-				canvas.repaint();
-			}
-		};
-		sim.setObserver(obs);
 		simThr = new Thread(sim);
 		toggleSimBtn.setText("Start");
 		stepSimBtn.setEnabled(true);
@@ -271,9 +292,7 @@ public class MainApplicationFrame extends JFrame {
 	}
 	
 	Action saveToFile = new AbstractAction("Save...") {
-		
 		private static final long serialVersionUID = -4675654942388512094L;
-
 		public void actionPerformed(ActionEvent e) {
 			int select = fc.showSaveDialog(MainApplicationFrame.this);
 			if (select == JFileChooser.APPROVE_OPTION){
@@ -289,7 +308,6 @@ public class MainApplicationFrame extends JFrame {
 	
 	Action loadFromFile = new AbstractAction("Load...") {
 		private static final long serialVersionUID = -4675654942388512094L;
-		
 		public void actionPerformed(ActionEvent e) {
 			int select = fc.showOpenDialog(MainApplicationFrame.this);
 			if (select == JFileChooser.APPROVE_OPTION){
@@ -307,9 +325,26 @@ public class MainApplicationFrame extends JFrame {
 	
 	Action quit = new AbstractAction("Exit") {
 		private static final long serialVersionUID = -4675654942388512094L;
-		
 		public void actionPerformed(ActionEvent e) {
 			System.exit(0);
+		}
+	};
+	
+	Action interactionListSize = new AbstractAction("Active nodes -linear scale") {
+		private static final long serialVersionUID = 4857404375859735556L;
+		public void actionPerformed(ActionEvent e) {
+			ScatterPlotter plot = sim.iListPlot(false);
+			plot.pack();
+			plot.setVisible(true);
+		}
+	};
+	
+	Action interactionListSize_log = new AbstractAction("Active nodes - log scale") {
+		private static final long serialVersionUID = 4857404375859735556L;
+		public void actionPerformed(ActionEvent e) {
+			ScatterPlotter plot = sim.iListPlot(true);
+			plot.pack();
+			plot.setVisible(true);
 		}
 	};
 

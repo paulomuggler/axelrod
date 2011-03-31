@@ -21,12 +21,10 @@ public class ScatterPlotter extends JFrame{
 	DefaultXYDataset ds;
 	public JFreeChart chart;
 	
-	public ScatterPlotter(String applicationTitle, String chartTitle, double[][] dataset) {
+	public ScatterPlotter(String applicationTitle, String chartTitle, String xCaption, String yCaption, double[][] dataset) {
 		super(applicationTitle);
-		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
 		// based on the dataset we create the chart
-		chart = createChart(dataset, chartTitle);
+		chart = createChart(dataset, chartTitle, xCaption, yCaption);
 		// we put the chart into a panel
 		ChartPanel chartPanel = new ChartPanel(chart);
 		// default size
@@ -38,11 +36,11 @@ public class ScatterPlotter extends JFrame{
 	/**
 	 * Creates a chart
 	 */
-	private JFreeChart createChart(double[][] dataset, String title) {
+	private JFreeChart createChart(double[][] dataset, String title, String xCaption, String yCaption) {
 		ds = new DefaultXYDataset();
 		ds.addSeries(1, dataset);
-		JFreeChart chart = ChartFactory.createScatterPlot(title, "q", "Smax/N", ds,
-		PlotOrientation.VERTICAL, false, false, false);
+		JFreeChart chart = ChartFactory.createScatterPlot(title, xCaption, yCaption, ds,
+		PlotOrientation.VERTICAL, false, true, false);
 		return chart;
 	}
 	

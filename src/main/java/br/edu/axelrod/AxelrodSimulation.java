@@ -3,7 +3,6 @@
  */
 package br.edu.axelrod;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -11,6 +10,8 @@ import java.util.List;
 import java.util.Random;
 
 import org.jfree.chart.axis.LogarithmicAxis;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.XYPlot;
 
 
@@ -29,20 +30,33 @@ public class AxelrodSimulation implements Runnable{
 	long sim_finish_ms;
 	int iterations = 0;
 	int interactions = 0;
+	double[][] series;
+	ScatterPlotter plot;
+	private final List<Integer> activeNodesSeries = new ArrayList<Integer>();
 
 	//
 	public final AxelrodNetwork nw;
 	SimulationObserver obs;
 	public int state = 2; // 2 => stopped; 1 => running; 0 => finished
 
+
 	public AxelrodSimulation(int size, int features, int traits) {
-		this.obs = new BaseSimulationObserver();
-		this.nw = new AxelrodNetwork(size, features, traits);
+		this(new AxelrodNetwork(size, features, traits));
 	}
 	
 	public AxelrodSimulation(AxelrodNetwork nw) {
-		this.obs = new BaseSimulationObserver();
 		this.nw = nw;
+		createActiveNodesPlot(nw);
+		this.obs = new BaseSimulationObserver();
+	}
+
+	private void createActiveNodesPlot(AxelrodNetwork nw) {
+		series = new double[2][1];
+		for (int i = 0; i < 1; i++) {
+			series[0][i] = 1;
+		}
+		plot = new ScatterPlotter("Simulation Plot - Interactive nodes",
+				String.format("L = %d, F = %d, q = %d", nw.size, nw.features, nw.traits), "time", "active nodes", series);
 	}
 
 	/**
@@ -63,23 +77,45 @@ public class AxelrodSimulation implements Runnable{
 		this.iterations = 0;
 		this.sim_start_ms = System.currentTimeMillis();
 		while (!(this.state == 0)) {
-			if(state == 2){
-				try {
-					Thread.sleep(33);
-				} catch (InterruptedException e) {}
-				continue;
-			}
-			if(this.speed < 100){
-				try {
-					Thread.sleep((long)((100 - speed)*0.1));
-				} catch (InterruptedException e) {
-					e.printStackTrace();
+			pause();
+			throttle();
+			this.sim_step();
+			if(this.iterations%(nw.n_nodes) == 0){
+				activeNodesSeries.add(nw.interactiveNodes.size());
+				if(plot.isActive()){
+					updateActiveNodesPlot();
 				}
 			}
-			this.sim_step();
 		}
 		this.sim_finish_ms = System.currentTimeMillis();
 		print_execution_statistics();
+	}
+
+	private void updateActiveNodesPlot() {
+		series = new double[2][activeNodesSeries.size()];
+		for (int i = 0; i < activeNodesSeries.size(); i++) {
+			series[0][i] = i+1;
+			series[1][i] = activeNodesSeries.get(i)/(double)nw.n_nodes;
+		}
+		plot.setSeries(series);
+	}
+
+	private void pause() {
+		while(this.state == 2){
+			try {
+				Thread.sleep(33);
+			} catch (InterruptedException e) {}
+		}
+	}
+
+	private void throttle() {
+		if(this.speed < 100){
+			try {
+				Thread.sleep((long)((100 - speed)*0.1));
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	private void networkDynamic(int node) {
@@ -161,13 +197,26 @@ public class AxelrodSimulation implements Runnable{
 		public void nodeInteraction(int i, int j, int[] newState) {
 		}
 	}
+	
+	public ScatterPlotter iListPlot(boolean logarithmic){
+		if(plot == null){
+			createActiveNodesPlot(nw);
+		}
+		ValueAxis xAxis = new NumberAxis("time");;
+		if (logarithmic){
+			xAxis = new LogarithmicAxis("time");
+		}
+		XYPlot pl = (XYPlot) plot.chart.getPlot();
+		pl.setDomainAxis(xAxis);
+		updateActiveNodesPlot();
+		return plot;
+	}
 
-	public static void main(String[] args) throws IOException,
-			InterruptedException {
+//	public static void main(String[] args) throws IOException,InterruptedException {
 //		 q_crit_plot();
 //		 culture_distribution_plot();
-		visual_representation();
-	}
+//		visual_representation();
+//	}
 
 	public static void visual_representation() throws InterruptedException {
 		int size = 100;
@@ -253,7 +302,7 @@ public class AxelrodSimulation implements Runnable{
 		}
 
 		ScatterPlotter plotter = new ScatterPlotter("Axelrod Simulation Plot",
-				String.format("L = %d, F = %d, q = %d", size, f, q), series);
+				String.format("L = %d, F = %d, q = %d", size, f, q), "", "", series);
 		LogarithmicAxis xAxis = new LogarithmicAxis("S");
 		LogarithmicAxis yAxis = new LogarithmicAxis("% culturas >= S");
 		XYPlot pl = (XYPlot) plotter.chart.getPlot();
@@ -298,7 +347,7 @@ public class AxelrodSimulation implements Runnable{
 			}
 			if (plotter == null) {
 				plotter = new ScatterPlotter("Axelrod Simulation Plot", String
-						.format("L = %d, F = %d", size, f), series);
+						.format("L = %d, F = %d", size, f), "q", "Smax/N", series);
 				plotter.mostra();
 			}
 			plotter.setSeries(series);
