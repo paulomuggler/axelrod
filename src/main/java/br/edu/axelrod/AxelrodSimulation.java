@@ -69,6 +69,13 @@ public class AxelrodSimulation implements Runnable{
 				} catch (InterruptedException e) {}
 				continue;
 			}
+			if(this.speed < 100){
+				try {
+					Thread.sleep((long)((100 - speed)*0.1));
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
 			this.sim_step();
 		}
 		this.sim_finish_ms = System.currentTimeMillis();
@@ -308,6 +315,10 @@ public class AxelrodSimulation implements Runnable{
 
 	public void quit() {
 		this.state = 0;
+	}
+
+	public void setSpeed(int speed) {
+		this.speed = speed;
 	}
 
 }

@@ -22,8 +22,11 @@ import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSlider;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import br.edu.axelrod.AxelrodCanvas;
 import br.edu.axelrod.AxelrodNetwork;
@@ -51,26 +54,31 @@ public class MainApplicationFrame extends JFrame {
 	
 	JPanel controls = new JPanel();
 
-	JPanel line0 = new JPanel();
 	JLabel lLbl = new JLabel("Size:");
 	JTextField lTxtIn = new JTextField("100");
 
-	JPanel line1 = new JPanel();
 	JLabel fLbl = new JLabel("F:");
 	JTextField fTxtIn = new JTextField("2");
 
-	JPanel line2 = new JPanel();
 	JLabel qLbl = new JLabel("q:");
 	JTextField qTxtIn = new JTextField("2");
 
-	JPanel line3 = new JPanel();
 	JLabel paintLbl = new JLabel("Paint with state: ");
 	JTextField paintTxtIn = new JTextField();
 	
-	JPanel line4 = new JPanel();
 	JButton resetBtn = new JButton("Reset");
 	JButton toggleSimBtn = new JButton("Start");
 	JButton stepSimBtn = new JButton("Step");
+
+	JPanel line0 = new JPanel();
+	JPanel line1 = new JPanel();
+	JPanel line2 = new JPanel();
+	JPanel line3 = new JPanel();
+	JPanel line4 = new JPanel();
+	JPanel line5 = new JPanel();
+	
+	JSlider speedSlider = new JSlider(JSlider.HORIZONTAL,
+	                                      0, 100, 100);
 
 	JTextArea out = new JTextArea(5, 30);
 
@@ -102,20 +110,9 @@ public class MainApplicationFrame extends JFrame {
 		
 		menuBar.add(fileMenu);
 		
-		controls.setLayout(new BoxLayout(controls, BoxLayout.PAGE_AXIS));
-		controls.setPreferredSize(new Dimension(120, 120));
-		
 		lTxtIn.setPreferredSize(new Dimension(36, 18));
-		line0.add(lLbl);
-		line0.add(lTxtIn);
-		
 		fTxtIn.setPreferredSize(new Dimension(36, 18));
-		line1.add(fLbl);
-		line1.add(fTxtIn);
-		
 		qTxtIn.setPreferredSize(new Dimension(36, 18));
-		line2.add(qLbl);
-		line2.add(qTxtIn);
 		
 		paintTxtIn.setPreferredSize(new Dimension(100, 18));
 		paintTxtIn.addActionListener(new ActionListener() {
@@ -127,6 +124,27 @@ public class MainApplicationFrame extends JFrame {
 			}
 		});
 		
+		speedSlider.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				MainApplicationFrame.this.sim.setSpeed(((JSlider)e.getSource()).getValue());
+			}
+		});
+
+		//Turn on labels at major tick marks.
+		speedSlider.setMajorTickSpacing(10);
+		speedSlider.setMinorTickSpacing(1);
+		speedSlider.setPaintTicks(true);
+		speedSlider.setPaintLabels(true);
+		
+		line0.add(lLbl);
+		line0.add(lTxtIn);
+		
+		line1.add(fLbl);
+		line1.add(fTxtIn);
+		
+		line2.add(qLbl);
+		line2.add(qTxtIn);
+		
 		line3.add(paintLbl);
 		line3.add(paintTxtIn);
 		
@@ -134,11 +152,17 @@ public class MainApplicationFrame extends JFrame {
 		line4.add(toggleSimBtn);
 		line4.add(stepSimBtn);
 		
+		line5.add(speedSlider);
+		
+		controls.setLayout(new BoxLayout(controls, BoxLayout.PAGE_AXIS));
+		controls.setPreferredSize(new Dimension(300, 120));
+		
 		controls.add(line0);
 		controls.add(line1);
 		controls.add(line2);
 		controls.add(line3);
 		controls.add(line4);
+		controls.add(line5);
 		
 		Container pane = this.getContentPane();
 		pane.add(menuBar, BorderLayout.NORTH);
