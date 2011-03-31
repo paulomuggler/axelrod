@@ -54,6 +54,7 @@ public class MainApplicationFrame extends JFrame {
 	JMenuBar menuBar = new JMenuBar();
 	JMenu fileMenu = new JMenu("File");
 	JMenu plotMenu = new JMenu("Plot");
+	JMenu activeNodesPlotMenu = new JMenu("Active Nodes");
 	
 	JPanel controls = new JPanel();
 
@@ -113,8 +114,10 @@ public class MainApplicationFrame extends JFrame {
 		fileMenu.add(saveToFile);
 		fileMenu.add(quit);
 		
-		plotMenu.add(interactionListSize);
-		plotMenu.add(interactionListSize_log);
+		activeNodesPlotMenu.add(interactionListSize);
+		activeNodesPlotMenu.add(interactionListSize_log);
+
+		plotMenu.add(activeNodesPlotMenu);
 		
 		menuBar.add(fileMenu);
 		menuBar.add(plotMenu);
@@ -330,7 +333,7 @@ public class MainApplicationFrame extends JFrame {
 		}
 	};
 	
-	Action interactionListSize = new AbstractAction("Active nodes -linear scale") {
+	Action interactionListSize = new AbstractAction("linear") {
 		private static final long serialVersionUID = 4857404375859735556L;
 		public void actionPerformed(ActionEvent e) {
 			ScatterPlotter plot = sim.iListPlot(false);
@@ -339,7 +342,7 @@ public class MainApplicationFrame extends JFrame {
 		}
 	};
 	
-	Action interactionListSize_log = new AbstractAction("Active nodes - log scale") {
+	Action interactionListSize_log = new AbstractAction("logarithmic") {
 		private static final long serialVersionUID = 4857404375859735556L;
 		public void actionPerformed(ActionEvent e) {
 			ScatterPlotter plot = sim.iListPlot(true);
