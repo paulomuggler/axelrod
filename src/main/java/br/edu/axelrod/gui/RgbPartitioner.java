@@ -1,7 +1,7 @@
 /**
  * 
  */
-package br.edu.axelrod;
+package br.edu.axelrod.gui;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,6 +9,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import br.edu.axelrod.network.State;
 
 
 

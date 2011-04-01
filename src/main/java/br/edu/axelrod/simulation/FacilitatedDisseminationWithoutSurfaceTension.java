@@ -9,16 +9,18 @@ import br.edu.axelrod.network.CulturalNetwork;
  * @author muggler
  * 
  */
-public class AxelrodSimulation extends NetworkSimulation {
+public class FacilitatedDisseminationWithoutSurfaceTension extends
+		NetworkSimulation {
 
 	// Statistics
 	protected int interactions = 0;
 
-	public AxelrodSimulation(int size, int features, int traits) {
+	public FacilitatedDisseminationWithoutSurfaceTension(int size,
+			int features, int traits) {
 		this(new CulturalNetwork(size, features, traits));
 	}
 
-	public AxelrodSimulation(CulturalNetwork nw) {
+	public FacilitatedDisseminationWithoutSurfaceTension(CulturalNetwork nw) {
 		super(nw);
 	}
 
@@ -51,7 +53,13 @@ public class AxelrodSimulation extends NetworkSimulation {
 		int nbr = -1;
 		int nbr_idx = rand.nextInt(nw.degree(node));
 
-		nbr = nw.node_neighbor(node, nbr_idx);
+		boolean interactive;
+		do {
+			nbr = nw.node_neighbor(node, nbr_idx);
+			interactive = nw.is_interaction_possible(nw.states[node],
+					nw.states[nbr]);
+			nbr_idx = rand.nextInt(nw.degree(node));
+		} while (!interactive);
 
 		int rand_f = rand.nextInt(nw.features);
 
@@ -68,8 +76,8 @@ public class AxelrodSimulation extends NetworkSimulation {
 				int i = rand.nextInt(diff_count);
 				int f = diff_features[i];
 
-				nw.states[nbr][f] = nw.states[node][f];
-				nw.update_representations(nbr);
+				nw.states[node][f] = nw.states[nbr][f];
+				nw.update_representations(node);
 
 				for (SimulationEventListener lis : listeners) {
 					lis.interaction(nbr / nw.size, nbr % nw.size);

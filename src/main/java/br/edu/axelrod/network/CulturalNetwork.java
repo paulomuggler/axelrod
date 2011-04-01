@@ -1,7 +1,7 @@
 /**
  * 
  */
-package br.edu.axelrod;
+package br.edu.axelrod.network;
 
 import java.io.File;
 import java.io.FileReader;
@@ -19,7 +19,7 @@ import java.util.Random;
  * @author muggler
  * 
  */
-public class AxelrodNetwork {
+public class CulturalNetwork {
 	final Random rand = new Random();
 
 	// Network characteristics
@@ -51,7 +51,7 @@ public class AxelrodNetwork {
 	// final Map<Integer, Integer> cultureSizes = new HashMap<Integer,
 	// Integer>();
 
-	public AxelrodNetwork(int size, int features, int traits) {
+	public CulturalNetwork(int size, int features, int traits) {
 		this.size = size;
 		this.n_nodes = size * size;
 		this.features = features;
@@ -65,7 +65,7 @@ public class AxelrodNetwork {
 		this.random_starting_distribution();
 	}
 	
-	public AxelrodNetwork(File f) throws IOException{
+	public CulturalNetwork(File f) throws IOException{
 		if(f.exists() && f.canRead()){
 			FileReader fr = new FileReader(f);
 			StringBuilder line = new StringBuilder();

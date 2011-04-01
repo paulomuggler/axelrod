@@ -9,16 +9,16 @@ import br.edu.axelrod.network.CulturalNetwork;
  * @author muggler
  * 
  */
-public class AxelrodSimulation extends NetworkSimulation {
+public class FacilitatedDisseminationWithSurfaceTension extends NetworkSimulation {
 
 	// Statistics
 	protected int interactions = 0;
 
-	public AxelrodSimulation(int size, int features, int traits) {
+	public FacilitatedDisseminationWithSurfaceTension(int size, int features, int traits) {
 		this(new CulturalNetwork(size, features, traits));
 	}
 
-	public AxelrodSimulation(CulturalNetwork nw) {
+	public FacilitatedDisseminationWithSurfaceTension(CulturalNetwork nw) {
 		super(nw);
 	}
 
@@ -51,7 +51,13 @@ public class AxelrodSimulation extends NetworkSimulation {
 		int nbr = -1;
 		int nbr_idx = rand.nextInt(nw.degree(node));
 
-		nbr = nw.node_neighbor(node, nbr_idx);
+		boolean interactive;
+		do {
+			nbr = nw.node_neighbor(node, nbr_idx);
+			interactive = nw.is_interaction_possible(nw.states[node],
+					nw.states[nbr]);
+			nbr_idx = rand.nextInt(nw.degree(node));
+		} while (!interactive);
 
 		int rand_f = rand.nextInt(nw.features);
 
@@ -70,7 +76,7 @@ public class AxelrodSimulation extends NetworkSimulation {
 
 				nw.states[nbr][f] = nw.states[node][f];
 				nw.update_representations(nbr);
-
+				
 				for (SimulationEventListener lis : listeners) {
 					lis.interaction(nbr / nw.size, nbr % nw.size);
 				}
@@ -83,15 +89,12 @@ public class AxelrodSimulation extends NetworkSimulation {
 	public int interactions() {
 		return interactions;
 	}
-
-	public void print_execution_statistics() {
+	
+	public void print_execution_statistics()
+	{
 		super.print_execution_statistics();
-		System.out.println(String.format("%d node interactions.",
-				interactions()));
-		double interactions_per_second = interactions()
-				/ elapsed_time_in_seconds();
-		System.out.println(String.format(
-				"Average node interaction speed: %f interactions/second",
-				interactions_per_second));
+		System.out.println(String.format("%d node interactions.", interactions()));
+		double interactions_per_second = interactions() / elapsed_time_in_seconds();
+		System.out.println(String.format("Average node interaction speed: %f interactions/second", interactions_per_second));
 	}
 }

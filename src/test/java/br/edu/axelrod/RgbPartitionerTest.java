@@ -10,6 +10,9 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
+import br.edu.axelrod.gui.RgbPartitioner;
+import br.edu.axelrod.network.State;
+
 /**
  * @author muggler
  * 

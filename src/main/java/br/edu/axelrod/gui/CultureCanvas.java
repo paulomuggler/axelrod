@@ -1,7 +1,7 @@
 /**
  * 
  */
-package br.edu.axelrod;
+package br.edu.axelrod.gui;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -21,21 +21,22 @@ import javax.swing.Action;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 
-import br.edu.axelrod.gui.MainApplicationFrame;
+import br.edu.axelrod.network.CulturalNetwork;
+import br.edu.axelrod.network.State;
 
 /**
  * @author muggler
  * 
  */
 
-public class AxelrodCanvas extends JPanel {
+public class CultureCanvas extends JPanel {
 
 	private static final long serialVersionUID = -5262909296764901151L;
 
 	private final int siteWidth;
 	private final int canvasWidth;
 	public final RgbPartitioner rp;
-	private final AxelrodNetwork nw;
+	private final CulturalNetwork nw;
 
 	protected Insets thickness;
 	protected Color lineColor;
@@ -50,7 +51,7 @@ public class AxelrodCanvas extends JPanel {
 	
 	public final List<int[]> dirtySites = Collections.synchronizedList(new ArrayList<int[]>());
 
-	public AxelrodCanvas(int canvasWidth, AxelrodNetwork nw, boolean borders) {
+	public CultureCanvas(int canvasWidth, CulturalNetwork nw, boolean borders) {
 		super();
 		this.nw = nw;
 		this.canvasWidth = canvasWidth - (canvasWidth % this.nw.size);
@@ -140,7 +141,7 @@ public class AxelrodCanvas extends JPanel {
 	Action printNodeState = new AbstractAction("print node state") {
 		private static final long serialVersionUID = 4857404375859735556L;
 		public void actionPerformed(ActionEvent e) {
-			String out = String.format("node: %d, (%d, %d), state %s", (clickNwCoords[0]*nw.size + clickNwCoords[1]), clickNwCoords[0], clickNwCoords[1], State.toString(AxelrodCanvas.this.nw.states[nodeClicked]));
+			String out = String.format("node: %d, (%d, %d), state %s", (clickNwCoords[0]*nw.size + clickNwCoords[1]), clickNwCoords[0], clickNwCoords[1], State.toString(CultureCanvas.this.nw.states[nodeClicked]));
 			System.out.println(out);
 		}
 	};
@@ -150,8 +151,8 @@ public class AxelrodCanvas extends JPanel {
 		public void actionPerformed(ActionEvent e) {
 			Component parent = getParent();
 			do parent = parent.getParent(); while (!(parent instanceof MainApplicationFrame));
-			((MainApplicationFrame)parent).sim.monitorNode(nodeClicked);
-			String out = String.format("monitoring node: %d, %d, %d, state %s", (clickNwCoords[1]*nw.size + clickNwCoords[0]), clickNwCoords[0], clickNwCoords[1], State.toString(AxelrodCanvas.this.nw.states[nodeClicked]));
+			((MainApplicationFrame)parent).sim.toggleMonitor(nodeClicked);
+			String out = String.format("monitoring node: %d, %d, %d, state %s", (clickNwCoords[1]*nw.size + clickNwCoords[0]), clickNwCoords[0], clickNwCoords[1], State.toString(CultureCanvas.this.nw.states[nodeClicked]));
 			System.out.println(out);
 		}
 	};
@@ -165,7 +166,7 @@ public class AxelrodCanvas extends JPanel {
 		public void mouseClicked(MouseEvent e) {
 			if(e.getButton() == MouseEvent.BUTTON3){
 				recordClickCoords(e);
-				nodeContextMenu.show(AxelrodCanvas.this, e.getX(), e.getY());
+				nodeContextMenu.show(CultureCanvas.this, e.getX(), e.getY());
 			}
 		}
 	};
@@ -175,9 +176,9 @@ public class AxelrodCanvas extends JPanel {
 		public void mouseClicked(MouseEvent e) {
 			if(e.getButton() == MouseEvent.BUTTON1){
 				int node = getClickedNode(e);
-				setStateStroke(AxelrodCanvas.this.nw.states[node]);
+				setStateStroke(CultureCanvas.this.nw.states[node]);
 				int[] coords = networkCoordsForClick(e);
-				String out = String.format("node: %d, %d, state %s", coords[0], coords[1], State.toString(AxelrodCanvas.this.nw.states[node]));
+				String out = String.format("node: %d, %d, state %s", coords[0], coords[1], State.toString(CultureCanvas.this.nw.states[node]));
 				System.out.println(out);
 			}
 		}
@@ -234,20 +235,20 @@ public class AxelrodCanvas extends JPanel {
 	private void setNwState(int node, int[] state){
 		System.arraycopy(state, 0, nw.states[node], 0, nw.features);
 		nw.update_representations(node);
-		AxelrodCanvas.this.repaint();
+		CultureCanvas.this.repaint();
 	}
 	
 	private int getClickedNode(MouseEvent e) {
 		int mouseX = e.getX();
 		int mouseY = e.getY();
-		int i = (mouseY / AxelrodCanvas.this.siteWidth);
-		int j = (mouseX / AxelrodCanvas.this.siteWidth);
-		int node = i*AxelrodCanvas.this.nw.size+ j;
+		int i = (mouseY / CultureCanvas.this.siteWidth);
+		int j = (mouseX / CultureCanvas.this.siteWidth);
+		int node = i*CultureCanvas.this.nw.size+ j;
 		return node;
 	}
 	
 	private int[] networkCoordsForClick(MouseEvent e){
-		int[] coords = {e.getY() / AxelrodCanvas.this.siteWidth, e.getX() / AxelrodCanvas.this.siteWidth};
+		int[] coords = {e.getY() / CultureCanvas.this.siteWidth, e.getX() / CultureCanvas.this.siteWidth};
 		return coords;
 	}
 

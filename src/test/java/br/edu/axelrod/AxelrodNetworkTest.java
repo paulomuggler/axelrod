@@ -10,6 +10,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import br.edu.axelrod.network.CulturalNetwork;
+
 /**
  * @author muggler
  *
@@ -19,11 +21,11 @@ public class AxelrodNetworkTest {
 	static final int size = 4;
 	static final int features = 3;
 	static final int traits = 3;
-	AxelrodNetwork nw;
+	CulturalNetwork nw;
 	
 	@Before
 	public void doBefore(){
-		nw = new AxelrodNetwork(size, features, traits);
+		nw = new CulturalNetwork(size, features, traits);
 	}
 	
 	@Test
@@ -103,7 +105,7 @@ public class AxelrodNetworkTest {
 			f.createNewFile();
 			nw.save_to_file(f);
 		}
-		nw = new AxelrodNetwork(f);
+		nw = new CulturalNetwork(f);
 		// TODO: add file reading and asserts
 		nw.save_to_file(f);
 	}

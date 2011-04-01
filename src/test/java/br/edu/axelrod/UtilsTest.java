@@ -8,8 +8,8 @@ import java.math.BigInteger;
 import org.junit.Assert;
 import org.junit.Test;
 
-import br.edu.axelrod.Utils;
-import static br.edu.axelrod.Utils.*;
+import br.edu.axelrod.network.Utils;
+import static br.edu.axelrod.network.Utils.*;
 
 /**
  * @author muggler

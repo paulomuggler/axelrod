@@ -1,7 +1,7 @@
 /**
  * 
  */
-package br.edu.axelrod;
+package br.edu.axelrod.network;
 
 import java.util.Random;
 
@@ -96,6 +96,27 @@ public class State {
 		}
 		sb.deleteCharAt(sb.length() - 1);
 		return String.format(sb.toString(), args);
+	}
+	
+	public static int[] parseState(String stateString, int features, int traits){
+		String[] stateSplit = stateString.split(":");
+		if (stateSplit.length == features){
+			int[] state = new int[features];
+			for (int i = 0; i < stateSplit.length; i++) {
+				int f = -1;
+				try {
+					f = Integer.parseInt(stateSplit[i]);
+				} catch (Exception e) {
+					return null;
+				}
+				if (f < 0 || f > traits){
+					return null;
+				}
+				state[i] = f;
+			}
+			return state;
+		}
+		return null;
 	}
 
 	public static int[] random_node_state(int features, int traits) {

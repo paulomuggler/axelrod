@@ -1,7 +1,7 @@
 /**
  * 
  */
-package br.edu.axelrod;
+package br.edu.axelrod.network;
 
 
 /**
