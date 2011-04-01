@@ -229,7 +229,7 @@ public class MainApplicationFrame extends JFrame {
 
 		Container pane = this.getContentPane();
 		pane.add(menuBar, BorderLayout.NORTH);
-		pane.add(controls, BorderLayout.EAST);
+		pane.add(controls, BorderLayout.WEST);
 
 		out.setEditable(false);
 		JScrollPane scrollOut = new JScrollPane(out);
