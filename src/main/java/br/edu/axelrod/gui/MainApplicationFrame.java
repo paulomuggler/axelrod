@@ -1,8 +1,10 @@
 package br.edu.axelrod.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -12,6 +14,7 @@ import java.io.PrintStream;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -26,14 +29,16 @@ import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import br.edu.axelrod.ActiveNodesPlotter;
 import br.edu.axelrod.AxelrodCanvas;
 import br.edu.axelrod.AxelrodNetwork;
-import br.edu.axelrod.AxelrodSimulation;
-import br.edu.axelrod.ScatterPlotter;
-import br.edu.axelrod.AxelrodSimulation.SimulationObserver;
+import br.edu.axelrod.RoomsHistogram;
+import br.edu.axelrod.simulation.AxelrodSimulation;
+import br.edu.axelrod.simulation.AxelrodSimulation.SimulationObserver;
 
 public class MainApplicationFrame extends JFrame {
 
@@ -69,6 +74,7 @@ public class MainApplicationFrame extends JFrame {
 
 	JLabel paintLbl = new JLabel("Paint with state: ");
 	JTextField paintTxtIn = new JTextField();
+	PaintSample paintSample = new PaintSample();
 	
 	JButton resetBtn = new JButton("Reset");
 	JButton toggleSimBtn = new JButton("Start");
@@ -95,8 +101,8 @@ public class MainApplicationFrame extends JFrame {
 	JLabel epochsLbl = new JLabel("Epochs: ");
 	JLabel epochsLblOut = new JLabel("0");
 
-	AxelrodCanvas canvas;
-	AxelrodSimulation sim;
+	public AxelrodCanvas canvas;
+	public AxelrodSimulation sim;
 	Thread simThr = new Thread(sim);
 
 	public MainApplicationFrame(){
@@ -118,6 +124,8 @@ public class MainApplicationFrame extends JFrame {
 		activeNodesPlotMenu.add(interactionListSize_log);
 
 		plotMenu.add(activeNodesPlotMenu);
+		plotMenu.add(roomsPlot);
+		plotMenu.add(roomsHistogram);
 		
 		menuBar.add(fileMenu);
 		menuBar.add(plotMenu);
@@ -134,11 +142,12 @@ public class MainApplicationFrame extends JFrame {
 		speedSlider.setPreferredSize(new Dimension(240,36));
 		
 		paintTxtIn.setPreferredSize(new Dimension(240, 18));
+		paintSample.setPreferredSize(new Dimension(16, 16));
 		paintTxtIn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int[] state = parseState(paintTxtIn.getText());
 				if(state != null){
-					canvas.stateStroke = state;
+					canvas.setStateStroke(state);
 				}
 			}
 		});
@@ -166,6 +175,7 @@ public class MainApplicationFrame extends JFrame {
 		
 		line3.add(paintLbl);
 		line3.add(paintTxtIn);
+		line3.add(paintSample);
 		
 		line4.add(enableVisualOut);
 		
@@ -257,7 +267,7 @@ public class MainApplicationFrame extends JFrame {
 	
 	private ActionListener stepSim = new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
-			sim.sim_step();
+			sim.simulation_step();
 		}
 	};
 
@@ -333,28 +343,65 @@ public class MainApplicationFrame extends JFrame {
 		}
 	};
 	
-	Action interactionListSize = new AbstractAction("linear") {
+	Action interactionListSize = new AbstractAction("Linear") {
 		private static final long serialVersionUID = 4857404375859735556L;
 		public void actionPerformed(ActionEvent e) {
-			ScatterPlotter plot = sim.iListPlot(false);
+			ActiveNodesPlotter plot = sim.iListPlot(false);
 			plot.pack();
 			plot.setVisible(true);
 		}
 	};
 	
-	Action interactionListSize_log = new AbstractAction("logarithmic") {
+	Action interactionListSize_log = new AbstractAction("Logarithmic") {
 		private static final long serialVersionUID = 4857404375859735556L;
 		public void actionPerformed(ActionEvent e) {
-			ScatterPlotter plot = sim.iListPlot(true);
+			ActiveNodesPlotter plot = sim.iListPlot(true);
 			plot.pack();
 			plot.setVisible(true);
 		}
 	};
+	
+	Action roomsPlot = new AbstractAction("Rooms plot") {
+		private static final long serialVersionUID = 4857404375859735556L;
+		public void actionPerformed(ActionEvent e) {
+			ActiveNodesPlotter plot = sim.roomsPlot();
+			plot.pack();
+			plot.setVisible(true);
+		}
+	};
+	
+	Action roomsHistogram = new AbstractAction("Rooms histogram") {
+		private static final long serialVersionUID = 4857404375859735556L;
+		public void actionPerformed(ActionEvent e) {
+			RoomsHistogram plot = sim.roomsHistogram();
+			plot.pack();
+			plot.setVisible(true);
+		}
+	};
+	
+	class PaintSample extends JPanel {
+		private static final long serialVersionUID = 4009724729060328197L;
+		
+		public PaintSample(){
+			Border blackline = BorderFactory.createLineBorder(Color.black);
+			setBorder(blackline);
+		}
+		
+		public void paintComponent(Graphics g){
+			int color = canvas.rp.color(canvas.stateStroke);
+			g.setColor(new Color(color));
+			g.fillRect(0, 0, getWidth(), getHeight());
+		}
+	}
 
 	public static void main(String[] args) {
 		MainApplicationFrame axelrod = new MainApplicationFrame();
 		axelrod.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		axelrod.pack();
 		axelrod.setVisible(true);
+	}
+
+	public void updateStroke() {
+		paintSample.repaint();
 	}
 }

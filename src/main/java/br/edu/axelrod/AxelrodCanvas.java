@@ -4,16 +4,24 @@
 package br.edu.axelrod;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+
+import br.edu.axelrod.gui.MainApplicationFrame;
 
 /**
  * @author muggler
@@ -26,7 +34,7 @@ public class AxelrodCanvas extends JPanel {
 
 	private final int siteWidth;
 	private final int canvasWidth;
-	private final RgbPartitioner rp; // O(335.5) MB - see RgbPartitioner.java
+	public final RgbPartitioner rp;
 	private final AxelrodNetwork nw;
 
 	protected Insets thickness;
@@ -34,7 +42,11 @@ public class AxelrodCanvas extends JPanel {
 	protected Insets gap;
 	private final boolean borders;
 	
+	private int nodeClicked;
+	private int[] clickNwCoords;
+	
 	public int[] stateStroke;
+	JPopupMenu nodeContextMenu = new JPopupMenu("Node");
 	
 	public final List<int[]> dirtySites = Collections.synchronizedList(new ArrayList<int[]>());
 
@@ -52,9 +64,14 @@ public class AxelrodCanvas extends JPanel {
 			stateStroke[i] = 0;
 		}
 		
-		this.addMouseListener(stateInspector);
+		this.addMouseListener(contextMenu);
+//		this.addMouseListener(stateInspector);
 		this.addMouseListener(statePen);
 		this.addMouseListener(stateRect);
+		
+		nodeContextMenu.add(setStateStroke);
+		nodeContextMenu.add(printNodeState);
+		nodeContextMenu.add(monitorNode);
 		
 		this.setPreferredSize(new Dimension(this.canvasWidth, this.canvasWidth));
 		
@@ -110,67 +127,103 @@ public class AxelrodCanvas extends JPanel {
 		return canvasWidth;
 	}
 	
-	private MouseListener stateInspector = new MouseListener() {
+	Action setStateStroke = new AbstractAction("set paint color") {
+		private static final long serialVersionUID = 4857404375859735556L;
+		public void actionPerformed(ActionEvent e) {
+			System.arraycopy(nw.states[nodeClicked], 0, stateStroke, 0, stateStroke.length);
+			Component parent = getParent();
+			do parent = parent.getParent(); while (!(parent instanceof MainApplicationFrame));
+			((MainApplicationFrame)parent).updateStroke();
+		}
+	};
+	
+	Action printNodeState = new AbstractAction("print node state") {
+		private static final long serialVersionUID = 4857404375859735556L;
+		public void actionPerformed(ActionEvent e) {
+			String out = String.format("node: %d, (%d, %d), state %s", (clickNwCoords[0]*nw.size + clickNwCoords[1]), clickNwCoords[0], clickNwCoords[1], State.toString(AxelrodCanvas.this.nw.states[nodeClicked]));
+			System.out.println(out);
+		}
+	};
+
+	Action monitorNode = new AbstractAction("monitor this node") {
+		private static final long serialVersionUID = 4857404375859735556L;
+		public void actionPerformed(ActionEvent e) {
+			Component parent = getParent();
+			do parent = parent.getParent(); while (!(parent instanceof MainApplicationFrame));
+			((MainApplicationFrame)parent).sim.monitorNode(nodeClicked);
+			String out = String.format("monitoring node: %d, %d, %d, state %s", (clickNwCoords[1]*nw.size + clickNwCoords[0]), clickNwCoords[0], clickNwCoords[1], State.toString(AxelrodCanvas.this.nw.states[nodeClicked]));
+			System.out.println(out);
+		}
+	};
+	
+	private void recordClickCoords(MouseEvent e){
+		nodeClicked = getClickedNode(e);
+		clickNwCoords = networkCoordsForClick(e);
+	}
+	
+	private MouseListener contextMenu = new MouseAdapter() {
+		public void mouseClicked(MouseEvent e) {
+			if(e.getButton() == MouseEvent.BUTTON3){
+				recordClickCoords(e);
+				nodeContextMenu.show(AxelrodCanvas.this, e.getX(), e.getY());
+			}
+		}
+	};
+	
+	@SuppressWarnings("unused")
+	private MouseListener stateInspector = new MouseAdapter() {
 		public void mouseClicked(MouseEvent e) {
 			if(e.getButton() == MouseEvent.BUTTON1){
 				int node = getClickedNode(e);
-				System.arraycopy(AxelrodCanvas.this.nw.states[node], 0, stateStroke, 0, nw.features);
+				setStateStroke(AxelrodCanvas.this.nw.states[node]);
 				int[] coords = networkCoordsForClick(e);
 				String out = String.format("node: %d, %d, state %s", coords[0], coords[1], State.toString(AxelrodCanvas.this.nw.states[node]));
 				System.out.println(out);
-	//			AxelrodCanvas.this.setToolTipText(out);
 			}
 		}
-		public void mouseEntered(MouseEvent e) {}
-		public void mouseExited(MouseEvent e) {}
-		public void mousePressed(MouseEvent e) {}
-		public void mouseReleased(MouseEvent e) {}
 	};
 	
-	private MouseListener statePen = new MouseListener() {
+	private MouseListener statePen = new MouseAdapter() {
 		public void mouseClicked(MouseEvent e) {
-			if(e.getButton() == MouseEvent.BUTTON3){
+			if(e.getButton() == MouseEvent.BUTTON1){
 				int node = getClickedNode(e);
 				setNwState(node, stateStroke);
 			}
 		}
-		public void mouseEntered(MouseEvent e) {}
-		public void mouseExited(MouseEvent e) {}
-		public void mousePressed(MouseEvent e) {}
-		public void mouseReleased(MouseEvent e) {}
 	};
 	
-	private MouseListener stateRect = new MouseListener() {
+	private MouseListener stateRect = new MouseAdapter() {
 		int[] dragStarted;
 		int[] dragEnded;
-		public void mouseClicked(MouseEvent e) {}
-		public void mouseEntered(MouseEvent e) {}
-		public void mouseExited(MouseEvent e) {}
 		public void mousePressed(MouseEvent e) {
-			dragStarted = networkCoordsForClick(e);
+			if(e.getButton() == MouseEvent.BUTTON1){
+				dragStarted = networkCoordsForClick(e);
+			}
 		}
 		public void mouseReleased(MouseEvent e) {
-			dragEnded = networkCoordsForClick(e);
-			int startX, startY, endX, endY;
-			if(dragStarted[0] < dragEnded[0]){
-				startX = dragStarted[0];
-				endX = dragEnded[0];
-			}else{
-				endX = dragStarted[0];
-				startX = dragEnded[0];
-			}
-			if(dragStarted[1] < dragEnded[1]){
-				startY = dragStarted[1];
-				endY = dragEnded[1];
-			}else{
-				endY = dragStarted[1];
-				startY = dragEnded[1];
-			}
-			if(startX != endX || startY != endY){
-				for (int i = startX; i <= endX; i++) {
-					for (int j = startY; j <= endY; j++) {
-						if(i < nw.size && j < nw.size){
-							setNwState(i*nw.size + j, stateStroke);
+			if(e.getButton() == MouseEvent.BUTTON1){
+				dragEnded = networkCoordsForClick(e);
+				int startX, startY, endX, endY;
+				if(dragStarted[0] < dragEnded[0]){
+					startX = dragStarted[0];
+					endX = dragEnded[0];
+				}else{
+					endX = dragStarted[0];
+					startX = dragEnded[0];
+				}
+				if(dragStarted[1] < dragEnded[1]){
+					startY = dragStarted[1];
+					endY = dragEnded[1];
+				}else{
+					endY = dragStarted[1];
+					startY = dragEnded[1];
+				}
+				if(startX != endX || startY != endY){
+					for (int i = startX; i <= endX; i++) {
+						for (int j = startY; j <= endY; j++) {
+							if(i < nw.size && j < nw.size){
+								setNwState(i*nw.size + j, stateStroke);
+							}
 						}
 					}
 				}
@@ -196,5 +249,9 @@ public class AxelrodCanvas extends JPanel {
 	private int[] networkCoordsForClick(MouseEvent e){
 		int[] coords = {e.getY() / AxelrodCanvas.this.siteWidth, e.getX() / AxelrodCanvas.this.siteWidth};
 		return coords;
+	}
+
+	public void setStateStroke(int[] state) {
+		System.arraycopy(state, 0, stateStroke, 0, nw.features);
 	}
 }

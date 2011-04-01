@@ -31,7 +31,7 @@ public class AxelrodNetwork {
 	public final int traits;
 
 	/** The network state representation */
-	final int[][] states; // size^2 (~100kB)
+	public final int[][] states; // size^2 (~100kB)
 
 	/** Stores connectivity information */
 	final int[][] adj_matrix; // 8*size^2 (~100kB)
@@ -40,8 +40,9 @@ public class AxelrodNetwork {
 	final int[] degree;
 
 	/** Stores all nodes that may interact */
-	final List<Integer> interactiveNodes = new ArrayList<Integer>(); // O(4*size^2)
-	// (~100kB)
+	public final List<Integer> interactiveNodes = new ArrayList<Integer>(); 
+
+	public final List<Integer> monitorNodes = new ArrayList<Integer>();
 
 	/** Stores the activity state of each node */
 	final boolean[] is_node_active;
@@ -66,9 +67,8 @@ public class AxelrodNetwork {
 	
 	public AxelrodNetwork(File f) throws IOException{
 		if(f.exists() && f.canRead()){
-			StringBuilder line = new StringBuilder();
 			FileReader fr = new FileReader(f);
-			
+			StringBuilder line = new StringBuilder();
 			int c = fr.read();
 			while(c != '\n'){
 				line.append((char) c );
@@ -100,6 +100,16 @@ public class AxelrodNetwork {
 					state[j] = Integer.parseInt(stateStr[j]);
 				}
 				System.arraycopy(state, 0, this.states[i], 0, this.features);
+			}
+			line = new StringBuilder();
+			c = fr.read();
+			while(c != '\n'){
+				line.append((char) c );
+				c = fr.read();
+			}
+			String[] monitor = line.substring(line.indexOf("[")+1, line.indexOf("]")-1).split(",");
+			for (String s : monitor) {
+				this.monitorNodes.add(Integer.parseInt(s));
 			}
 		}else {
 			this.size = 64;
