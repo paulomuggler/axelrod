@@ -225,7 +225,7 @@ public class MainApplicationFrame extends JFrame {
 		controls.add(new JLabel("Speed:"), "wrap");
 		controls.add(speedSlider, "span 3, grow, wrap, gapbottom 18");
 
-		controls.setPreferredSize(new Dimension(600, 800));
+		controls.setPreferredSize(new Dimension(400, 800));
 
 		Container pane = this.getContentPane();
 		pane.add(menuBar, BorderLayout.NORTH);
