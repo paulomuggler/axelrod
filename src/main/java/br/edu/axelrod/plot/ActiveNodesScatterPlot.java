@@ -11,16 +11,16 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.xy.DefaultXYDataset;
 
-import br.edu.axelrod.simulation.FacilitatedDisseminationWithSurfaceTension;
+import br.edu.axelrod.simulation.CultureDisseminationSimulation;
 
-public class ActiveNodesScatterPlot extends Plot<FacilitatedDisseminationWithSurfaceTension> {
+public class ActiveNodesScatterPlot extends Plot<CultureDisseminationSimulation> {
 	
 	private static final int SERIES_UPDATE_INTERVAL  = 10;
 	DefaultXYDataset ds;
 	List<double[]> seriesList;
 	
 	@Override
-	public JFreeChart createPlot(FacilitatedDisseminationWithSurfaceTension sim) {
+	public JFreeChart createPlot(CultureDisseminationSimulation sim) {
 		this.simulation = sim;
 		seriesList= new ArrayList<double[]>();
 		ds = new DefaultXYDataset();

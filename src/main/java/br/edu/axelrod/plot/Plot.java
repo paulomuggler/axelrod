@@ -2,10 +2,10 @@ package br.edu.axelrod.plot;
 
 import org.jfree.chart.JFreeChart;
 
-import br.edu.axelrod.simulation.NetworkSimulation;
-import br.edu.axelrod.simulation.NetworkSimulation.SimulationEventListener;
+import br.edu.axelrod.simulation.CultureDisseminationSimulation;
+import br.edu.axelrod.simulation.CultureDisseminationSimulation.SimulationEventListener;
 
-public abstract class Plot<S extends NetworkSimulation> implements SimulationEventListener {
+public abstract class Plot<S extends CultureDisseminationSimulation> implements SimulationEventListener {
 	
 	protected JFreeChart chart;
 	protected S simulation;

@@ -9,7 +9,7 @@ import java.util.Random;
 import br.edu.axelrod.network.CulturalNetwork;
 import br.edu.axelrod.plot.Plot;
 
-public abstract class NetworkSimulation implements Runnable {
+public abstract class CultureDisseminationSimulation implements Runnable {
 	public enum SimulationState { RUNNING, STOPPED, FINISHED }
 
 	public CulturalNetwork nw;
@@ -144,15 +144,15 @@ public abstract class NetworkSimulation implements Runnable {
 		System.out.println();
 	}
 	
-	public NetworkSimulation(int size, int features, int traits){
+	public CultureDisseminationSimulation(int size, int features, int traits){
 		this.nw = new CulturalNetwork(size, features, traits);
 	}
 	
-	public NetworkSimulation(CulturalNetwork nw){
+	public CultureDisseminationSimulation(CulturalNetwork nw){
 		this.nw = nw;
 	}
 	
-	public static NetworkSimulation factory(Class<? extends NetworkSimulation> clazz, CulturalNetwork nw){
+	public static CultureDisseminationSimulation factory(Class<? extends CultureDisseminationSimulation> clazz, CulturalNetwork nw){
 		try {
 			return clazz.getConstructor(CulturalNetwork.class).newInstance(nw);
 		} catch (IllegalArgumentException e) {

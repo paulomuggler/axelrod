@@ -10,7 +10,7 @@ import br.edu.axelrod.network.CulturalNetwork;
  * 
  */
 public class FacilitatedDisseminationWithoutSurfaceTension extends
-		NetworkSimulation {
+		CultureDisseminationSimulation {
 
 	// Statistics
 	protected int interactions = 0;

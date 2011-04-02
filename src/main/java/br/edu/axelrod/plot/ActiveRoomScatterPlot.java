@@ -8,9 +8,9 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.DefaultXYDataset;
 
-import br.edu.axelrod.simulation.FacilitatedDisseminationWithSurfaceTension;
+import br.edu.axelrod.simulation.CultureDisseminationSimulation;
 
-public class ActiveRoomScatterPlot extends Plot<FacilitatedDisseminationWithSurfaceTension> {
+public class ActiveRoomScatterPlot extends Plot<CultureDisseminationSimulation> {
 	
 	private Integer lastMonitoredNodeToChange;
 	List<double[]> seriesList;
@@ -18,7 +18,7 @@ public class ActiveRoomScatterPlot extends Plot<FacilitatedDisseminationWithSurf
 	DefaultXYDataset ds;
 	
 	@Override
-	public JFreeChart createPlot(FacilitatedDisseminationWithSurfaceTension sim) {
+	public JFreeChart createPlot(CultureDisseminationSimulation sim) {
 		seriesList = new ArrayList<double[]>();
 		lastMonitoredNodeToChange = 0;
 		this.simulation = sim;

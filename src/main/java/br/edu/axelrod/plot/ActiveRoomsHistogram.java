@@ -14,13 +14,13 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.statistics.SimpleHistogramBin;
 import org.jfree.data.statistics.SimpleHistogramDataset;
 
-import br.edu.axelrod.simulation.FacilitatedDisseminationWithSurfaceTension;
+import br.edu.axelrod.simulation.CultureDisseminationSimulation;
 
 /**
  * @author muggler
  *
  */
-public class RoomsHistogram extends Plot<FacilitatedDisseminationWithSurfaceTension>{
+public class ActiveRoomsHistogram extends Plot<CultureDisseminationSimulation>{
 
 	private static final long serialVersionUID = -5160449133785015019L;
 	
@@ -28,19 +28,24 @@ public class RoomsHistogram extends Plot<FacilitatedDisseminationWithSurfaceTens
 	private Integer timeOfLastChange;
 	
 	SimpleHistogramDataset ds;
-	public JFreeChart chart;
 	
 	final static int MIN_VAL = 0;
-	final static int MAX_VAL = 3000000;
-//	final static int BIN_SIZE = 10000;
-//	final static int NUM_BINS = (MAX_VAL-MIN_VAL)/BIN_SIZE + 1;
-	final static int NUM_BINS = 30;
-	final static int BIN_SIZE = (MAX_VAL-MIN_VAL)/NUM_BINS;
+	final static int MAX_VAL = 1000;
+	final static int BIN_SIZE = 25;
+	final static int NUM_BINS = (MAX_VAL-MIN_VAL)/BIN_SIZE + 1;
+//	final static int NUM_BINS = 30;
+//	final static int BIN_SIZE = (MAX_VAL-MIN_VAL)/NUM_BINS;
 	
-	public JFreeChart createPlot(FacilitatedDisseminationWithSurfaceTension sim) {
+	public JFreeChart createPlot(CultureDisseminationSimulation sim) {
 		this.simulation = sim;
 		lastMonitoredNodeToChange = 0;
 		timeOfLastChange = 0;
+		for (Integer node : simulation.nw.monitorNodes) {
+			if (simulation.nw.interactiveNodes.contains(node)) {
+				lastMonitoredNodeToChange = node;
+				break;
+			}
+		}
 		ds = new SimpleHistogramDataset(1);
 		for (int i = 0; i < NUM_BINS; i++) {
 			ds.addBin(new SimpleHistogramBin(i * BIN_SIZE, (i+1)*BIN_SIZE, true, false));
@@ -49,38 +54,34 @@ public class RoomsHistogram extends Plot<FacilitatedDisseminationWithSurfaceTens
 		return chart;
 	}
 	
+	private int epoch;
 	public void interaction(int i, int j){
-		Integer nbr = simulation.nw.size * i + j;
-		if (simulation.nw.monitorNodes.contains(nbr)
-				&& !nbr.equals(lastMonitoredNodeToChange)) {
+		Integer node = simulation.nw.size * i + j;
+		if (simulation.nw.monitorNodes.contains(node)
+				&& !node.equals(lastMonitoredNodeToChange)) {
+			lastMonitoredNodeToChange = node;
+			epoch = simulation.epoch();
 			plot();
-			lastMonitoredNodeToChange = nbr;
-			plot();
-			timeOfLastChange = simulation.epoch();
+			timeOfLastChange = epoch;
 		}
 	}
 	
 	@Override
 	public void plot() {
-		Integer delta = simulation.epoch() - timeOfLastChange;
+		Integer delta = epoch - timeOfLastChange;
 		ds.addObservation(delta);
-		ds.seriesChanged(null);
 	}
 	
-	public static void main(String[] args){
-		int bin_width = 10;
+	public static void main(String[] args) throws InterruptedException{
 		Random rand = new Random();
 		SimpleHistogramDataset ds = new SimpleHistogramDataset(1);
-		for (int i = 0; i < 10; i++) {
-			SimpleHistogramBin bin = new SimpleHistogramBin(i*bin_width, bin_width * (i+1), true, false);
-			ds.addBin(bin);
+		for (int i = 0; i < NUM_BINS; i++) {
+			ds.addBin(new SimpleHistogramBin(i * BIN_SIZE, (i+1)*BIN_SIZE, true, false));
 		}
+		JFreeChart chart = ChartFactory.createHistogram("Active Rooms Histogram:", "time", "frequency", ds, PlotOrientation.VERTICAL, false, true, false);
+		
 		JFrame plot = new JFrame("Test histogram");
 		plot.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		for (int i = 0; i < 5; i++) {
-			ds.addObservation(rand.nextInt(100));
-		}
-		JFreeChart chart = ChartFactory.createHistogram("Test", "element","frequency", ds, PlotOrientation.VERTICAL, false, true, false);
 		// we put the chart into a panel
 		ChartPanel chartPanel = new ChartPanel(chart);
 		// default size
@@ -89,5 +90,9 @@ public class RoomsHistogram extends Plot<FacilitatedDisseminationWithSurfaceTens
 		plot.setContentPane(chartPanel);
 		plot.pack();
 		plot.setVisible(true);
+		for (int i = 0; i < 500; i++) {
+			ds.addObservation(rand .nextInt(1000));
+			Thread.sleep(33);
+		}
 	}
 }

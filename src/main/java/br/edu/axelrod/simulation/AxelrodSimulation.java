@@ -9,7 +9,7 @@ import br.edu.axelrod.network.CulturalNetwork;
  * @author muggler
  * 
  */
-public class AxelrodSimulation extends NetworkSimulation {
+public class AxelrodSimulation extends CultureDisseminationSimulation {
 
 	// Statistics
 	protected int interactions = 0;

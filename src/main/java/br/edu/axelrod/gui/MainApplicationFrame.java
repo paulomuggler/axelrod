@@ -51,15 +51,15 @@ import br.edu.axelrod.plot.ActiveNodesScatterPlot;
 import br.edu.axelrod.plot.ActiveRoomScatterPlot;
 import br.edu.axelrod.plot.CultureDistributionScatterPlot;
 import br.edu.axelrod.plot.Plot;
-import br.edu.axelrod.plot.RoomsHistogram;
+import br.edu.axelrod.plot.ActiveRoomsHistogram;
 import br.edu.axelrod.plot.ScatterPlotter;
 import br.edu.axelrod.simulation.AxelrodSimulation;
 import br.edu.axelrod.simulation.FacilitatedDisseminationWithSurfaceTension;
 import br.edu.axelrod.simulation.FacilitatedDisseminationWithoutSurfaceTension;
-import br.edu.axelrod.simulation.NetworkSimulation;
-import br.edu.axelrod.simulation.NetworkSimulation.SimulationEventAdapter;
-import br.edu.axelrod.simulation.NetworkSimulation.SimulationEventListener;
-import br.edu.axelrod.simulation.NetworkSimulation.SimulationState;
+import br.edu.axelrod.simulation.CultureDisseminationSimulation;
+import br.edu.axelrod.simulation.CultureDisseminationSimulation.SimulationEventAdapter;
+import br.edu.axelrod.simulation.CultureDisseminationSimulation.SimulationEventListener;
+import br.edu.axelrod.simulation.CultureDisseminationSimulation.SimulationState;
 
 public class MainApplicationFrame extends JFrame {
 
@@ -121,7 +121,7 @@ public class MainApplicationFrame extends JFrame {
 	JLabel epochsLblOut = new JLabel("0");
 
 	public CultureCanvas canvas;
-	public NetworkSimulation sim;
+	public CultureDisseminationSimulation sim;
 	Thread simThr = new Thread(sim);
 
 	private PlotAction activeNodesPlotAction;
@@ -361,7 +361,7 @@ public class MainApplicationFrame extends JFrame {
 		activeRoomsPlotAction = new PlotAction("Rooms plot",
 				"Active Rooms - Scatter Plot", new ActiveRoomScatterPlot());
 		activeRoomsHistogramAction = new PlotAction("Rooms histogram",
-				"Active Rooms - Histogram", new RoomsHistogram());
+				"Active Rooms - Histogram", new ActiveRoomsHistogram());
 
 		clearPlots();
 		addPlots(activeNodesPlotAction, cultureDistributionPlotAction,
@@ -401,8 +401,8 @@ public class MainApplicationFrame extends JFrame {
 			if (sim != null)
 				sim.quit();
 			try {
-				sim = NetworkSimulation.factory(
-						(Class<? extends NetworkSimulation>) simulationSelect
+				sim = CultureDisseminationSimulation.factory(
+						(Class<? extends CultureDisseminationSimulation>) simulationSelect
 								.getSelectedItem(), new CulturalNetwork(Integer
 								.parseInt(lTxtIn.getText()), Integer
 								.parseInt(fTxtIn.getText()), Integer
@@ -472,7 +472,7 @@ public class MainApplicationFrame extends JFrame {
 					CulturalNetwork nw = new CulturalNetwork(f);
 					if (sim != null)
 						sim.quit();
-					sim = new FacilitatedDisseminationWithSurfaceTension(nw);
+					sim = CultureDisseminationSimulation.factory((Class<? extends CultureDisseminationSimulation>) simulationSelect.getSelectedItem(), nw);
 					resetGui();
 				} catch (IOException e1) {
 					JOptionPane.showMessageDialog(MainApplicationFrame.this,
@@ -494,12 +494,12 @@ public class MainApplicationFrame extends JFrame {
 	class PlotAction extends AbstractAction {
 		private static final long serialVersionUID = 8874503720547085785L;
 		protected Plotter plotter;
-		protected Plot<NetworkSimulation> plot;
+		protected Plot<CultureDisseminationSimulation> plot;
 		private String pTitle;
 
 		public PlotAction(String actionCaption, String plotTitle, Plot<?> p) {
 			super(actionCaption);
-			plot = (Plot<NetworkSimulation>) p;
+			plot = (Plot<CultureDisseminationSimulation>) p;
 			pTitle = plotTitle;
 		}
 
@@ -541,8 +541,10 @@ public class MainApplicationFrame extends JFrame {
 			System.out.println("q: " + q);
 			double[][] cSizes = new double[2][numSims];
 			for (int i = 0; i < numSims; i++) {
-				FacilitatedDisseminationWithSurfaceTension sim = new FacilitatedDisseminationWithSurfaceTension(
-						size, f, q);
+				CultureDisseminationSimulation sim =
+					CultureDisseminationSimulation.factory(
+							(Class<? extends CultureDisseminationSimulation>) simulationSelect.getSelectedItem(),
+							new CulturalNetwork(size, f, q));
 				sim.start();
 				sim.run();
 				Integer[] culture_sizes = new ArrayList<Integer>(sim.nw
