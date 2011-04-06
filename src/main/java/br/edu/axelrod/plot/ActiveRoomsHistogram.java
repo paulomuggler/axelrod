@@ -20,14 +20,12 @@ import br.edu.axelrod.simulation.CultureDisseminationSimulation;
  * @author muggler
  *
  */
-public class ActiveRoomsHistogram extends Plot<CultureDisseminationSimulation>{
+public class ActiveRoomsHistogram extends Plot<CultureDisseminationSimulation, SimpleHistogramDataset>{
 
 	private static final long serialVersionUID = -5160449133785015019L;
 	
 	private Integer lastMonitoredNodeToChange;
 	private Integer timeOfLastChange;
-	
-	SimpleHistogramDataset ds;
 	
 	final static int MIN_VAL = 0;
 	final static int MAX_VAL = 1000;
@@ -46,11 +44,11 @@ public class ActiveRoomsHistogram extends Plot<CultureDisseminationSimulation>{
 				break;
 			}
 		}
-		ds = new SimpleHistogramDataset(1);
+		dataset = new SimpleHistogramDataset(1);
 		for (int i = 0; i < NUM_BINS; i++) {
-			ds.addBin(new SimpleHistogramBin(i * BIN_SIZE, (i+1)*BIN_SIZE, true, false));
+			dataset.addBin(new SimpleHistogramBin((i * BIN_SIZE) + MIN_VAL, ((i+1)*BIN_SIZE) + MIN_VAL, true, false));
 		}
-		chart = ChartFactory.createHistogram("Active Rooms Histogram: "+simInfo(), "time", "frequency", ds, PlotOrientation.VERTICAL, false, true, false);
+		chart = ChartFactory.createHistogram("Active Rooms Histogram: "+simInfo(), "time", "frequency", dataset, PlotOrientation.VERTICAL, false, true, false);
 		return chart;
 	}
 	
@@ -69,7 +67,7 @@ public class ActiveRoomsHistogram extends Plot<CultureDisseminationSimulation>{
 	@Override
 	public void plot() {
 		Integer delta = epoch - timeOfLastChange;
-		ds.addObservation(delta);
+		dataset.addObservation((delta == 0 ? 1 : delta));
 	}
 	
 	public static void main(String[] args) throws InterruptedException{

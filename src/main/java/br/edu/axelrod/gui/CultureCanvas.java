@@ -146,13 +146,13 @@ public class CultureCanvas extends JPanel {
 		}
 	};
 
-	Action monitorNode = new AbstractAction("monitor this node") {
+	Action monitorNode = new AbstractAction("toggle monitor for this node") {
 		private static final long serialVersionUID = 4857404375859735556L;
 		public void actionPerformed(ActionEvent e) {
 			Component parent = getParent();
 			do parent = parent.getParent(); while (!(parent instanceof MainApplicationFrame));
-			((MainApplicationFrame)parent).sim.toggleMonitor(nodeClicked);
-			String out = String.format("monitoring node: %d, %d, %d, state %s", (clickNwCoords[1]*nw.size + clickNwCoords[0]), clickNwCoords[0], clickNwCoords[1], State.toString(CultureCanvas.this.nw.states[nodeClicked]));
+			boolean monitoring = ((MainApplicationFrame)parent).sim.toggleMonitor(nodeClicked);
+			String out = String.format((monitoring ? "added node to monitoring" : "removed node from monitoring")+": %d, %d, %d, state %s", (clickNwCoords[1]*nw.size + clickNwCoords[0]), clickNwCoords[0], clickNwCoords[1], State.toString(CultureCanvas.this.nw.states[nodeClicked]));
 			System.out.println(out);
 		}
 	};

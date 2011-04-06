@@ -1,0 +1,3 @@
+ - criar lista de edges ativos;
+ - plot de edges ativos;
+ - condições periódicas de contorno toglável;

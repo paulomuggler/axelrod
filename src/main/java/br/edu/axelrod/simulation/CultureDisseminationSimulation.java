@@ -13,7 +13,7 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 	public enum SimulationState { RUNNING, STOPPED, FINISHED }
 
 	public CulturalNetwork nw;
-	protected final List<Plot<?>> plots = new ArrayList<Plot<?>>();
+	protected final List<Plot<?, ?>> plots = new ArrayList<Plot<?, ?>>();
 	
 	protected final Random rand = new Random();
 	protected int speed = 100;
@@ -61,11 +61,11 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 		this.speed = speed;
 	}
 	
-	public void addPlot(Plot<?> p){
+	public void addPlot(Plot<?, ?> p){
 		if (!plots.contains(p)) plots.add(p);
 	}
 	
-	public void removePlot(Plot<?> p){
+	public void removePlot(Plot<?, ?> p){
 		plots.remove(p);
 	}
 
@@ -83,11 +83,13 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 		}
 	}
 	
-	public void toggleMonitor(int nodeClicked) {
+	public boolean toggleMonitor(int nodeClicked) {
 		if(this.nw.monitorNodes.contains(nodeClicked)){
 			this.nw.monitorNodes.remove(new Integer(nodeClicked));
+			return false;
 		}else{
 			this.nw.monitorNodes.add(nodeClicked);
+			return true;
 		}
 	}
 

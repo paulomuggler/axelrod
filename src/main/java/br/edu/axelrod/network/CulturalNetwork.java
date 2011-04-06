@@ -3,6 +3,7 @@
  */
 package br.edu.axelrod.network;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -68,14 +69,8 @@ public class CulturalNetwork {
 	public CulturalNetwork(File f) throws IOException{
 		if(f.exists() && f.canRead()){
 			FileReader fr = new FileReader(f);
-			StringBuilder line = new StringBuilder();
-			int c = fr.read();
-			while(c != '\n'){
-				line.append((char) c );
-				c = fr.read();
-			}
-			
-			String[] params = line.toString().split(":");
+			BufferedReader r = new BufferedReader(fr);
+			String[] params = r.readLine().split(":");
 			
 			this.size = Integer.parseInt(params[0]);
 			this.n_nodes = size * size;
@@ -86,28 +81,16 @@ public class CulturalNetwork {
 			this.is_node_active = new boolean[this.n_nodes];
 			this.degree = new int[this.n_nodes];
 			
-			line = new StringBuilder();
 			for (int i = 0; i < this.n_nodes; i++) {
-				c = fr.read();
-				while(c != '\n'){
-					line.append((char)c);
-					c = fr.read();
-				}
-				String[] stateStr = line.toString().split(":");
-				line = new StringBuilder();
+				String[] stateStr = r.readLine().toString().split(":");
 				int[] state = new int [stateStr.length];
 				for (int j = 0; j < stateStr.length; j++) {
 					state[j] = Integer.parseInt(stateStr[j]);
 				}
 				System.arraycopy(state, 0, this.states[i], 0, this.features);
 			}
-			line = new StringBuilder();
-			c = fr.read();
-			while(c != '\n'){
-				line.append((char) c );
-				c = fr.read();
-			}
-			String[] monitor = line.substring(line.indexOf("[")+1, line.indexOf("]")-1).split(",");
+			String line = r.readLine();
+			String[] monitor = line.substring(line.indexOf("[")+1, line.indexOf("]")).split(",");
 			for (String s : monitor) {
 				this.monitorNodes.add(Integer.parseInt(s));
 			}
@@ -423,6 +406,11 @@ public class CulturalNetwork {
 					if(j != state.length -1) fw.write(':');
 				}
 				fw.write('\n');
+			}
+			fw.write("monitor:[");
+			for (Integer node : monitorNodes) {
+				fw.write(Integer.toString(node));
+				fw.write(monitorNodes.indexOf(node) == monitorNodes.size() -1 ? ']' : ',');
 			}
 			fw.close();
 		}

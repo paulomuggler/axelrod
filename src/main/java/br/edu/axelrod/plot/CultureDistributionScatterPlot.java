@@ -13,17 +13,16 @@ import org.jfree.data.xy.DefaultXYDataset;
 
 import br.edu.axelrod.simulation.CultureDisseminationSimulation;
 
-public class CultureDistributionScatterPlot extends Plot<CultureDisseminationSimulation> {
+public class CultureDistributionScatterPlot extends Plot<CultureDisseminationSimulation, DefaultXYDataset> {
 
 	private static final int SERIES_UPDATE_INTERVAL  = 10;
-	DefaultXYDataset ds;
-	
+
 	@Override
 	public JFreeChart createPlot(CultureDisseminationSimulation sim) {
 		this.simulation = sim;
-		ds = new DefaultXYDataset();
-		ds.addSeries(1, new double [2][0]);
-		chart = ChartFactory.createScatterPlot("Culture sizes distribution "+simInfo(), "S", "% of culture sizes >= S", ds,
+		dataset = new DefaultXYDataset();
+		dataset.addSeries(1, new double [2][0]);
+		chart = ChartFactory.createScatterPlot("Culture sizes distribution "+simInfo(), "S", "% of culture sizes >= S", dataset,
 		PlotOrientation.VERTICAL, false, true, false);
 		LogarithmicAxis xAxis = new LogarithmicAxis("S");
 		LogarithmicAxis yAxis = new LogarithmicAxis("% of culture sizes >= S");
@@ -82,7 +81,6 @@ public class CultureDistributionScatterPlot extends Plot<CultureDisseminationSim
 			series[0][i] = result[0][i];
 			series[1][i] = result[1][i];
 		}
-		ds.addSeries(1, series);
+		dataset.addSeries(1, series);
 	}
-	
 }

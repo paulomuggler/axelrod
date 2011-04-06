@@ -75,7 +75,7 @@ public class MainApplicationFrame extends JFrame {
 
 	private static final String APP_TITLE = "Axelrod Simulation";
 
-	final JFileChooser fc = new JFileChooser();
+	private static JFileChooser fc;
 
 	JComboBox simulationSelect;
 
@@ -234,6 +234,7 @@ public class MainApplicationFrame extends JFrame {
 		out.setEditable(false);
 		JScrollPane scrollOut = new JScrollPane(out);
 		System.setOut(new PrintStream(textAreaOutputStream(out)));
+		System.setErr(new PrintStream(textAreaOutputStream(out)));
 		pane.add(scrollOut, BorderLayout.SOUTH);
 	}
 
@@ -349,7 +350,7 @@ public class MainApplicationFrame extends JFrame {
 			private static final long serialVersionUID = -2489956318996611551L;
 
 			public void defer_init() {
-				plotter.addChartScaleSelectorX();
+				plotter.addChartScaleSelectorX("time");
 				plotter.validate();
 				plotter.repaint();
 			}
@@ -362,6 +363,7 @@ public class MainApplicationFrame extends JFrame {
 				"Active Rooms - Scatter Plot", new ActiveRoomScatterPlot());
 		activeRoomsHistogramAction = new PlotAction("Rooms histogram",
 				"Active Rooms - Histogram", new ActiveRoomsHistogram());
+
 
 		clearPlots();
 		addPlots(activeNodesPlotAction, cultureDistributionPlotAction,
@@ -446,9 +448,9 @@ public class MainApplicationFrame extends JFrame {
 		private static final long serialVersionUID = -4675654942388512094L;
 
 		public void actionPerformed(ActionEvent e) {
-			int select = fc.showSaveDialog(MainApplicationFrame.this);
+			int select = getFileChooser().showSaveDialog(MainApplicationFrame.this);
 			if (select == JFileChooser.APPROVE_OPTION) {
-				File f = fc.getSelectedFile();
+				File f = getFileChooser().getSelectedFile();
 				try {
 					sim.nw.save_to_file(f);
 				} catch (IOException e1) {
@@ -465,9 +467,9 @@ public class MainApplicationFrame extends JFrame {
 
 		public void actionPerformed(ActionEvent e) {
 			System.out.println("load simulation from file...");
-			int select = fc.showOpenDialog(MainApplicationFrame.this);
+			int select = getFileChooser().showOpenDialog(MainApplicationFrame.this);
 			if (select == JFileChooser.APPROVE_OPTION) {
-				File f = fc.getSelectedFile();
+				File f = getFileChooser().getSelectedFile();
 				try {
 					CulturalNetwork nw = new CulturalNetwork(f);
 					if (sim != null)
@@ -494,12 +496,12 @@ public class MainApplicationFrame extends JFrame {
 	class PlotAction extends AbstractAction {
 		private static final long serialVersionUID = 8874503720547085785L;
 		protected Plotter plotter;
-		protected Plot<CultureDisseminationSimulation> plot;
+		protected Plot<CultureDisseminationSimulation, ?> plot;
 		private String pTitle;
 
-		public PlotAction(String actionCaption, String plotTitle, Plot<?> p) {
+		public PlotAction(String actionCaption, String plotTitle, Plot<?, ?> p) {
 			super(actionCaption);
-			plot = (Plot<CultureDisseminationSimulation>) p;
+			plot = (Plot<CultureDisseminationSimulation, ?>) p;
 			pTitle = plotTitle;
 		}
 
@@ -594,5 +596,9 @@ public class MainApplicationFrame extends JFrame {
 		axelrod.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		axelrod.pack();
 		axelrod.setVisible(true);
+	}
+
+	public static JFileChooser getFileChooser() {
+		return fc == null? fc = new JFileChooser() : fc;
 	}
 }

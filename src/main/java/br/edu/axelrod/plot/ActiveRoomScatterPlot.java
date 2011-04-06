@@ -10,12 +10,10 @@ import org.jfree.data.xy.DefaultXYDataset;
 
 import br.edu.axelrod.simulation.CultureDisseminationSimulation;
 
-public class ActiveRoomScatterPlot extends Plot<CultureDisseminationSimulation> {
+public class ActiveRoomScatterPlot extends Plot<CultureDisseminationSimulation, DefaultXYDataset> {
 	
 	private Integer lastMonitoredNodeToChange;
 	List<double[]> seriesList;
-	
-	DefaultXYDataset ds;
 	
 	@Override
 	public JFreeChart createPlot(CultureDisseminationSimulation sim) {
@@ -28,9 +26,9 @@ public class ActiveRoomScatterPlot extends Plot<CultureDisseminationSimulation> 
 				break;
 			}
 		}
-		ds = new DefaultXYDataset();
-		ds.addSeries(1, new double[2][0]);
-		chart = ChartFactory.createScatterPlot("Active rooms over time: "+simInfo(), "time", "nodes", ds,
+		dataset = new DefaultXYDataset();
+		dataset.addSeries(SERIES_KEY, new double[2][0]);
+		chart = ChartFactory.createScatterPlot("Active rooms over time: "+simInfo(), "time", "nodes", dataset,
 		PlotOrientation.VERTICAL, false, true, false);
 		plot();
 		return chart;
@@ -59,6 +57,6 @@ public class ActiveRoomScatterPlot extends Plot<CultureDisseminationSimulation> 
 			series[0][i] = point[0];
 			series[1][i++] = point[1];
 		}
-		ds.addSeries(1, series);
+		dataset.addSeries(SERIES_KEY, series);
 	}
 }
