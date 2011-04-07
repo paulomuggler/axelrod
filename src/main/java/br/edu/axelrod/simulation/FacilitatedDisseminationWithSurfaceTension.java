@@ -14,10 +14,6 @@ public class FacilitatedDisseminationWithSurfaceTension extends CultureDissemina
 	// Statistics
 	protected int interactions = 0;
 
-	public FacilitatedDisseminationWithSurfaceTension(int size, int features, int traits) {
-		this(new CulturalNetwork(size, features, traits));
-	}
-
 	public FacilitatedDisseminationWithSurfaceTension(CulturalNetwork nw) {
 		super(nw);
 	}

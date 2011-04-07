@@ -146,10 +146,6 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 		System.out.println();
 	}
 	
-	public CultureDisseminationSimulation(int size, int features, int traits){
-		this.nw = new CulturalNetwork(size, features, traits);
-	}
-	
 	public CultureDisseminationSimulation(CulturalNetwork nw){
 		this.nw = nw;
 	}

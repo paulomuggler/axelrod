@@ -78,6 +78,7 @@ public class MainApplicationFrame extends JFrame {
 	private static JFileChooser fc;
 
 	JComboBox simulationSelect;
+	JCheckBox periodicBoundarySelect;
 
 	JMenuBar menuBar = new JMenuBar();
 	JMenu fileMenu = new JMenu("File");
@@ -141,6 +142,8 @@ public class MainApplicationFrame extends JFrame {
 		simulationSelect.addItem(AxelrodSimulation.class);
 
 		simulationSelect.setRenderer(new ClassNameComboBoxRenderer());
+		
+		periodicBoundarySelect = new JCheckBox("Periodic boundary condition");
 
 		resetBtn.addActionListener(resetSim);
 		toggleSimBtn.addActionListener(toggleSim);
@@ -199,6 +202,7 @@ public class MainApplicationFrame extends JFrame {
 		speedSlider.setPaintLabels(true);
 
 		controls.add(simulationSelect, "span 3, grow, wrap");
+		controls.add(periodicBoundarySelect, "span 3, grow, wrap");
 
 		controls.add(lLbl, "split 6");
 		controls.add(lTxtIn, "");
@@ -254,6 +258,7 @@ public class MainApplicationFrame extends JFrame {
 						sim.nw.features, sim.nw.traits);
 				if (state != null) {
 					canvas.setStateStroke(state);
+					MainApplicationFrame.this.updateStroke();
 				}
 			}
 		};
@@ -408,7 +413,7 @@ public class MainApplicationFrame extends JFrame {
 								.getSelectedItem(), new CulturalNetwork(Integer
 								.parseInt(lTxtIn.getText()), Integer
 								.parseInt(fTxtIn.getText()), Integer
-								.parseInt(qTxtIn.getText())));
+								.parseInt(qTxtIn.getText()), periodicBoundarySelect.isSelected()));
 			} catch (NumberFormatException ex) {
 				JOptionPane.showMessageDialog(MainApplicationFrame.this,
 						"Numbers only please!", "Error",
@@ -546,7 +551,7 @@ public class MainApplicationFrame extends JFrame {
 				CultureDisseminationSimulation sim =
 					CultureDisseminationSimulation.factory(
 							(Class<? extends CultureDisseminationSimulation>) simulationSelect.getSelectedItem(),
-							new CulturalNetwork(size, f, q));
+							new CulturalNetwork(size, f, q, periodicBoundarySelect.isSelected()));
 				sim.start();
 				sim.run();
 				Integer[] culture_sizes = new ArrayList<Integer>(sim.nw

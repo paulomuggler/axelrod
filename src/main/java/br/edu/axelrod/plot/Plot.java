@@ -17,25 +17,25 @@ public abstract class Plot<S extends CultureDisseminationSimulation, D extends X
 	
 	protected static final int SERIES_KEY = 0;
 	protected JFreeChart chart;
-	protected S simulation;
+	protected S sim;
 	protected D dataset;
 	
-	public abstract JFreeChart createPlot(S sim);
+	public abstract JFreeChart createPlot(S simulation);
 	public abstract void plot();
 	
-	public void link(S sim) {
-		createPlot(sim);
-		simulation.addListener(this);
+	public void link(S simulation) {
+		createPlot(simulation);
+		sim.addListener(this);
 	}
 	public void unlink() {
-		simulation.removeListener(this);
+		sim.removeListener(this);
 	}
 	
 	public JFreeChart chart(){ return chart; }
 	
 	public String simInfo(){
-		return String.format("L = %d, F = %d, q = %d", simulation.nw.size, 
-							 simulation.nw.features, simulation.nw.traits);
+		return String.format("L = %d, F = %d, q = %d", sim.nw.size, 
+							 sim.nw.features, sim.nw.traits);
 	}
 	
 	public void iteration() {}

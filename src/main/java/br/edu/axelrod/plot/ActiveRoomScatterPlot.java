@@ -16,12 +16,12 @@ public class ActiveRoomScatterPlot extends Plot<CultureDisseminationSimulation, 
 	List<double[]> seriesList;
 	
 	@Override
-	public JFreeChart createPlot(CultureDisseminationSimulation sim) {
+	public JFreeChart createPlot(CultureDisseminationSimulation s) {
 		seriesList = new ArrayList<double[]>();
 		lastMonitoredNodeToChange = 0;
-		this.simulation = sim;
-		for (Integer node : simulation.nw.monitorNodes) {
-			if (simulation.nw.interactiveNodes.contains(node)) {
+		this.sim = s;
+		for (Integer node : s.nw.monitorNodes) {
+			if (s.nw.interactiveNodes.contains(node)) {
 				lastMonitoredNodeToChange = node;
 				break;
 			}
@@ -35,8 +35,8 @@ public class ActiveRoomScatterPlot extends Plot<CultureDisseminationSimulation, 
 	}
 	
 	public void interaction(int i, int j){
-		Integer nbr = simulation.nw.size * i + j;
-		if (simulation.nw.monitorNodes.contains(nbr)
+		Integer nbr = sim.nw.size * i + j;
+		if (sim.nw.monitorNodes.contains(nbr)
 				&& !nbr.equals(lastMonitoredNodeToChange)) {
 			plot();
 			lastMonitoredNodeToChange = nbr;
@@ -46,7 +46,7 @@ public class ActiveRoomScatterPlot extends Plot<CultureDisseminationSimulation, 
 	@Override
 	public void plot() {
 		reallocate_series();
-		double[] point = { simulation.iterations(), simulation.nw.monitorNodes.indexOf(lastMonitoredNodeToChange) };
+		double[] point = { sim.iterations(), sim.nw.monitorNodes.indexOf(lastMonitoredNodeToChange) };
 		seriesList.add(point);
 	}
 	

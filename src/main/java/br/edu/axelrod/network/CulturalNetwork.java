@@ -30,6 +30,7 @@ public class CulturalNetwork {
 	public final int n_nodes;
 	public final int features;
 	public final int traits;
+	public final boolean periodicBoundary;
 
 	/** The network state representation */
 	public final int[][] states; // size^2 (~100kB)
@@ -48,21 +49,23 @@ public class CulturalNetwork {
 	/** Stores the activity state of each node */
 	final boolean[] is_node_active;
 
-	/** Keep track of culture sizes on the network */
+	/** Keep track of culture sizes on the network 
+	 * @param periodicBoundary */
 	// final Map<Integer, Integer> cultureSizes = new HashMap<Integer,
 	// Integer>();
 
-	public CulturalNetwork(int size, int features, int traits) {
+	public CulturalNetwork(int size, int features, int traits, boolean periodicBoundary) {
 		this.size = size;
 		this.n_nodes = size * size;
 		this.features = features;
 		this.traits = traits;
+		this.periodicBoundary = periodicBoundary;
 
 		this.states = new int[this.n_nodes][this.features];
 		this.adj_matrix = new int[this.n_nodes][MAX_DEGREE];
 		this.is_node_active = new boolean[this.n_nodes];
 		this.degree = new int[this.n_nodes];
-		this.init_adj_matrix();
+		this.init_adj_matrix(periodicBoundary);
 		this.random_starting_distribution();
 	}
 	
@@ -76,6 +79,7 @@ public class CulturalNetwork {
 			this.n_nodes = size * size;
 			this.features = Integer.parseInt(params[1]);
 			this.traits = Integer.parseInt(params[2]);
+			this.periodicBoundary = Boolean.parseBoolean(params[3]);
 			this.states = new int[this.n_nodes][this.features];
 			this.adj_matrix = new int[this.n_nodes][MAX_DEGREE];
 			this.is_node_active = new boolean[this.n_nodes];
@@ -95,42 +99,38 @@ public class CulturalNetwork {
 				this.monitorNodes.add(Integer.parseInt(s));
 			}
 		}else {
-			this.size = 64;
-			this.n_nodes = size * size;
-			this.features = 3;
-			this.traits = 3;
-
-			this.states = new int[this.n_nodes][this.features];
-			this.adj_matrix = new int[this.n_nodes][MAX_DEGREE];
-			this.is_node_active = new boolean[this.n_nodes];
-			this.degree = new int[this.n_nodes];
-			this.init_adj_matrix();
-			this.random_starting_distribution();
+			throw new IOException("File does not exist or read not allowed");
 		}
-		this.init_adj_matrix();
+		this.init_adj_matrix(periodicBoundary);
 		this.initInteractionList();
 	}
 
-	private void init_adj_matrix() {
+	private void init_adj_matrix(boolean periodicBoundary) {
 
 		for (int nd = 0; nd < this.n_nodes; nd++) {
 
 			degree[nd] = 0;
 			int i = nd / size;
 			int j = nd % size;
-
-			if (j > 0) // not on column 0
-				adj_matrix[nd][degree[nd]++] = (j - 1) + (i * size); // left
-
-			if (j < size - 1) // not on last column
-				adj_matrix[nd][degree[nd]++] = (j + 1) + (i * size); // right
-
-			if (i > 0) // not on line 0
-				adj_matrix[nd][degree[nd]++] = j + (i - 1) * size; // up
-
-			if (i < size - 1) // not on last line
-				adj_matrix[nd][degree[nd]++] = j + (i + 1) * size; // down
-
+			
+			if(periodicBoundary){
+				adj_matrix[nd][degree[nd]++] = j + (i == 0 ? this.size - 1 : i - 1) * size; // up
+				adj_matrix[nd][degree[nd]++] = (j == 0 ? this.size -1 : j - 1) + (i * size); // left
+				adj_matrix[nd][degree[nd]++] = j + (i == size - 1 ? 0 : i + 1) * size; // down
+				adj_matrix[nd][degree[nd]++] = (j == size - 1 ? 0 : j + 1) + (i * size); // right
+			}else {
+				if (i > 0) // not on line 0
+					adj_matrix[nd][degree[nd]++] = j + (i - 1) * size; // up
+				
+				if (j > 0) // not on column 0
+					adj_matrix[nd][degree[nd]++] = (j - 1) + (i * size); // left
+				
+				if (i < size - 1) // not on last line
+					adj_matrix[nd][degree[nd]++] = j + (i + 1) * size; // down
+				
+				if (j < size - 1) // not on last column
+					adj_matrix[nd][degree[nd]++] = (j + 1) + (i * size); // right
+			}
 		}
 	}
 

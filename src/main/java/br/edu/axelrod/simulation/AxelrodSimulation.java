@@ -14,10 +14,6 @@ public class AxelrodSimulation extends CultureDisseminationSimulation {
 	// Statistics
 	protected int interactions = 0;
 
-	public AxelrodSimulation(int size, int features, int traits) {
-		this(new CulturalNetwork(size, features, traits));
-	}
-
 	public AxelrodSimulation(CulturalNetwork nw) {
 		super(nw);
 	}

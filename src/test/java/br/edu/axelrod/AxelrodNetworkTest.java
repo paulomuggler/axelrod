@@ -25,7 +25,7 @@ public class AxelrodNetworkTest {
 	
 	@Before
 	public void doBefore(){
-		nw = new CulturalNetwork(size, features, traits);
+		nw = new CulturalNetwork(size, features, traits, false);
 	}
 	
 	@Test

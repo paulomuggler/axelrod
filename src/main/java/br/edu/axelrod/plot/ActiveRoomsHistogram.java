@@ -35,11 +35,11 @@ public class ActiveRoomsHistogram extends Plot<CultureDisseminationSimulation, S
 //	final static int BIN_SIZE = (MAX_VAL-MIN_VAL)/NUM_BINS;
 	
 	public JFreeChart createPlot(CultureDisseminationSimulation sim) {
-		this.simulation = sim;
+		this.sim = sim;
 		lastMonitoredNodeToChange = 0;
 		timeOfLastChange = 0;
-		for (Integer node : simulation.nw.monitorNodes) {
-			if (simulation.nw.interactiveNodes.contains(node)) {
+		for (Integer node : sim.nw.monitorNodes) {
+			if (sim.nw.interactiveNodes.contains(node)) {
 				lastMonitoredNodeToChange = node;
 				break;
 			}
@@ -54,11 +54,11 @@ public class ActiveRoomsHistogram extends Plot<CultureDisseminationSimulation, S
 	
 	private int epoch;
 	public void interaction(int i, int j){
-		Integer node = simulation.nw.size * i + j;
-		if (simulation.nw.monitorNodes.contains(node)
+		Integer node = sim.nw.size * i + j;
+		if (sim.nw.monitorNodes.contains(node)
 				&& !node.equals(lastMonitoredNodeToChange)) {
 			lastMonitoredNodeToChange = node;
-			epoch = simulation.epoch();
+			epoch = sim.epoch();
 			plot();
 			timeOfLastChange = epoch;
 		}
@@ -88,8 +88,8 @@ public class ActiveRoomsHistogram extends Plot<CultureDisseminationSimulation, S
 		plot.setContentPane(chartPanel);
 		plot.pack();
 		plot.setVisible(true);
-		for (int i = 0; i < 500; i++) {
-			ds.addObservation(rand .nextInt(1000));
+		for (int i = 0; i < 5000; i++) {
+			ds.addObservation(rand .nextInt(10000));
 			Thread.sleep(33);
 		}
 	}

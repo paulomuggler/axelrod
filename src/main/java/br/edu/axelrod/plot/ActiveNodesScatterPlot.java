@@ -17,7 +17,7 @@ public class ActiveNodesScatterPlot extends Plot<CultureDisseminationSimulation,
 	
 	@Override
 	public JFreeChart createPlot(CultureDisseminationSimulation sim) {
-		this.simulation = sim;
+		this.sim = sim;
 		seriesList= new ArrayList<double[]>();
 		dataset = new DefaultXYDataset();
 		dataset.addSeries(1, new double [2][0]);
@@ -30,8 +30,8 @@ public class ActiveNodesScatterPlot extends Plot<CultureDisseminationSimulation,
 		if(seriesList.size() % SERIES_UPDATE_INTERVAL == 0){
 			reallocate_series();
 		}
-		double[] point = { simulation.epoch() == 0? 1 : simulation.epoch(), 
-						   simulation.nw.interactiveNodes.size() };
+		double[] point = { sim.epoch() == 0? 1 : sim.epoch(), 
+						   sim.nw.interactiveNodes.size() };
 		seriesList.add(point);
 	}
 

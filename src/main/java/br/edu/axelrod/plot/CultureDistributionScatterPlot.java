@@ -19,7 +19,7 @@ public class CultureDistributionScatterPlot extends Plot<CultureDisseminationSim
 
 	@Override
 	public JFreeChart createPlot(CultureDisseminationSimulation sim) {
-		this.simulation = sim;
+		this.sim = sim;
 		dataset = new DefaultXYDataset();
 		dataset.addSeries(1, new double [2][0]);
 		chart = ChartFactory.createScatterPlot("Culture sizes distribution "+simInfo(), "S", "% of culture sizes >= S", dataset,
@@ -37,11 +37,11 @@ public class CultureDistributionScatterPlot extends Plot<CultureDisseminationSim
 	}
 
 	public void plot() {
-		if(simulation.epoch() % SERIES_UPDATE_INTERVAL != 0){
+		if(sim.epoch() % SERIES_UPDATE_INTERVAL != 0){
 			return;
 		}
 		
-		List<Integer> cSizes = new ArrayList<Integer>(simulation.nw.count_cultures().values());
+		List<Integer> cSizes = new ArrayList<Integer>(sim.nw.count_cultures().values());
 		while (cSizes.contains(new Integer(0))) {
 			cSizes.remove(new Integer(0));
 		}
@@ -55,7 +55,7 @@ public class CultureDistributionScatterPlot extends Plot<CultureDisseminationSim
 		}
 
 		int diff = 0;
-		int y = simulation.nw.n_nodes;
+		int y = sim.nw.n_nodes;
 		int x = 2;
 
 		int count = 1;
@@ -70,7 +70,7 @@ public class CultureDistributionScatterPlot extends Plot<CultureDisseminationSim
 				y = y - diff;
 			} else {
 				result[0][count] = x;
-				result[1][count++] = ((double) y) / (simulation.nw.n_nodes);
+				result[1][count++] = ((double) y) / (sim.nw.n_nodes);
 				x = diff + 1;
 				y = y - diff;
 			}
