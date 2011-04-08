@@ -41,6 +41,8 @@ public abstract class Plot<S extends CultureDisseminationSimulation, D extends X
 	public void iteration() {}
 	public void interaction(int i, int j) {}
 	public void epoch() {}
+	public void started() {}
+	public void finished() {}
 	
 	public void linearX(String axisLabel){
 		((XYPlot) chart.getPlot()).setDomainAxis(new NumberAxis(axisLabel));

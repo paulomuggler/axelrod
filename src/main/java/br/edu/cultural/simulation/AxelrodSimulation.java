@@ -65,29 +65,8 @@ public class AxelrodSimulation extends CultureDisseminationSimulation {
 				int f = diff_features[i];
 
 				nw.states[nbr][f] = nw.states[node][f];
-				nw.update_representations(nbr);
-
-				for (SimulationEventListener lis : listeners) {
-					lis.interaction(nbr / nw.size, nbr % nw.size);
-				}
-
-				interactions++;
+				interacted(nbr);
 			}
 		}
-	}
-
-	public int interactions() {
-		return interactions;
-	}
-
-	public void print_execution_statistics() {
-		super.print_execution_statistics();
-		System.out.println(String.format("%d node interactions.",
-				interactions()));
-		double interactions_per_second = interactions()
-				/ elapsed_time_in_seconds();
-		System.out.println(String.format(
-				"Average node interaction speed: %f interactions/second",
-				interactions_per_second));
 	}
 }

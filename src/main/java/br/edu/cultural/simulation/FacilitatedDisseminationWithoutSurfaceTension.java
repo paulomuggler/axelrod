@@ -12,9 +12,6 @@ import br.edu.cultural.network.CulturalNetwork;
 public class FacilitatedDisseminationWithoutSurfaceTension extends
 		CultureDisseminationSimulation {
 
-	// Statistics
-	protected int interactions = 0;
-
 	public FacilitatedDisseminationWithoutSurfaceTension(CulturalNetwork nw) {
 		super(nw);
 	}
@@ -49,12 +46,14 @@ public class FacilitatedDisseminationWithoutSurfaceTension extends
 		int nbr_idx = rand.nextInt(nw.degree(node));
 
 		boolean interactive;
+		int count = 0;
 		do {
 			nbr = nw.node_neighbor(node, nbr_idx);
-			interactive = nw.is_interaction_possible(nw.states[node],
+			interactive = CulturalNetwork.is_interaction_possible(nw.states[node],
 					nw.states[nbr]);
 			nbr_idx = rand.nextInt(nw.degree(node));
-		} while (!interactive);
+		} while (!interactive && count++ < nw.degree(nbr));
+		if (count == nw.degree(nbr)) return;
 
 		int rand_f = rand.nextInt(nw.features);
 
@@ -67,34 +66,13 @@ public class FacilitatedDisseminationWithoutSurfaceTension extends
 				}
 			}
 
-			if (diff_count > 0) {
-				int i = rand.nextInt(diff_count);
-				int f = diff_features[i];
+//			if (diff_count > 0) {
+			int i = rand.nextInt(diff_count);
+			int f = diff_features[i];
 
-				nw.states[node][f] = nw.states[nbr][f];
-				nw.update_representations(node);
-
-				for (SimulationEventListener lis : listeners) {
-					lis.interaction(nbr / nw.size, nbr % nw.size);
-				}
-
-				interactions++;
-			}
+			nw.states[node][f] = nw.states[nbr][f];
+			interacted(node);
+//			}
 		}
-	}
-
-	public int interactions() {
-		return interactions;
-	}
-
-	public void print_execution_statistics() {
-		super.print_execution_statistics();
-		System.out.println(String.format("%d node interactions.",
-				interactions()));
-		double interactions_per_second = interactions()
-				/ elapsed_time_in_seconds();
-		System.out.println(String.format(
-				"Average node interaction speed: %f interactions/second",
-				interactions_per_second));
 	}
 }

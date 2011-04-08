@@ -34,6 +34,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTextArea;
@@ -55,6 +56,7 @@ import br.edu.cultural.plot.CultureDistributionScatterPlot;
 import br.edu.cultural.plot.Plot;
 import br.edu.cultural.plot.ScatterPlotter;
 import br.edu.cultural.simulation.AxelrodSimulation;
+import br.edu.cultural.simulation.BelousovZhabotinsky;
 import br.edu.cultural.simulation.CultureDisseminationSimulation;
 import br.edu.cultural.simulation.FacilitatedDisseminationWithSurfaceTension;
 import br.edu.cultural.simulation.FacilitatedDisseminationWithoutSurfaceTension;
@@ -80,6 +82,7 @@ public class MainApplicationFrame extends JFrame {
 
 	JComboBox simulationSelect;
 	JCheckBox periodicBoundarySelect;
+	JCheckBox deferredUpdateSelect;
 
 	JMenuBar menuBar = new JMenuBar();
 	JMenu fileMenu = new JMenu("File");
@@ -111,8 +114,10 @@ public class MainApplicationFrame extends JFrame {
 	JCheckBox enableVisualOut = new JCheckBox("Enable visual representation");
 
 	JSlider speedSlider = new JSlider(JSlider.HORIZONTAL, 0, 100, 100);
+	
+	JSlider networkRefreshRateSlider = new JSlider(JSlider.HORIZONTAL, 0, 100, 10);
 
-	JTextArea out = new JTextArea(5, 30);
+	JTextArea out;
 
 	// JLabel tLbl = new JLabel("Time: ");
 	JLabel iterationsLbl = new JLabel("Iterations: ");
@@ -141,11 +146,14 @@ public class MainApplicationFrame extends JFrame {
 				.addItem(FacilitatedDisseminationWithSurfaceTension.class);
 		simulationSelect
 				.addItem(FacilitatedDisseminationWithoutSurfaceTension.class);
+		simulationSelect.addItem(BelousovZhabotinsky.class);
 		simulationSelect.addItem(AxelrodSimulation.class);
 
 		simulationSelect.setRenderer(new ClassNameComboBoxRenderer());
 		
 		periodicBoundarySelect = new JCheckBox("Periodic boundary condition");
+		deferredUpdateSelect = new JCheckBox("Defer representation updates (optimization)");
+		deferredUpdateSelect.setSelected(true);
 
 		resetBtn.addActionListener(resetSim);
 		toggleSimBtn.addActionListener(toggleSim);
@@ -190,21 +198,29 @@ public class MainApplicationFrame extends JFrame {
 
 		enableVisualOut.setPreferredSize(new Dimension(240, 36));
 		speedSlider.setPreferredSize(new Dimension(240, 36));
+		networkRefreshRateSlider.setPreferredSize(new Dimension(240, 36));
 
 		paintTxtIn.setPreferredSize(new Dimension(320, 18));
 		paintSample.setPreferredSize(new Dimension(16, 16));
 		paintTxtIn.addActionListener(stateStrokeActionHandler());
 
 		speedSlider.addChangeListener(speedSliderChangeHandler());
-
 		// Turn on labels at major tick marks.
 		speedSlider.setMajorTickSpacing(10);
 		speedSlider.setMinorTickSpacing(1);
 		speedSlider.setPaintTicks(true);
 		speedSlider.setPaintLabels(true);
+		
+		networkRefreshRateSlider.addChangeListener(networkRefreshSliderHandler());
+		// Turn on labels at major tick marks.
+		networkRefreshRateSlider.setMajorTickSpacing(10);
+		networkRefreshRateSlider.setMinorTickSpacing(1);
+		networkRefreshRateSlider.setPaintTicks(true);
+		networkRefreshRateSlider.setPaintLabels(true);
 
 		controls.add(simulationSelect, "span 3, grow, wrap");
 		controls.add(periodicBoundarySelect, "span 3, grow, wrap");
+		controls.add(deferredUpdateSelect, "span 3, grow, wrap");
 
 		controls.add(lLbl, "split 6");
 		controls.add(lTxtIn, "");
@@ -230,6 +246,9 @@ public class MainApplicationFrame extends JFrame {
 
 		controls.add(new JLabel("Speed:"), "wrap");
 		controls.add(speedSlider, "span 3, grow, wrap, gapbottom 18");
+		
+		controls.add(new JLabel("Network refresh adjust:"), "wrap");
+		controls.add(networkRefreshRateSlider, "span 3, grow, wrap, gapbottom 18");
 
 		controls.setPreferredSize(new Dimension(400, 800));
 
@@ -237,7 +256,24 @@ public class MainApplicationFrame extends JFrame {
 		pane.add(menuBar, BorderLayout.NORTH);
 		pane.add(controls, BorderLayout.WEST);
 
+		final JPopupMenu outputMenu = new JPopupMenu("Output");
+		outputMenu.add(new AbstractAction("Clear") {
+			private static final long serialVersionUID = 5606674484787535063L;
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				out.setText("");
+			}
+		});
+		out = new JTextArea(5, 30);
 		out.setEditable(false);
+		out.addMouseListener( new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				if(e.getButton() == MouseEvent.BUTTON3){
+					outputMenu.show(out, e.getX(), e.getY());
+				}
+			}
+		});
+		
 		JScrollPane scrollOut = new JScrollPane(out);
 		System.setOut(new PrintStream(textAreaOutputStream(out)));
 		System.setErr(new PrintStream(textAreaOutputStream(out)));
@@ -249,6 +285,15 @@ public class MainApplicationFrame extends JFrame {
 			public void stateChanged(ChangeEvent e) {
 				MainApplicationFrame.this.sim
 						.setSpeed(((JSlider) e.getSource()).getValue());
+			}
+		};
+	}
+	
+	private ChangeListener networkRefreshSliderHandler() {
+		return new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				MainApplicationFrame.this.sim.nw
+						.setRefreshAdjust(((JSlider) e.getSource()).getValue());
 			}
 		};
 	}
@@ -418,8 +463,11 @@ public class MainApplicationFrame extends JFrame {
 	private ActionListener resetSim = new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 			System.out.println("resetting simulation thread...");
-			if (sim != null)
+			if (sim != null){
+				System.out.println("Simulation interrupted.");
+				System.out.println(sim.execution_statistics_string());
 				sim.quit();
+			}
 			try {
 				sim = CultureDisseminationSimulation.factory(
 						(Class<? extends CultureDisseminationSimulation>) simulationSelect
@@ -427,6 +475,22 @@ public class MainApplicationFrame extends JFrame {
 								.parseInt(lTxtIn.getText()), Integer
 								.parseInt(fTxtIn.getText()), Integer
 								.parseInt(qTxtIn.getText()), periodicBoundarySelect.isSelected()));
+				
+				sim.addListener(new SimulationEventAdapter(){
+					public void finished(){
+						System.out.println("Simulation finished.");
+						System.out.println(sim.execution_statistics_string());
+					}
+				});
+				
+				deferredUpdateSelect.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						sim.setDefer_update(deferredUpdateSelect.isSelected());
+					}
+				});
+				sim.setDefer_update(deferredUpdateSelect.isSelected());
+				
 			} catch (NumberFormatException ex) {
 				JOptionPane.showMessageDialog(MainApplicationFrame.this,
 						"Numbers only please!", "Error",

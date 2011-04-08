@@ -682,7 +682,10 @@ public class Culture extends Applet implements Runnable {
 					time += 1.0 / (double) act;
 					i = (int) (Math.random() * act);
 					site = ali[i];
-					j = (int) (Math.random() * degree[site]);
+					int count = 0;
+					do {
+						j = (int) (Math.random() * degree[site]);
+					} while (!is_interaction_possible(s[site], s[lt[site][j]]) && count++ < degree[site]);
 					f = (int) (Math.random() * F);
 
 					if (s[site][f] == s[neigh = lt[site][j]][f]) {
@@ -693,15 +696,18 @@ public class Culture extends Applet implements Runnable {
 						if (j != 0) {
 							j = (int) (Math.random() * j);
 							f = agrl[j];
-							s[site][f] = s[neigh][f];
+//							s[site][f] = s[neigh][f];
+							s[neigh][f] = s[site][f];
 							if (gfx_mode != 2)
-								draw_site(site, g);
+								draw_site(neigh, g);
 
-							for (j = 0; j < degree[site]; j++)
-								if (a[neigh = lt[site][j]] == 0) {
-									a[neigh] = 1;
-									ali[act++] = neigh;
+							for (j = 0; j < degree[neigh]; j++){
+								int nneigh;
+								if (a[nneigh = lt[neigh][j]] == 0) {
+									a[nneigh] = 1;
+									ali[act++] = nneigh;
 								}
+							}
 							waitsteps = 0;
 						}
 					}
@@ -733,5 +739,22 @@ public class Culture extends Applet implements Runnable {
 				otime += slowmo;
 			}
 		}
+	}
+
+	public boolean is_interaction_possible(int[] ndState, int[] nbrState) {
+		boolean has_different_element = false;
+		boolean has_equal_element = false;
+
+		for (int i = 0; i < ndState.length; i++) {
+			if (!has_different_element && ndState[i] != nbrState[i]) {
+				has_different_element = true;
+			}
+			if (!has_equal_element && ndState[i] == nbrState[i]) {
+				has_equal_element = true;
+			}
+			if (has_different_element && has_equal_element)
+				return true;
+		}
+		return false;
 	}
 }

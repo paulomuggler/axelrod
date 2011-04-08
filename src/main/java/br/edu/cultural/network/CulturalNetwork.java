@@ -31,6 +31,8 @@ public class CulturalNetwork {
 	public final int features;
 	public final int traits;
 	public final boolean periodicBoundary;
+	
+	public final int active_nodes_refresh_rate;
 
 	/** The network state representation */
 	public final int[][] states; // size^2 (~100kB)
@@ -39,7 +41,7 @@ public class CulturalNetwork {
 	final int[][] adj_matrix; // 8*size^2 (~100kB)
 
 	/** Gives the degree of each node */
-	final int[] degree;
+	public final int[] degree;
 
 	/** Stores all nodes that may interact */
 	public final List<Integer> interactiveNodes = new ArrayList<Integer>();
@@ -47,7 +49,9 @@ public class CulturalNetwork {
 	public final List<Integer> monitorNodes = new ArrayList<Integer>();
 
 	/** Stores the activity state of each node */
-	final boolean[] is_node_active;
+	public final boolean[] is_node_active;
+
+	private int refreshAdjust = 10;
 
 	public CulturalNetwork(int size, int features, int traits, boolean periodicBoundary) {
 		this.size = size;
@@ -55,6 +59,7 @@ public class CulturalNetwork {
 		this.features = features;
 		this.traits = traits;
 		this.periodicBoundary = periodicBoundary;
+		this.active_nodes_refresh_rate = calc_update_rate();
 
 		this.states = new int[this.n_nodes][this.features];
 		this.adj_matrix = new int[this.n_nodes][MAX_DEGREE];
@@ -64,6 +69,10 @@ public class CulturalNetwork {
 		this.random_starting_distribution();
 	}
 	
+	private int calc_update_rate() {
+		return (int) (refreshAdjust*this.features*(1+Math.sqrt(1+4*0.2*this.n_nodes/25.0))/2.0);
+	}
+
 	public CulturalNetwork(File f) throws IOException{
 		if(f.exists() && f.canRead()){
 			FileReader fr = new FileReader(f);
@@ -75,6 +84,8 @@ public class CulturalNetwork {
 			this.features = Integer.parseInt(params[1]);
 			this.traits = Integer.parseInt(params[2]);
 			this.periodicBoundary = Boolean.parseBoolean(params[3]);
+			this.active_nodes_refresh_rate = calc_update_rate();
+			
 			this.states = new int[this.n_nodes][this.features];
 			this.adj_matrix = new int[this.n_nodes][MAX_DEGREE];
 			this.is_node_active = new boolean[this.n_nodes];
@@ -89,7 +100,7 @@ public class CulturalNetwork {
 				System.arraycopy(state, 0, this.states[i], 0, this.features);
 			}
 			String line = r.readLine();
-			if (line.startsWith("monitor:")){
+			if (line != null && line.startsWith("monitor:")){
 				String[] monitor = line.substring(line.indexOf("[")+1, line.indexOf("]")).split(",");
 				for (String s : monitor) {
 					this.monitorNodes.add(Integer.parseInt(s));
@@ -99,10 +110,10 @@ public class CulturalNetwork {
 			throw new IOException("File does not exist or read not allowed");
 		}
 		this.init_adj_matrix(periodicBoundary);
-		this.initInteractionList();
+		this.initInteractionList(true);
 	}
 
-	private void init_adj_matrix(boolean periodicBoundary) {
+	public void init_adj_matrix(boolean periodicBoundary) {
 
 		for (int nd = 0; nd < this.n_nodes; nd++) {
 
@@ -131,24 +142,27 @@ public class CulturalNetwork {
 		}
 	}
 
-	private void initInteractionList() {
+	public void initInteractionList(boolean complete) {
 		this.interactiveNodes.clear();
 		for (int nd = 0; nd < this.n_nodes; nd++) {
-			is_node_active[nd] = false;
-			for (int nbr_idx = 0; nbr_idx < degree[nd]; nbr_idx++) {
-				int similarity = 0;
-				int nbr = adj_matrix[nd][nbr_idx];
-				for (int f = 0; f < features; f++)
-					if (states[nd][f] == states[nbr][f])
-						similarity++;
-				if ((similarity > 0) && (similarity < features)) {
-					is_node_active[nd] = true;
-					if(!interactiveNodes.contains(nd)) interactiveNodes.add(nd);
+			if (complete || (is_node_active[nd] != false)) {
+				is_node_active[nd] = false;
+				for (int nbr_idx = 0; nbr_idx < degree[nd]; nbr_idx++) {
+					int similarity = 0;
+					int nbr = adj_matrix[nd][nbr_idx];
+					for (int f = 0; f < features; f++)
+						if (states[nd][f] == states[nbr][f])
+							similarity++;
+					if ((similarity > 0) && (similarity < features)) {
+						is_node_active[nd] = true;
+						interactiveNodes.add(nd);
+						break;
+					}
 				}
 			}
 		}
 	}
-
+	
 	public Map<Integer, Integer> count_cultures() {
 		Map<Integer, Integer> cultureSizes = new HashMap<Integer, Integer>();
 		for (int nd = 0; nd < n_nodes; nd++) {
@@ -192,22 +206,14 @@ public class CulturalNetwork {
 			is_node_active[nbr] = false;
 			interactiveNodes.remove(new Integer(nbr));
 			
-			Integer[] edge01 = {nd, nbr};
-			Integer[] edge10 = {nbr, nd};
-//			interactiveEdges.remove(new Integer(Arrays.hashCode(edge01)));
-//			interactiveEdges.remove(new Integer(Arrays.hashCode(edge10)));
-
-			if (is_interaction_possible(nd_state, nbr_state)) {
-				is_node_active[nd] = true;
-				if(!interactiveNodes.contains(nd)) interactiveNodes.add(nd);
-
-				is_node_active[nbr] = true;
-				if (!interactiveNodes.contains(nbr)) interactiveNodes.add(nbr);
-				
-//				interactiveEdges.add(Arrays.hashCode(edge01));
-//				interactiveEdges.add(Arrays.hashCode(edge10));
-				
-				continue;
+			if(is_node_active[nd] == false){
+				if (is_interaction_possible(nd_state, nbr_state)) {
+					is_node_active[nd] = true;
+					interactiveNodes.add(nd);
+					is_node_active[nbr] = true;
+					interactiveNodes.add(nbr);
+					continue;
+				}
 			}
 
 			for (int k1 = 0; k1 < degree[nbr] && is_node_active[nbr] == false; k1++) {
@@ -287,7 +293,7 @@ public class CulturalNetwork {
 		for (int nd = 0; nd < this.n_nodes; nd++) {
 			states[nd] = State.random_node_state(features, traits);
 		}
-		this.initInteractionList();
+		this.initInteractionList(true);
 	}
 
 	public void bubble_random_starting_distribution(int bubble_radius,
@@ -354,7 +360,7 @@ public class CulturalNetwork {
 			}
 			step_size++;
 		}
-		this.initInteractionList();
+		this.initInteractionList(true);
 	}
 
 	public void striped_starting_distribution() {
@@ -372,7 +378,7 @@ public class CulturalNetwork {
 				System.arraycopy(state2, 0, states[nd], 0, state2.length);
 			}
 		}
-		this.initInteractionList();
+		this.initInteractionList(true);
 	}
 
 	public void homogeneous_distribution() {
@@ -380,7 +386,7 @@ public class CulturalNetwork {
 		for (int nd = 0; nd < n_nodes; nd++) {
 			System.arraycopy(randst, 0, states[nd], 0, randst.length);
 		}
-		this.initInteractionList();
+		this.initInteractionList(true);
 	}
 
 	public boolean is_state_valid(int[] state) {
@@ -438,21 +444,8 @@ public class CulturalNetwork {
 			fw.close();
 		}
 	}
-	
-	public static void main(String[] args){
-		List<Integer> list = new ArrayList<Integer>();
-		Integer[] a1 = {0,1};
-		Integer[] a2 = {0,1};
-		Integer[] b1 = {1,0};
-		Integer[] b2 = {1,0};
-		
-		list.add(Arrays.hashCode(a1));
-		System.out.println(list.contains(Arrays.hashCode(a2)));
-		
-		list.add(Arrays.hashCode(b1));
-		list.remove(new Integer(Arrays.hashCode(b2)));
-		System.out.println(list.contains(Arrays.hashCode(b1)));
+
+	public void setRefreshAdjust(int refreshAdjust) {
+		this.refreshAdjust  = refreshAdjust;
 	}
-	
-	
 }
