@@ -5,4 +5,4 @@ test_save_nw.txt
 .settings/org.eclipse.jdt.core.prefs
 .classpath
 .project
-
+release/binaries/
