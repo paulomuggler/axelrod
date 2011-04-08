@@ -176,7 +176,6 @@ public class CulturalNetwork {
 	public Integer count_interactive_edges(){
 		Integer interactive_edges = 0;
 		for (int nd = 0; nd < this.n_nodes; nd++) {
-			is_node_active[nd] = false;
 			for (int nbr_idx = 0; nbr_idx < degree[nd]; nbr_idx++) {
 				int similarity = 0;
 				int nbr = adj_matrix[nd][nbr_idx];
@@ -448,5 +447,15 @@ public class CulturalNetwork {
 	public void setRefreshAdjust(int refreshAdjust) {
 		this.refreshAdjust  = refreshAdjust;
 		this.refresh_rate = calc_update_rate();
+	}
+	
+	public Integer overlap(int node, int nbr){
+		Integer overlap = 0;
+		for (int f = 0; f < features; f++) {
+			if (states[node][f] == states[nbr][f]) {
+				overlap++;
+			}
+		}
+		return overlap;
 	}
 }

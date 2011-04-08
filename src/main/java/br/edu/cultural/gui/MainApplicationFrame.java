@@ -56,10 +56,12 @@ import br.edu.cultural.plot.CultureDistributionScatterPlot;
 import br.edu.cultural.plot.Plot;
 import br.edu.cultural.plot.ScatterPlotter;
 import br.edu.cultural.simulation.AxelrodSimulation;
-import br.edu.cultural.simulation.BelousovZhabotinsky;
+import br.edu.cultural.simulation.BelousovZhabotinskySimulation;
 import br.edu.cultural.simulation.CultureDisseminationSimulation;
 import br.edu.cultural.simulation.FacilitatedDisseminationWithSurfaceTension;
 import br.edu.cultural.simulation.FacilitatedDisseminationWithoutSurfaceTension;
+import br.edu.cultural.simulation.KupermanSimulationOneFeatureOverlap;
+import br.edu.cultural.simulation.KupermanSimulationOverallOverlap;
 import br.edu.cultural.simulation.CultureDisseminationSimulation.SimulationEventAdapter;
 import br.edu.cultural.simulation.CultureDisseminationSimulation.SimulationEventListener;
 import br.edu.cultural.simulation.CultureDisseminationSimulation.SimulationState;
@@ -146,8 +148,10 @@ public class MainApplicationFrame extends JFrame {
 				.addItem(FacilitatedDisseminationWithSurfaceTension.class);
 		simulationSelect
 				.addItem(FacilitatedDisseminationWithoutSurfaceTension.class);
-		simulationSelect.addItem(BelousovZhabotinsky.class);
+		simulationSelect.addItem(BelousovZhabotinskySimulation.class);
 		simulationSelect.addItem(AxelrodSimulation.class);
+		simulationSelect.addItem(KupermanSimulationOneFeatureOverlap.class);
+		simulationSelect.addItem(KupermanSimulationOverallOverlap.class);
 
 		simulationSelect.setRenderer(new ClassNameComboBoxRenderer());
 		

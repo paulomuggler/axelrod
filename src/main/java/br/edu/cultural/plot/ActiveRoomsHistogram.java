@@ -28,8 +28,8 @@ public class ActiveRoomsHistogram extends Plot<CultureDisseminationSimulation, S
 	private Integer timeOfLastChange;
 	
 	final static int MIN_VAL = 0;
-	final static int MAX_VAL = 1000;
-	final static int BIN_SIZE = 25;
+	final static int MAX_VAL = 1000000;
+	final static int BIN_SIZE = 250;
 	final static int NUM_BINS = (MAX_VAL-MIN_VAL)/BIN_SIZE + 1;
 //	final static int NUM_BINS = 30;
 //	final static int BIN_SIZE = (MAX_VAL-MIN_VAL)/NUM_BINS;
@@ -52,21 +52,21 @@ public class ActiveRoomsHistogram extends Plot<CultureDisseminationSimulation, S
 		return chart;
 	}
 	
-	private int epoch;
+	private int iteration;
 	public void interaction(int i, int j){
 		Integer node = sim.nw.size * i + j;
 		if (sim.nw.monitorNodes.contains(node)
 				&& !node.equals(lastMonitoredNodeToChange)) {
 			lastMonitoredNodeToChange = node;
-			epoch = sim.epoch();
+			iteration = sim.iterations();
 			plot();
-			timeOfLastChange = epoch;
+			timeOfLastChange = iteration;
 		}
 	}
 	
 	@Override
 	public void plot() {
-		Integer delta = epoch - timeOfLastChange;
+		Integer delta = iteration - timeOfLastChange;
 		dataset.addObservation((delta == 0 ? 1 : delta));
 	}
 	

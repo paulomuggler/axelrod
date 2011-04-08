@@ -27,7 +27,7 @@ public class ActiveRoomScatterPlot extends Plot<CultureDisseminationSimulation, 
 			}
 		}
 		dataset = new DefaultXYDataset();
-		dataset.addSeries(SERIES_KEY, new double[2][0]);
+		dataset.addSeries(DEFAULT_SERIES_KEY, new double[2][0]);
 		chart = ChartFactory.createScatterPlot("Active rooms over time: "+simInfo(), "time", "nodes", dataset,
 		PlotOrientation.VERTICAL, false, true, false);
 		plot();
@@ -57,6 +57,6 @@ public class ActiveRoomScatterPlot extends Plot<CultureDisseminationSimulation, 
 			series[0][i] = point[0];
 			series[1][i++] = point[1];
 		}
-		dataset.addSeries(SERIES_KEY, series);
+		dataset.addSeries(DEFAULT_SERIES_KEY, series);
 	}
 }

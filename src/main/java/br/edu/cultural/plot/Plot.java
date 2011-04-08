@@ -15,7 +15,7 @@ import br.edu.cultural.simulation.CultureDisseminationSimulation.SimulationEvent
 
 public abstract class Plot<S extends CultureDisseminationSimulation, D extends XYDataset> implements SimulationEventListener {
 	
-	protected static final int SERIES_KEY = 0;
+	protected static final int DEFAULT_SERIES_KEY = 0;
 	protected JFreeChart chart;
 	protected S sim;
 	protected D dataset;
@@ -80,10 +80,10 @@ public abstract class Plot<S extends CultureDisseminationSimulation, D extends X
 			fw.write(',');
 			fw.write(((XYPlot) chart.getPlot()).getRangeAxis().getLabel());
 			fw.write('\n');
-			for (int i = 0; i < dataset.getItemCount(SERIES_KEY); i++) {
-				fw.write(Double.toString(dataset.getXValue(SERIES_KEY, i)));
+			for (int i = 0; i < dataset.getItemCount(DEFAULT_SERIES_KEY); i++) {
+				fw.write(Double.toString(dataset.getXValue(DEFAULT_SERIES_KEY, i)));
 				fw.write(',');
-				fw.write(Double.toString(dataset.getYValue(SERIES_KEY, i)));
+				fw.write(Double.toString(dataset.getYValue(DEFAULT_SERIES_KEY, i)));
 				fw.write('\n');
 			}
 			fw.close();

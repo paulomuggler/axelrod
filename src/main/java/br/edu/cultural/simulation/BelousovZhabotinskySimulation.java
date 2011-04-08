@@ -9,10 +9,9 @@ import br.edu.cultural.network.CulturalNetwork;
  * @author muggler
  * 
  */
-public class FacilitatedDisseminationWithoutSurfaceTension extends
-		CultureDisseminationSimulation {
+public class BelousovZhabotinskySimulation extends CultureDisseminationSimulation {
 
-	public FacilitatedDisseminationWithoutSurfaceTension(CulturalNetwork nw) {
+	public BelousovZhabotinskySimulation(CulturalNetwork nw) {
 		super(nw);
 	}
 
@@ -73,9 +72,16 @@ public class FacilitatedDisseminationWithoutSurfaceTension extends
 			int i = rand.nextInt(diff_count);
 			int f = diff_features[i];
 
-			nw.states[node][f] = nw.states[nbr][f];
-			interacted(node);
+			nw.states[nbr][f] = nw.states[node][f];
+			interacted(nbr);
 //			}
+		}
+	}
+	
+	protected void deferred_representation_update(Integer node) {
+		nw.is_node_active[node] = true;
+		if (interactions % nw.refresh_rate == 0) {
+				nw.initInteractionList(false);
 		}
 	}
 }

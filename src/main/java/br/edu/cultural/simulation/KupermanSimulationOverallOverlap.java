@@ -9,9 +9,9 @@ import br.edu.cultural.network.CulturalNetwork;
  * @author muggler
  * 
  */
-public class BelousovZhabotinsky extends CultureDisseminationSimulation {
+public class KupermanSimulationOverallOverlap extends CultureDisseminationSimulation {
 
-	public BelousovZhabotinsky(CulturalNetwork nw) {
+	public KupermanSimulationOverallOverlap(CulturalNetwork nw) {
 		super(nw);
 	}
 
@@ -44,18 +44,7 @@ public class BelousovZhabotinsky extends CultureDisseminationSimulation {
 		int nbr = -1;
 		int nbr_idx = rand.nextInt(nw.degree(node));
 
-		boolean interactive;
-		int count = 0;
-		do {
-			nbr = nw.node_neighbor(node, nbr_idx);
-			interactive = CulturalNetwork.is_interaction_possible(nw.states[node],
-					nw.states[nbr]);
-			nbr_idx = rand.nextInt(nw.degree(node));
-			count+=1;
-		} while (!interactive && count <= nw.degree(nbr));
-		if (count > nw.degree(nbr)){
-			return;
-		}
+		nbr = nw.node_neighbor(node, nbr_idx);
 
 		int rand_f = rand.nextInt(nw.features);
 
@@ -68,20 +57,33 @@ public class BelousovZhabotinsky extends CultureDisseminationSimulation {
 				}
 			}
 
-//			if (diff_count > 0) {
-			int i = rand.nextInt(diff_count);
-			int f = diff_features[i];
-
-			nw.states[nbr][f] = nw.states[node][f];
-			interacted(nbr);
-//			}
+			if (diff_count > 0) {
+				int i = rand.nextInt(diff_count);
+				int f = diff_features[i];
+				
+				if(will_increase_similarity(nbr, f, nw.states[node][f])){
+					nw.states[nbr][f] = nw.states[node][f];
+					interacted(nbr);
+				}
+			}
 		}
 	}
-	
-	protected void deferred_representation_update(Integer node) {
-		nw.is_node_active[node] = true;
-		if (interactions % nw.refresh_rate == 0) {
-				nw.initInteractionList(false);
+
+	private boolean will_increase_similarity(int node, int f, int new_trait) {
+		int sim_old_state = 0;
+		int sim_new_state = 0;
+		int old_trait = nw.states[node][f];
+		for(int nbr_idx = 0; nbr_idx < nw.degree[node]; nbr_idx++){
+			int neigh = nw.node_neighbor(node, nbr_idx);
+			if(nw.states[node][f]==nw.states[neigh][f]){
+				sim_old_state += nw.overlap(node, neigh);
+			}
+			nw.states[node][f] = new_trait;
+			if(nw.states[node][f]==nw.states[neigh][f]){
+				sim_new_state += nw.overlap(node, neigh);
+			}
+			nw.states[node][f] = old_trait;
 		}
+		return (sim_new_state == sim_old_state? rand.nextBoolean() : (sim_new_state > sim_old_state));
 	}
 }

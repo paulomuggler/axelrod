@@ -20,7 +20,7 @@ public class ActiveEdgesScatterPlot extends Plot<CultureDisseminationSimulation,
 		this.sim = s;
 		seriesList= new ArrayList<double[]>();
 		dataset = new DefaultXYDataset();
-		dataset.addSeries(1, new double [2][0]);
+		dataset.addSeries(DEFAULT_SERIES_KEY, new double [2][0]);
 		chart = ChartFactory.createScatterPlot("Interactive edges over time: "+simInfo(), "time", "edges", dataset,
 		PlotOrientation.VERTICAL, false, true, false);
 		return chart;
@@ -42,7 +42,7 @@ public class ActiveEdgesScatterPlot extends Plot<CultureDisseminationSimulation,
 			series[0][i] = point[0];
 			series[1][i++] = point[1];
 		}
-		dataset.addSeries(1, series);
+		dataset.addSeries(DEFAULT_SERIES_KEY, series);
 	}
 
 	public void epoch() {
