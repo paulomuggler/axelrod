@@ -43,17 +43,11 @@ public class CulturalNetwork {
 
 	/** Stores all nodes that may interact */
 	public final List<Integer> interactiveNodes = new ArrayList<Integer>();
-	public final List<Integer> interactiveEdges = new ArrayList<Integer>();
 
 	public final List<Integer> monitorNodes = new ArrayList<Integer>();
 
 	/** Stores the activity state of each node */
 	final boolean[] is_node_active;
-
-	/** Keep track of culture sizes on the network 
-	 * @param periodicBoundary */
-	// final Map<Integer, Integer> cultureSizes = new HashMap<Integer,
-	// Integer>();
 
 	public CulturalNetwork(int size, int features, int traits, boolean periodicBoundary) {
 		this.size = size;
@@ -95,9 +89,11 @@ public class CulturalNetwork {
 				System.arraycopy(state, 0, this.states[i], 0, this.features);
 			}
 			String line = r.readLine();
-			String[] monitor = line.substring(line.indexOf("[")+1, line.indexOf("]")).split(",");
-			for (String s : monitor) {
-				this.monitorNodes.add(Integer.parseInt(s));
+			if (line.startsWith("monitor:")){
+				String[] monitor = line.substring(line.indexOf("[")+1, line.indexOf("]")).split(",");
+				for (String s : monitor) {
+					this.monitorNodes.add(Integer.parseInt(s));
+				}
 			}
 		}else {
 			throw new IOException("File does not exist or read not allowed");
@@ -137,7 +133,6 @@ public class CulturalNetwork {
 
 	private void initInteractionList() {
 		this.interactiveNodes.clear();
-		this.interactiveEdges.clear();
 		for (int nd = 0; nd < this.n_nodes; nd++) {
 			is_node_active[nd] = false;
 			for (int nbr_idx = 0; nbr_idx < degree[nd]; nbr_idx++) {
@@ -149,13 +144,6 @@ public class CulturalNetwork {
 				if ((similarity > 0) && (similarity < features)) {
 					is_node_active[nd] = true;
 					if(!interactiveNodes.contains(nd)) interactiveNodes.add(nd);
-					Integer[] edge = {nd, nbr};
-					interactiveEdges.add(Arrays.hashCode(edge));
-					/* possible memory optimization:
-						Integer[] edge01 = {nd, nbr};
-						Integer[] edge10 = {nbr, nd};
-						if(!interactiveEdges.contains(edge10)) interactiveEdges.add(edge01);
-					 */
 				}
 			}
 		}
@@ -169,6 +157,24 @@ public class CulturalNetwork {
 					: cultureSizes.get(Arrays.hashCode(states[nd]))) + 1);
 		}
 		return cultureSizes;
+	}
+	
+	public Integer count_interactive_edges(){
+		Integer interactive_edges = 0;
+		for (int nd = 0; nd < this.n_nodes; nd++) {
+			is_node_active[nd] = false;
+			for (int nbr_idx = 0; nbr_idx < degree[nd]; nbr_idx++) {
+				int similarity = 0;
+				int nbr = adj_matrix[nd][nbr_idx];
+				for (int f = 0; f < features; f++)
+					if (states[nd][f] == states[nbr][f])
+						similarity++;
+				if ((similarity > 0) && (similarity < features)) {
+					interactive_edges++;
+				}
+			}
+		}
+		return interactive_edges;
 	}
 
 	public void update_representations(int nd) {
@@ -188,8 +194,8 @@ public class CulturalNetwork {
 			
 			Integer[] edge01 = {nd, nbr};
 			Integer[] edge10 = {nbr, nd};
-			interactiveEdges.remove(new Integer(Arrays.hashCode(edge01)));
-			interactiveEdges.remove(new Integer(Arrays.hashCode(edge10)));
+//			interactiveEdges.remove(new Integer(Arrays.hashCode(edge01)));
+//			interactiveEdges.remove(new Integer(Arrays.hashCode(edge10)));
 
 			if (is_interaction_possible(nd_state, nbr_state)) {
 				is_node_active[nd] = true;
@@ -198,8 +204,8 @@ public class CulturalNetwork {
 				is_node_active[nbr] = true;
 				if (!interactiveNodes.contains(nbr)) interactiveNodes.add(nbr);
 				
-				interactiveEdges.add(Arrays.hashCode(edge01));
-				interactiveEdges.add(Arrays.hashCode(edge10));
+//				interactiveEdges.add(Arrays.hashCode(edge01));
+//				interactiveEdges.add(Arrays.hashCode(edge10));
 				
 				continue;
 			}
@@ -413,6 +419,8 @@ public class CulturalNetwork {
 			fw.write(String.valueOf(this.features));
 			fw.write(':');
 			fw.write(String.valueOf(this.traits));
+			fw.write(':');
+			fw.write(String.valueOf(this.periodicBoundary));
 			fw.write('\n');
 			for (int i = 0; i < states.length; i++) {
 				int [] state = states[i];
@@ -422,7 +430,7 @@ public class CulturalNetwork {
 				}
 				fw.write('\n');
 			}
-			fw.write("monitor:[");
+			if(!monitorNodes.isEmpty()) fw.write("monitor:[");
 			for (Integer node : monitorNodes) {
 				fw.write(Integer.toString(node));
 				fw.write(monitorNodes.indexOf(node) == monitorNodes.size() -1 ? ']' : ',');

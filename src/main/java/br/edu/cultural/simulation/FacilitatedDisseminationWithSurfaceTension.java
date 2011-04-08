@@ -50,7 +50,7 @@ public class FacilitatedDisseminationWithSurfaceTension extends CultureDissemina
 		boolean interactive;
 		do {
 			nbr = nw.node_neighbor(node, nbr_idx);
-			interactive = nw.is_interaction_possible(nw.states[node],
+			interactive = CulturalNetwork.is_interaction_possible(nw.states[node],
 					nw.states[nbr]);
 			nbr_idx = rand.nextInt(nw.degree(node));
 		} while (!interactive);
@@ -76,7 +76,6 @@ public class FacilitatedDisseminationWithSurfaceTension extends CultureDissemina
 				for (SimulationEventListener lis : listeners) {
 					lis.interaction(nbr / nw.size, nbr % nw.size);
 				}
-
 				interactions++;
 			}
 		}

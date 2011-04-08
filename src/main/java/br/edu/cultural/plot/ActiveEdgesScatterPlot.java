@@ -31,7 +31,7 @@ public class ActiveEdgesScatterPlot extends Plot<CultureDisseminationSimulation,
 			reallocate_series();
 		}
 		double[] point = { sim.epoch() == 0? 1 : sim.epoch(), 
-						   sim.nw.interactiveEdges.size()/2 };
+						   sim.nw.count_interactive_edges()/2 };
 		seriesList.add(point);
 	}
 
