@@ -32,7 +32,7 @@ public class CulturalNetwork {
 	public final int traits;
 	public final boolean periodicBoundary;
 	
-	public final int active_nodes_refresh_rate;
+	public int refresh_rate;
 
 	/** The network state representation */
 	public final int[][] states; // size^2 (~100kB)
@@ -59,7 +59,7 @@ public class CulturalNetwork {
 		this.features = features;
 		this.traits = traits;
 		this.periodicBoundary = periodicBoundary;
-		this.active_nodes_refresh_rate = calc_update_rate();
+		this.refresh_rate = calc_update_rate();
 
 		this.states = new int[this.n_nodes][this.features];
 		this.adj_matrix = new int[this.n_nodes][MAX_DEGREE];
@@ -84,7 +84,7 @@ public class CulturalNetwork {
 			this.features = Integer.parseInt(params[1]);
 			this.traits = Integer.parseInt(params[2]);
 			this.periodicBoundary = Boolean.parseBoolean(params[3]);
-			this.active_nodes_refresh_rate = calc_update_rate();
+			this.refresh_rate = calc_update_rate();
 			
 			this.states = new int[this.n_nodes][this.features];
 			this.adj_matrix = new int[this.n_nodes][MAX_DEGREE];
@@ -447,5 +447,6 @@ public class CulturalNetwork {
 
 	public void setRefreshAdjust(int refreshAdjust) {
 		this.refreshAdjust  = refreshAdjust;
+		this.refresh_rate = calc_update_rate();
 	}
 }

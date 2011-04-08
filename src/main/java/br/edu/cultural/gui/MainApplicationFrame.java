@@ -115,7 +115,7 @@ public class MainApplicationFrame extends JFrame {
 
 	JSlider speedSlider = new JSlider(JSlider.HORIZONTAL, 0, 100, 100);
 	
-	JSlider networkRefreshRateSlider = new JSlider(JSlider.HORIZONTAL, 0, 100, 10);
+	JSlider networkRefreshRateSlider = new JSlider(JSlider.HORIZONTAL, 1, 100, 10);
 
 	JTextArea out;
 

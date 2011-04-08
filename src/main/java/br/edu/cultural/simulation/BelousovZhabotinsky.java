@@ -80,7 +80,7 @@ public class BelousovZhabotinsky extends CultureDisseminationSimulation {
 	
 	protected void deferred_representation_update(Integer node) {
 		nw.is_node_active[node] = true;
-		if (interactions % nw.active_nodes_refresh_rate == 0) {
+		if (interactions % nw.refresh_rate == 0) {
 				nw.initInteractionList(false);
 		}
 	}

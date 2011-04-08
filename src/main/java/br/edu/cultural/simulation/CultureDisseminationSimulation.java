@@ -78,7 +78,7 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 		for (int nbrIdx = 0; nbrIdx < nw.degree[node]; nbrIdx++) {
 			nw.is_node_active[nw.node_neighbor(node, nbrIdx)] = true;
 		}
-		if (interactions % nw.active_nodes_refresh_rate == 0) {
+		if (interactions % nw.refresh_rate == 0) {
 				nw.initInteractionList(false);
 		}
 	}
