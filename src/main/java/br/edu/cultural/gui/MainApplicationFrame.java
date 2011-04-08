@@ -157,7 +157,6 @@ public class MainApplicationFrame extends JFrame {
 		
 		periodicBoundarySelect = new JCheckBox("Periodic boundary condition");
 		deferredUpdateSelect = new JCheckBox("Defer representation updates (optimization)");
-		deferredUpdateSelect.setSelected(true);
 
 		resetBtn.addActionListener(resetSim);
 		toggleSimBtn.addActionListener(toggleSim);
@@ -384,6 +383,7 @@ public class MainApplicationFrame extends JFrame {
 		if (canvas != null) {
 			pane.remove(canvas);
 		}
+		deferredUpdateSelect.setSelected(true);
 		if (enableVisualOut.isSelected()) {
 			canvas = new CultureCanvas(CANVAS_WIDTH, sim.nw, BORDERS);
 			pane.add(canvas, BorderLayout.CENTER);
@@ -393,6 +393,7 @@ public class MainApplicationFrame extends JFrame {
 				}
 			};
 			sim.addListener(canvasRepaintListener);
+			sim.setDefer_update(deferredUpdateSelect.isSelected());
 		}
 		simThr = new Thread(sim);
 		toggleSimBtn.setText("Start");
@@ -400,7 +401,7 @@ public class MainApplicationFrame extends JFrame {
 		lTxtIn.setText(String.valueOf(sim.nw.size));
 		fTxtIn.setText(String.valueOf(sim.nw.features));
 		qTxtIn.setText(String.valueOf(sim.nw.traits));
-
+		
 		activeNodesPlotAction = new PlotAction("Active Nodes",
 				"Active Nodes - Scatter Plot", new ActiveNodesScatterPlot()) {
 			private static final long serialVersionUID = -2489956318996611551L;
