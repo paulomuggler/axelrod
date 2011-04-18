@@ -51,15 +51,13 @@ public class CulturalNetwork {
 	/** Stores the activity state of each node */
 	public final boolean[] is_node_active;
 
-	private int refreshAdjust = 10;
-
-	public CulturalNetwork(int size, int features, int traits, boolean periodicBoundary) {
+	public CulturalNetwork(int size, int features, int traits, boolean periodicBoundary, int refreshAdjust) {
 		this.size = size;
 		this.n_nodes = size * size;
 		this.features = features;
 		this.traits = traits;
 		this.periodicBoundary = periodicBoundary;
-		this.refresh_rate = calc_update_rate();
+		this.refresh_rate = calc_update_rate(refreshAdjust);
 
 		this.states = new int[this.n_nodes][this.features];
 		this.adj_matrix = new int[this.n_nodes][MAX_DEGREE];
@@ -69,8 +67,8 @@ public class CulturalNetwork {
 		this.random_starting_distribution();
 	}
 	
-	private int calc_update_rate() {
-		return (int) (refreshAdjust*this.features*(1+Math.sqrt(1+4*0.2*this.n_nodes/25.0))/2.0);
+	private int calc_update_rate(int refreshAdjust) {
+		return (int) Math.floor((refreshAdjust*this.features*(1+Math.sqrt(1+4*0.2*this.interactiveNodes.size()/25.0))/2.0));
 	}
 
 	public CulturalNetwork(File f) throws IOException{
@@ -84,7 +82,7 @@ public class CulturalNetwork {
 			this.features = Integer.parseInt(params[1]);
 			this.traits = Integer.parseInt(params[2]);
 			this.periodicBoundary = Boolean.parseBoolean(params[3]);
-			this.refresh_rate = calc_update_rate();
+			this.refresh_rate = calc_update_rate(100);
 			
 			this.states = new int[this.n_nodes][this.features];
 			this.adj_matrix = new int[this.n_nodes][MAX_DEGREE];
@@ -145,14 +143,17 @@ public class CulturalNetwork {
 	public void initInteractionList(boolean complete) {
 		this.interactiveNodes.clear();
 		for (int nd = 0; nd < this.n_nodes; nd++) {
-			if (complete || (is_node_active[nd] != false)) {
+//			if (complete || interactiveNodes.contains(nd)) {
+			if (complete || (is_node_active[nd] == true)) {
 				is_node_active[nd] = false;
 				for (int nbr_idx = 0; nbr_idx < degree[nd]; nbr_idx++) {
 					int similarity = 0;
 					int nbr = adj_matrix[nd][nbr_idx];
-					for (int f = 0; f < features; f++)
-						if (states[nd][f] == states[nbr][f])
+					for (int f = 0; f < features; f++){
+						if (states[nd][f] == states[nbr][f]){
 							similarity++;
+						}
+					}
 					if ((similarity > 0) && (similarity < features)) {
 						is_node_active[nd] = true;
 						interactiveNodes.add(nd);
@@ -205,7 +206,7 @@ public class CulturalNetwork {
 			is_node_active[nbr] = false;
 			interactiveNodes.remove(new Integer(nbr));
 			
-			if(is_node_active[nd] == false){
+			if(!interactiveNodes.contains(nd)){
 				if (is_interaction_possible(nd_state, nbr_state)) {
 					is_node_active[nd] = true;
 					interactiveNodes.add(nd);
@@ -216,6 +217,7 @@ public class CulturalNetwork {
 			}
 
 			for (int k1 = 0; k1 < degree[nbr] && is_node_active[nbr] == false; k1++) {
+//			for (int k1 = 0; k1 < degree[nbr] && !interactiveNodes.contains(nbr); k1++) {
 				int nbr_nbr = this.adj_matrix[nbr][k1];
 				int[] nbr_nbr_state = this.states[nbr_nbr];
 
@@ -445,8 +447,7 @@ public class CulturalNetwork {
 	}
 
 	public void setRefreshAdjust(int refreshAdjust) {
-		this.refreshAdjust  = refreshAdjust;
-		this.refresh_rate = calc_update_rate();
+		this.refresh_rate = calc_update_rate(refreshAdjust);
 	}
 	
 	public Integer overlap(int node, int nbr){
@@ -457,5 +458,12 @@ public class CulturalNetwork {
 			}
 		}
 		return overlap;
+	}
+	
+	public int n_edges(){
+		if (periodicBoundary){
+			return n_nodes*2;
+		}else
+			return n_nodes*2 - size*2;
 	}
 }

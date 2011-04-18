@@ -4,6 +4,7 @@
 package br.edu.cultural.simulation;
 
 import br.edu.cultural.network.CulturalNetwork;
+import br.edu.cultural.network.Utils;
 
 /**
  * @author muggler
@@ -72,14 +73,21 @@ public class BelousovZhabotinskySimulation extends CultureDisseminationSimulatio
 			int i = rand.nextInt(diff_count);
 			int f = diff_features[i];
 
+			int[] oldState = Utils.copyArray(nw.states[nbr]);
 			nw.states[nbr][f] = nw.states[node][f];
-			interacted(nbr);
+			int[] newState = Utils.copyArray(nw.states[nbr]);
+			interacted(nbr, oldState, newState);
+//			nw.states[node][f] = nw.states[nbr][f];
+//			interacted(node);
 //			}
 		}
 	}
 	
 	protected void deferred_representation_update(Integer node) {
 		nw.is_node_active[node] = true;
+		if(nw.is_node_active[node] = false){
+			nw.interactiveNodes.add(node);
+		}
 		if (interactions % nw.refresh_rate == 0) {
 				nw.initInteractionList(false);
 		}

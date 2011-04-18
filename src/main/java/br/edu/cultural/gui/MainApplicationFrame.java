@@ -52,6 +52,7 @@ import br.edu.cultural.plot.ActiveEdgesScatterPlot;
 import br.edu.cultural.plot.ActiveNodesScatterPlot;
 import br.edu.cultural.plot.ActiveRoomScatterPlot;
 import br.edu.cultural.plot.ActiveRoomsHistogram;
+import br.edu.cultural.plot.CommonFeaturesScatterPlot;
 import br.edu.cultural.plot.CultureDistributionScatterPlot;
 import br.edu.cultural.plot.Plot;
 import br.edu.cultural.plot.ScatterPlotter;
@@ -138,6 +139,7 @@ public class MainApplicationFrame extends JFrame {
 	private PlotAction cultureDistributionPlotAction;
 	private PlotAction activeRoomsPlotAction;
 	private PlotAction activeRoomsHistogramAction;
+	private PlotAction commonFeaturesPlotAction;
 
 	public MainApplicationFrame() {
 
@@ -388,7 +390,8 @@ public class MainApplicationFrame extends JFrame {
 			canvas = new CultureCanvas(CANVAS_WIDTH, sim.nw, BORDERS);
 			pane.add(canvas, BorderLayout.CENTER);
 			SimulationEventListener canvasRepaintListener = new SimulationEventAdapter() {
-				public void interaction(int i, int j) {
+				@Override
+				public void interaction(int i, int j, int[] oldState, int[] newState) {
 					canvas.repaint();
 				}
 			};
@@ -431,11 +434,13 @@ public class MainApplicationFrame extends JFrame {
 				"Active Rooms - Scatter Plot", new ActiveRoomScatterPlot());
 		activeRoomsHistogramAction = new PlotAction("Rooms histogram",
 				"Active Rooms - Histogram", new ActiveRoomsHistogram());
+		commonFeaturesPlotAction = new PlotAction("Common features plot",
+				"Common Features - Scatter Plot", new CommonFeaturesScatterPlot());
 
 
 		clearPlots();
 		addPlots(activeNodesPlotAction, activeEdgesPlotAction, cultureDistributionPlotAction,
-				activeRoomsPlotAction, activeRoomsHistogramAction);
+				activeRoomsPlotAction, activeRoomsHistogramAction, commonFeaturesPlotAction);
 
 		this.pack();
 		this.repaint();
@@ -479,7 +484,7 @@ public class MainApplicationFrame extends JFrame {
 								.getSelectedItem(), new CulturalNetwork(Integer
 								.parseInt(lTxtIn.getText()), Integer
 								.parseInt(fTxtIn.getText()), Integer
-								.parseInt(qTxtIn.getText()), periodicBoundarySelect.isSelected()));
+								.parseInt(qTxtIn.getText()), periodicBoundarySelect.isSelected(), networkRefreshRateSlider.getValue()));
 				
 				sim.addListener(new SimulationEventAdapter(){
 					public void finished(){
@@ -633,7 +638,7 @@ public class MainApplicationFrame extends JFrame {
 				CultureDisseminationSimulation sim =
 					CultureDisseminationSimulation.factory(
 							(Class<? extends CultureDisseminationSimulation>) simulationSelect.getSelectedItem(),
-							new CulturalNetwork(size, f, q, periodicBoundarySelect.isSelected()));
+							new CulturalNetwork(size, f, q, periodicBoundarySelect.isSelected(), networkRefreshRateSlider.getValue()));
 				sim.start();
 				sim.run();
 				Integer[] culture_sizes = new ArrayList<Integer>(sim.nw

@@ -4,6 +4,7 @@
 package br.edu.cultural.simulation;
 
 import br.edu.cultural.network.CulturalNetwork;
+import br.edu.cultural.network.Utils;
 
 /**
  * @author muggler
@@ -73,8 +74,10 @@ public class FacilitatedDisseminationWithoutSurfaceTension extends
 			int i = rand.nextInt(diff_count);
 			int f = diff_features[i];
 
+			int[] oldState = Utils.copyArray(nw.states[node]);
 			nw.states[node][f] = nw.states[nbr][f];
-			interacted(node);
+			int[] newState = Utils.copyArray(nw.states[node]);
+			interacted(node, oldState, newState);
 //			}
 		}
 	}

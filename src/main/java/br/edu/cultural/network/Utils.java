@@ -51,5 +51,11 @@ public class Utils {
 		}
 		return sb.toString();
 	}
+	
+	public static int[] copyArray(int[] ary){
+		int[] copy = new int[ary.length];
+		System.arraycopy(ary, 0, copy, 0, ary.length);
+		return copy;
+	}
 
 }

@@ -34,7 +34,8 @@ public class ActiveRoomScatterPlot extends Plot<CultureDisseminationSimulation, 
 		return chart;
 	}
 	
-	public void interaction(int i, int j){
+	@Override
+	public void interaction(int i, int j, int[] oldState, int[] newState){
 		Integer nbr = sim.nw.size * i + j;
 		if (sim.nw.monitorNodes.contains(nbr)
 				&& !nbr.equals(lastMonitoredNodeToChange)) {

@@ -4,6 +4,7 @@
 package br.edu.cultural.simulation;
 
 import br.edu.cultural.network.CulturalNetwork;
+import br.edu.cultural.network.Utils;
 
 /**
  * @author muggler
@@ -64,8 +65,10 @@ public class AxelrodSimulation extends CultureDisseminationSimulation {
 				int i = rand.nextInt(diff_count);
 				int f = diff_features[i];
 
+				int[] oldState = Utils.copyArray(nw.states[nbr]);
 				nw.states[nbr][f] = nw.states[node][f];
-				interacted(nbr);
+				int[] newState = Utils.copyArray(nw.states[nbr]);
+				interacted(nbr, oldState, newState);
 			}
 		}
 	}

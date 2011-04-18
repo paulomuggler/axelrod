@@ -61,25 +61,32 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 		System.out.print(execution_statistics_string());
 	}
 
-	protected void interacted(int node) {
+	protected void interacted(int node, int[] oldState, int[] newState) {
 		if (defer_update) {
 			deferred_representation_update(node);
 		} else {
 			nw.update_representations(node);
 		}
 		for (SimulationEventListener lis : listeners) {
-			lis.interaction(node / nw.size, node % nw.size);
+			lis.interaction(node / nw.size, node % nw.size, oldState, newState);
 		}
 		interactions++;
 	}
 
 	protected void deferred_representation_update(Integer node) {
-		nw.is_node_active[node] = true;
+		if(nw.is_node_active[node] == false){
+			nw.interactiveNodes.add(node);
+			nw.is_node_active[node] = true;
+		}
 		for (int nbrIdx = 0; nbrIdx < nw.degree[node]; nbrIdx++) {
-			nw.is_node_active[nw.node_neighbor(node, nbrIdx)] = true;
+			int nbr = nw.node_neighbor(node, nbrIdx);
+			if(nw.is_node_active[nbr] == false){
+				nw.interactiveNodes.add(nbr);
+				nw.is_node_active[nbr] = true;
+			}
 		}
 		if (interactions % nw.refresh_rate == 0) {
-				nw.initInteractionList(false);
+				nw.initInteractionList(true);
 		}
 	}
 	
@@ -206,7 +213,7 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 
 		public void iteration();
 
-		public void interaction(int i, int j);
+		public void interaction(int i, int j, int[] oldState, int[] newState);
 
 		public void epoch();
 
@@ -221,7 +228,7 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 		public void iteration() {
 		}
 
-		public void interaction(int i, int j) {
+		public void interaction(int i, int j, int[] oldState, int[] newState) {
 		}
 
 		public void epoch() {

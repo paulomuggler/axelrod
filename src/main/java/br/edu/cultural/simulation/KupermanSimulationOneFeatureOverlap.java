@@ -4,6 +4,7 @@
 package br.edu.cultural.simulation;
 
 import br.edu.cultural.network.CulturalNetwork;
+import br.edu.cultural.network.Utils;
 
 /**
  * @author muggler
@@ -62,8 +63,10 @@ public class KupermanSimulationOneFeatureOverlap extends CultureDisseminationSim
 				int f = diff_features[i];
 				
 				if(will_increase_similarity(nbr, f, nw.states[node][f])){
+					int[] oldState = Utils.copyArray(nw.states[nbr]);
 					nw.states[nbr][f] = nw.states[node][f];
-					interacted(nbr);
+					int[] newState = Utils.copyArray(nw.states[nbr]);
+					interacted(nbr, oldState, newState);
 				}
 			}
 		}

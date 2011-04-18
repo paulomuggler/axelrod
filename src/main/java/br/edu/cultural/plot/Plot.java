@@ -38,10 +38,15 @@ public abstract class Plot<S extends CultureDisseminationSimulation, D extends X
 							 sim.nw.features, sim.nw.traits);
 	}
 	
+	@Override
 	public void iteration() {}
-	public void interaction(int i, int j) {}
+	@Override
+	public void interaction(int i, int j, int[] oldState, int[] newState) {}
+	@Override
 	public void epoch() {}
+	@Override
 	public void started() {}
+	@Override
 	public void finished() {}
 	
 	public void linearX(String axisLabel){

@@ -53,7 +53,9 @@ public class ActiveRoomsHistogram extends Plot<CultureDisseminationSimulation, S
 	}
 	
 	private int iteration;
-	public void interaction(int i, int j){
+	
+	@Override
+	public void interaction(int i, int j, int[] oldState, int[] newState){
 		Integer node = sim.nw.size * i + j;
 		if (sim.nw.monitorNodes.contains(node)
 				&& !node.equals(lastMonitoredNodeToChange)) {

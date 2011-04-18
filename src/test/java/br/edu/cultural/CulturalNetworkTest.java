@@ -25,7 +25,7 @@ public class CulturalNetworkTest {
 	
 	@Before
 	public void doBefore(){
-		nw = new CulturalNetwork(size, features, traits, false);
+		nw = new CulturalNetwork(size, features, traits, false, 100);
 	}
 	
 	@Test
