@@ -1,20 +1,12 @@
-/**
- * 
- */
 package br.edu.cultural.gui;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -24,41 +16,32 @@ import javax.swing.JPopupMenu;
 import br.edu.cultural.network.CulturalNetwork;
 import br.edu.cultural.network.State;
 
-/**
- * @author muggler
- * 
- */
-
-public class CultureCanvas extends JPanel {
-
-	private static final long serialVersionUID = -5262909296764901151L;
-
-	private final int siteWidth;
-	private final int canvasWidth;
-	public final RgbPartitioner rp;
-	private final CulturalNetwork nw;
-
-	protected Insets thickness;
-	protected Color lineColor;
-	protected Insets gap;
-	private final boolean borders;
+public abstract class CultureCanvas extends JPanel {
+	private static final long serialVersionUID = 8613295340995177231L;
 	
-	private int nodeClicked;
-	private int[] clickNwCoords;
+	public final RgbPartitioner rp;
+	
+	protected int nodeClicked;
+	protected int[] clickNwCoords;
 	
 	public int[] stateStroke;
 	JPopupMenu nodeContextMenu = new JPopupMenu("Node");
 	
-	public final List<int[]> dirtySites = Collections.synchronizedList(new ArrayList<int[]>());
-
-	public CultureCanvas(int canvasWidth, CulturalNetwork nw, boolean borders) {
+	protected final int siteWidth;
+	protected final int canvasWidth;
+	protected final CulturalNetwork nw;
+	
+	public CultureCanvas(int canvasWidth, CulturalNetwork nw) {
 		super();
 		this.nw = nw;
 		this.canvasWidth = canvasWidth - (canvasWidth % this.nw.size);
 		this.siteWidth = (int) canvasWidth / this.nw.size;
 		
-		this.rp = new RgbPartitioner(nw.features, nw.traits);
-		this.borders = borders;
+		if(Math.pow(this.nw.traits, this.nw.features) > 0x1000000){
+			this.rp = new OnTheFlyRgbPartitioner(nw.features, nw.traits);
+		}else{
+			this.rp = new PreCalcRgbPartitioner(nw.features, nw.traits);
+		}
 		
 		this.stateStroke = new int[nw.features];
 		for (int i = 0; i < stateStroke.length; i++) {
@@ -66,7 +49,6 @@ public class CultureCanvas extends JPanel {
 		}
 		
 		this.addMouseListener(contextMenu);
-//		this.addMouseListener(stateInspector);
 		this.addMouseListener(statePen);
 		this.addMouseListener(stateRect);
 		
@@ -76,54 +58,11 @@ public class CultureCanvas extends JPanel {
 		
 		this.setPreferredSize(new Dimension(this.canvasWidth, this.canvasWidth));
 		
-		lineColor = new Color(0,0,0);
-		this.thickness = new Insets(1, 1, 1, 1);
-		this.gap = new Insets(1, 1, 1, 1);
-
 	}
+
+	public abstract void paintComponent(Graphics g);
 	
-	public void paintComponent(Graphics g){
-		for (int nd = 0; nd < nw.n_nodes; nd++) {
-			int[] site = {nd / nw.size, nd % nw.size};
-			int node = site[0] * nw.size + site[1];
-			int y = site[0] * this.siteWidth;
-			int x = site[1] * this.siteWidth;
-			int color = this.rp.color(this.nw.states[node]);
-			g.setColor(new Color(color));
-			g.fillRect(x, y, this.siteWidth, this.siteWidth);
-			if(borders){
-				this.paintBorder(g, x, y, this.siteWidth, this.siteWidth);
-			}
-		}
-	}
 
-	public void paintBorder( Graphics g, int x, int y, int width,
-			int height) {
-		Color oldColor = g.getColor();
-
-		g.setColor(lineColor);
-		// top
-		for (int i = 0; i < thickness.top; i++) {
-			g.drawLine(x, y + i, x + width, y + i);
-		}
-		// bottom
-		for (int i = 0; i < thickness.bottom; i++) {
-			g.drawLine(x, y + height - i - 1, x + width, y + height - i - 1);
-		}
-		// right
-		for (int i = 0; i < thickness.right; i++) {
-			g.drawLine(x + width - i - 1, y, x + width - i - 1, y + height);
-		}
-		// left
-		for (int i = 0; i < thickness.left; i++) {
-			g.drawLine(x + i, y, x + i, y + height);
-		}
-		g.setColor(oldColor);
-	}
-
-	/**
-	 * @return the canvasWidth
-	 */
 	public int getCanvasWidth() {
 		return canvasWidth;
 	}
@@ -255,4 +194,5 @@ public class CultureCanvas extends JPanel {
 	public void setStateStroke(int[] state) {
 		System.arraycopy(state, 0, stateStroke, 0, nw.features);
 	}
+
 }

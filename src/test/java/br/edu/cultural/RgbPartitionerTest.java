@@ -10,6 +10,7 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
+import br.edu.cultural.gui.PreCalcRgbPartitioner;
 import br.edu.cultural.gui.RgbPartitioner;
 import br.edu.cultural.network.State;
 
@@ -24,8 +25,8 @@ public class RgbPartitionerTest {
 
 	@Test
 	public void testRgbPartitioning() {
-		RgbPartitioner rp = new RgbPartitioner(features, traits);
-		Map<Integer, Integer> cm = rp.getColorMap();
+		RgbPartitioner rp = new PreCalcRgbPartitioner(features, traits);
+		Map<Integer, Integer> cm = ((PreCalcRgbPartitioner)rp).getColorMap();
 		for (Entry<Integer, Integer> e : cm.entrySet()) {
 			StringBuilder sb = new StringBuilder();
 			sb.append("State: " + e.getKey());
@@ -36,7 +37,7 @@ public class RgbPartitionerTest {
 
 	@Test
 	public void test_partition_contains_all_states() {
-		RgbPartitioner rp = new RgbPartitioner(features, traits);
+		RgbPartitioner rp = new PreCalcRgbPartitioner(features, traits);
 		int[] state = new int[features];
 		for (int i = 0; i < state.length; i++) {
 			state[i] = 0;

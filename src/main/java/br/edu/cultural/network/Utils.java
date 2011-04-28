@@ -57,5 +57,14 @@ public class Utils {
 		System.arraycopy(ary, 0, copy, 0, ary.length);
 		return copy;
 	}
+	
+	public static double array_average(double data[]) {
+		double sum = 0;
+		double average = 0;
+		for(int counter = 0; counter < data.length; counter++)
+		sum += data[counter];
+		average = sum /data.length;
+		return average;
+	}
 
 }

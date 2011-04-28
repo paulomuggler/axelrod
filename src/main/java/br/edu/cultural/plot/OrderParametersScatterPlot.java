@@ -10,7 +10,7 @@ import org.jfree.data.xy.DefaultXYDataset;
 
 import br.edu.cultural.simulation.CultureDisseminationSimulation;
 
-public class CommonFeaturesScatterPlot extends Plot<CultureDisseminationSimulation, DefaultXYDataset> {
+public class OrderParametersScatterPlot extends Plot<CultureDisseminationSimulation, DefaultXYDataset> {
 	
 	private static final int SERIES_UPDATE_INTERVAL  = 3;
 	List<List<double[]>> serieses = new ArrayList<List<double[]>>();
@@ -19,12 +19,12 @@ public class CommonFeaturesScatterPlot extends Plot<CultureDisseminationSimulati
 	@Override
 	public JFreeChart createPlot(CultureDisseminationSimulation sim) {
 		this.sim = sim;
-		for(int f = 0; f <= sim.nw.features; f++){
+		for(int s = 0; s < 3; s++){
 			serieses.add(new ArrayList<double[]>());
 		}
 		dataset = new DefaultXYDataset();
 		dataset.addSeries(1, new double [2][0]);
-		chart = ChartFactory.createScatterPlot("Number of common features over time: "+simInfo(), "time", "nodes", dataset,
+		chart = ChartFactory.createScatterPlot("Size of cultural regions: "+simInfo(), "time", "nodes", dataset,
 		PlotOrientation.VERTICAL, true, true, false);
 		return chart;
 	}
@@ -50,7 +50,7 @@ public class CommonFeaturesScatterPlot extends Plot<CultureDisseminationSimulati
 	}
 	
 	public void started(){
-		points = new double[sim.nw.features+1];
+		points = new double[3];
 		for(int nd = 0; nd < sim.nw.n_nodes; nd++){
 			for(int nbr_idx = 0; nbr_idx < sim.nw.degree(nd); nbr_idx++){
 				int nbr = sim.nw.node_neighbor(nd, nbr_idx);
@@ -60,7 +60,13 @@ public class CommonFeaturesScatterPlot extends Plot<CultureDisseminationSimulati
 						overlap++;
 					}
 				}
-				points[overlap]++;
+				if(overlap == 0){
+					points[0]++;
+				}else if(overlap == sim.nw.features){
+					points[2]++;
+				}else{
+					points[1]++;
+				}
 			}
 		}
 		
@@ -73,7 +79,7 @@ public class CommonFeaturesScatterPlot extends Plot<CultureDisseminationSimulati
 	}
 
 	private void addPoints(double time) {
-		for (int i = 0; i <= sim.nw.features; i ++) {
+		for (int i = 0; i < points.length; i ++) {
 			double[] point = {time, points[i]/sim.nw.n_edges()};
 			serieses.get(i).add(point);
 		}
@@ -96,8 +102,20 @@ public class CommonFeaturesScatterPlot extends Plot<CultureDisseminationSimulati
 					newOverlap++;
 				}
 			}
-			points[oldOverlap]--;
-			points[newOverlap]++;
+			if(oldOverlap == 0){
+				points[0]--;
+			}else if(oldOverlap == sim.nw.features){
+				points[2]--;
+			}else{
+				points[1]--;
+			}
+			if(newOverlap == 0){
+				points[0]++;
+			}else if(newOverlap == sim.nw.features){
+				points[2]++;
+			}else{
+				points[1]++;
+			}
 		}
 	}
 

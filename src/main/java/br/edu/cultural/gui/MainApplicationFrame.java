@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -35,11 +36,13 @@ import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -48,12 +51,14 @@ import javax.swing.plaf.basic.BasicComboBoxRenderer;
 import net.miginfocom.swing.MigLayout;
 import br.edu.cultural.network.CulturalNetwork;
 import br.edu.cultural.network.State;
+import br.edu.cultural.network.Utils;
 import br.edu.cultural.plot.ActiveEdgesScatterPlot;
 import br.edu.cultural.plot.ActiveNodesScatterPlot;
 import br.edu.cultural.plot.ActiveRoomScatterPlot;
 import br.edu.cultural.plot.ActiveRoomsHistogram;
 import br.edu.cultural.plot.CommonFeaturesScatterPlot;
 import br.edu.cultural.plot.CultureDistributionScatterPlot;
+import br.edu.cultural.plot.OrderParametersScatterPlot;
 import br.edu.cultural.plot.Plot;
 import br.edu.cultural.plot.ScatterPlotter;
 import br.edu.cultural.simulation.AxelrodSimulation;
@@ -77,7 +82,6 @@ public class MainApplicationFrame extends JFrame {
 	@SuppressWarnings("unused")
 	private static final int FRAME_HEIGHT = 800;
 	private static final int CANVAS_WIDTH = 800;
-	private static final boolean BORDERS = false;
 
 	private static final String APP_TITLE = "Axelrod Simulation";
 
@@ -115,9 +119,56 @@ public class MainApplicationFrame extends JFrame {
 	JButton toggleSimBtn = new JButton("Start");
 	JButton stepSimBtn = new JButton("Step");
 	JCheckBox enableVisualOut = new JCheckBox("Enable visual representation");
-
-	JSlider speedSlider = new JSlider(JSlider.HORIZONTAL, 0, 100, 100);
 	
+	ButtonGroup representations = new ButtonGroup();
+	JRadioButton colorRepresentation = new JRadioButton(new AbstractAction() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			final Container pane = MainApplicationFrame.this.getContentPane();
+			if (canvas != null) {
+				pane.remove(canvas);
+			}
+			if(MainApplicationFrame.this.sim.state.equals(CultureDisseminationSimulation.SimulationState.RUNNING)){
+				MainApplicationFrame.this.toggleSim.actionPerformed(null);
+			}
+			canvas = new CultureColorsCanvas(CANVAS_WIDTH, sim.nw);
+			SwingUtilities.invokeLater(new Runnable() {
+				
+				@Override
+				public void run() {
+					pane.add(canvas);
+					pane.repaint();
+				}
+			});
+			MainApplicationFrame.this.repaint();
+//			MainApplicationFrame.this.toggleSim.actionPerformed(null);
+		}
+	});
+	JRadioButton bordersRepresentation = new JRadioButton(new AbstractAction() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			final Container pane = MainApplicationFrame.this.getContentPane();
+			if (canvas != null) {
+				pane.remove(canvas);
+			}
+			if(MainApplicationFrame.this.sim.state.equals(CultureDisseminationSimulation.SimulationState.RUNNING)){
+				MainApplicationFrame.this.toggleSim.actionPerformed(null);
+			}
+			canvas = new CultureBordersCanvas(CANVAS_WIDTH, sim.nw);
+			SwingUtilities.invokeLater(new Runnable() {
+				
+				@Override
+				public void run() {
+					pane.add(canvas);
+					pane.repaint();
+				}
+			});
+//			MainApplicationFrame.this.repaint();
+//			MainApplicationFrame.this.toggleSim.actionPerformed(null);
+		}
+	});
+	
+	JSlider speedSlider = new JSlider(JSlider.HORIZONTAL, 0, 100, 100);
 	JSlider networkRefreshRateSlider = new JSlider(JSlider.HORIZONTAL, 1, 100, 10);
 
 	JTextArea out;
@@ -140,6 +191,7 @@ public class MainApplicationFrame extends JFrame {
 	private PlotAction activeRoomsPlotAction;
 	private PlotAction activeRoomsHistogramAction;
 	private PlotAction commonFeaturesPlotAction;
+	private PlotAction orderParametersPlotAction;
 
 	public MainApplicationFrame() {
 
@@ -201,9 +253,17 @@ public class MainApplicationFrame extends JFrame {
 		toggleSimBtn.setPreferredSize(new Dimension(80, 20));
 		stepSimBtn.setPreferredSize(new Dimension(80, 20));
 
-		enableVisualOut.setPreferredSize(new Dimension(240, 36));
 		speedSlider.setPreferredSize(new Dimension(240, 36));
 		networkRefreshRateSlider.setPreferredSize(new Dimension(240, 36));
+		
+		enableVisualOut.setPreferredSize(new Dimension(240, 36));
+		colorRepresentation.setText("Colors");
+		representations.add(colorRepresentation);
+		bordersRepresentation.setText("Borders");
+		representations.add(bordersRepresentation);
+		JPanel repPan = new JPanel();
+		repPan.add(colorRepresentation);
+		repPan.add(bordersRepresentation);
 
 		paintTxtIn.setPreferredSize(new Dimension(320, 18));
 		paintSample.setPreferredSize(new Dimension(16, 16));
@@ -243,6 +303,8 @@ public class MainApplicationFrame extends JFrame {
 		controls.add(new JLabel("Plots:"), "wrap");
 		controls.add(plotListScrollPane, "span 3, split 2, grow");
 		controls.add(activePlotListScrollPane, "wrap, grow");
+		controls.add(new JLabel("Representations:"), "wrap, gapTop 18");
+		controls.add(repPan, "wrap");
 		controls.add(enableVisualOut, "span 3, wrap, gapbottom 18");
 
 		controls.add(toggleSimBtn, "span 3, split 3, growx");
@@ -387,7 +449,11 @@ public class MainApplicationFrame extends JFrame {
 		}
 		deferredUpdateSelect.setSelected(true);
 		if (enableVisualOut.isSelected()) {
-			canvas = new CultureCanvas(CANVAS_WIDTH, sim.nw, BORDERS);
+			if(colorRepresentation.isSelected()){
+				canvas = new CultureColorsCanvas(CANVAS_WIDTH, sim.nw);
+			}else{
+				canvas = new CultureBordersCanvas(CANVAS_WIDTH, sim.nw);
+			}
 			pane.add(canvas, BorderLayout.CENTER);
 			SimulationEventListener canvasRepaintListener = new SimulationEventAdapter() {
 				@Override
@@ -435,12 +501,29 @@ public class MainApplicationFrame extends JFrame {
 		activeRoomsHistogramAction = new PlotAction("Rooms histogram",
 				"Active Rooms - Histogram", new ActiveRoomsHistogram());
 		commonFeaturesPlotAction = new PlotAction("Common features plot",
-				"Common Features - Scatter Plot", new CommonFeaturesScatterPlot());
+				"Common Features - Scatter Plot", new CommonFeaturesScatterPlot()){
+			private static final long serialVersionUID = -2489956318996611551L;
+			public void defer_init() {
+				plotter.addChartScaleSelectorX("time");
+				plotter.validate();
+				plotter.repaint();
+			}
+		};
+		
+		orderParametersPlotAction = new PlotAction("Order parameters plot",
+				"Order parameters - Scatter Plot", new OrderParametersScatterPlot()){
+			private static final long serialVersionUID = -2489956318996611551L;
+			public void defer_init() {
+				plotter.addChartScaleSelectorX("time");
+				plotter.validate();
+				plotter.repaint();
+			}
+		};
 
 
 		clearPlots();
 		addPlots(activeNodesPlotAction, activeEdgesPlotAction, cultureDistributionPlotAction,
-				activeRoomsPlotAction, activeRoomsHistogramAction, commonFeaturesPlotAction);
+				activeRoomsPlotAction, activeRoomsHistogramAction, commonFeaturesPlotAction, orderParametersPlotAction);
 
 		this.pack();
 		this.repaint();
@@ -628,7 +711,7 @@ public class MainApplicationFrame extends JFrame {
 		int qMin = 2;
 		int qMax = 100;
 
-		double[][] series = new double[2][(qMax - qMin + 1) * numSims];
+		double[][] series = new double[2][(qMax - qMin + 1)];
 		int si = 0;
 		ScatterPlotter plotter = null;
 		for (int q = qMin; q <= qMax; q++) {
@@ -650,11 +733,10 @@ public class MainApplicationFrame extends JFrame {
 						/ (sim.nw.size * sim.nw.size); // largest culture,
 				// normalized
 			}
-			for (int i = 0; i < numSims; i++) {
-				series[0][si] = cSizes[0][i];
-				series[1][si] = cSizes[1][i];
-				si++;
-			}
+			double average = Utils.array_average(cSizes[1]);
+			series[0][si] = cSizes[0][0];
+			series[1][si] = average;
+			si++;
 			if (plotter == null) {
 				plotter = new ScatterPlotter("Axelrod Simulation Plot", String
 						.format("L = %d, F = %d", size, f), series);
