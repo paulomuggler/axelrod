@@ -89,7 +89,7 @@ public class BelousovZhabotinskySimulation extends CultureDisseminationSimulatio
 			nw.interactiveNodes.add(node);
 		}
 		if (interactions % nw.refresh_rate == 0) {
-				nw.initInteractionList(false);
+				nw.reset_interaction_list(false);
 		}
 	}
 }

@@ -46,7 +46,7 @@ public class CulturalNetwork {
 	/** Stores all nodes that may interact */
 	public final List<Integer> interactiveNodes = new ArrayList<Integer>();
 
-	public final List<Integer> monitorNodes = new ArrayList<Integer>();
+	public final List<Integer> nodes_listened = new ArrayList<Integer>();
 
 	/** Stores the activity state of each node */
 	public final boolean[] is_node_active;
@@ -101,14 +101,14 @@ public class CulturalNetwork {
 			if (line != null && line.startsWith("monitor:")){
 				String[] monitor = line.substring(line.indexOf("[")+1, line.indexOf("]")).split(",");
 				for (String s : monitor) {
-					this.monitorNodes.add(Integer.parseInt(s));
+					this.nodes_listened.add(Integer.parseInt(s));
 				}
 			}
 		}else {
 			throw new IOException("File does not exist or read not allowed");
 		}
 		this.init_adj_matrix(periodicBoundary);
-		this.initInteractionList(true);
+		this.reset_interaction_list(true);
 	}
 
 	public void init_adj_matrix(boolean periodicBoundary) {
@@ -140,7 +140,7 @@ public class CulturalNetwork {
 		}
 	}
 
-	public void initInteractionList(boolean complete) {
+	public void reset_interaction_list(boolean complete) {
 		this.interactiveNodes.clear();
 		for (int nd = 0; nd < this.n_nodes; nd++) {
 //			if (complete || interactiveNodes.contains(nd)) {
@@ -294,7 +294,7 @@ public class CulturalNetwork {
 		for (int nd = 0; nd < this.n_nodes; nd++) {
 			states[nd] = State.random_node_state(features, traits);
 		}
-		this.initInteractionList(true);
+		this.reset_interaction_list(true);
 	}
 
 	public void bubble_random_starting_distribution(int bubble_radius,
@@ -361,7 +361,7 @@ public class CulturalNetwork {
 			}
 			step_size++;
 		}
-		this.initInteractionList(true);
+		this.reset_interaction_list(true);
 	}
 
 	public void striped_starting_distribution() {
@@ -379,7 +379,7 @@ public class CulturalNetwork {
 				System.arraycopy(state2, 0, states[nd], 0, state2.length);
 			}
 		}
-		this.initInteractionList(true);
+		this.reset_interaction_list(true);
 	}
 
 	public void homogeneous_distribution() {
@@ -387,7 +387,7 @@ public class CulturalNetwork {
 		for (int nd = 0; nd < n_nodes; nd++) {
 			System.arraycopy(randst, 0, states[nd], 0, randst.length);
 		}
-		this.initInteractionList(true);
+		this.reset_interaction_list(true);
 	}
 
 	public boolean is_state_valid(int[] state) {
@@ -437,10 +437,10 @@ public class CulturalNetwork {
 				}
 				fw.write('\n');
 			}
-			if(!monitorNodes.isEmpty()) fw.write("monitor:[");
-			for (Integer node : monitorNodes) {
+			if(!nodes_listened.isEmpty()) fw.write("monitor:[");
+			for (Integer node : nodes_listened) {
 				fw.write(Integer.toString(node));
-				fw.write(monitorNodes.indexOf(node) == monitorNodes.size() -1 ? ']' : ',');
+				fw.write(nodes_listened.indexOf(node) == nodes_listened.size() -1 ? ']' : ',');
 			}
 			fw.close();
 		}

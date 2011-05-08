@@ -27,6 +27,8 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 	protected long sim_finish_ms = -1;
 	protected int iterations = 0;
 	protected int interactions = 0;
+	
+	protected long stop_after_iterations = Long.MAX_VALUE;
 
 	protected List<SimulationEventListener> listeners = Collections
 			.synchronizedList(new ArrayList<SimulationEventListener>());
@@ -45,7 +47,10 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 			throttle();
 			defer_run();
 			if (iterations % 100000 == 0) {
-				nw.initInteractionList(false);
+				nw.reset_interaction_list(false);
+			}
+			if(iterations >= stop_after_iterations){
+				this.quit();
 			}
 		}
 		this.sim_finish_ms = System.currentTimeMillis();
@@ -73,6 +78,8 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 		interactions++;
 	}
 
+	/* defers an update to the list of interactive nodes until
+	 * refresh_rate interactions have occurred	 */
 	protected void deferred_representation_update(Integer node) {
 		if(nw.is_node_active[node] == false){
 			nw.interactiveNodes.add(node);
@@ -86,13 +93,14 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 			}
 		}
 		if (interactions % nw.refresh_rate == 0) {
-				nw.initInteractionList(true);
+				nw.reset_interaction_list(true);
 		}
 	}
 	
+	/** pretty prints information on the running simulation */
 	public String execution_statistics_string() {
-		double iterations_per_second = iterations() / elapsed_time_in_seconds();
-		double interactions_per_second = interactions()
+		float iterations_per_second = iterations() / elapsed_time_in_seconds();
+		float interactions_per_second = interactions()
 				/ elapsed_time_in_seconds();
 		StringBuilder sb = new StringBuilder();
 		sb.append("\n");
@@ -115,40 +123,25 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 		return sb.toString();
 	}
 
-	/**
-	 * Performs a single step of the simulation
-	 */
+	/** Performs a single step of the simulation */
 	public abstract void simulation_step();
 
 	public void stop() {
 		this.state = SimulationState.STOPPED;
 	}
 
+	/** set simulation state to RUNNING */
 	public void start() {
 		this.state = SimulationState.RUNNING;
 	}
 
+	/** set simulation state to FINISHED */
 	public void quit() {
 		this.state = SimulationState.FINISHED;
 	}
+	
 
-	public void setSpeed(int speed) {
-		this.speed = speed;
-	}
-
-	public void setDefer_update(boolean deferUpdate) {
-		defer_update = deferUpdate;
-	}
-
-	public void addPlot(Plot<?, ?> p) {
-		if (!plots.contains(p))
-			plots.add(p);
-	}
-
-	public void removePlot(Plot<?, ?> p) {
-		plots.remove(p);
-	}
-
+	/** Idle loop used to emulate the STOPPED state; */
 	private void pause() {
 		while (this.state == SimulationState.STOPPED) {
 			try {
@@ -158,6 +151,7 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 		}
 	}
 
+	/** Sleeps for an amount of time proportional to the set speed */
 	private void throttle() {
 		if (this.speed < 100) {
 			try {
@@ -167,12 +161,47 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 		}
 	}
 
-	public boolean toggleMonitor(int nodeClicked) {
-		if (this.nw.monitorNodes.contains(nodeClicked)) {
-			this.nw.monitorNodes.remove(new Integer(nodeClicked));
+	public void setSpeed(int speed) {
+		this.speed = speed;
+	}
+	
+	public void stop_after_iterations(long n){
+		this.stop_after_iterations = n;
+	}
+
+	public void setDefer_update(boolean deferUpdate) {
+		defer_update = deferUpdate;
+	}
+	
+	/** Toggle this simulation's optimization on/off */
+	public void toggle_defer_update_optimize() {
+		defer_update = !defer_update;
+	}
+
+	/** adds a plot to the list of running plots */
+	public void addPlot(Plot<?, ?> p) {
+		if (!plots.contains(p))
+			plots.add(p);
+	}
+
+	/** removes a plot from the list of running plots */
+	public void removePlot(Plot<?, ?> p) {
+		plots.remove(p);
+	}
+
+	/**
+	 * Adds a node to the list of monitored nodes.
+	 * A monitored node will trigger an event whenever 
+	 * its state changes.
+	 * @param node
+	 * @return
+	 */
+	public boolean toggle_listening(int node) {
+		if (this.nw.nodes_listened.contains(node)) {
+			this.nw.nodes_listened.remove(new Integer(node));
 			return false;
 		} else {
-			this.nw.monitorNodes.add(nodeClicked);
+			this.nw.nodes_listened.add(node);
 			return true;
 		}
 	}
@@ -186,37 +215,58 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 	}
 
 	public long elapsed_time() {
-		return (sim_finish_ms == -1 ? System.currentTimeMillis()
-				: sim_finish_ms)
+		return (sim_finish_ms == -1 ? 
+					System.currentTimeMillis()
+					: sim_finish_ms)
 				- sim_start_ms;
 	}
 
-	public double elapsed_time_in_seconds() {
-		return elapsed_time() / 1000.0;
+	public float elapsed_time_in_seconds() {
+		return (elapsed_time() / 1000f);
 	}
 
-	public int iterations() {
-		return iterations;
-	}
 
-	public void addListener(SimulationEventListener lis) {
+	/**
+	 * Registers a listener with this simulation. Meaningful events along 
+	 * the simulation's lifecycle will trigger specific callbacks on the
+	 * registered listeners. 
+	 * {@link SimulationEventAdapter} is a utility class with empty implementations
+	 * for {@link SimulationEventListener}'s callback methods.
+	 * @param lis
+	 * @return
+	 */
+	public boolean addListener(SimulationEventListener lis) {
 		if (!listeners.contains(lis))
-			listeners.add(lis);
+			return listeners.add(lis);
+		return false;
 	}
 
-	public void removeListener(SimulationEventListener lis) {
-		listeners.remove(lis);
+	/**
+	 * De-registers a listener.
+	 * @param lis
+	 * @return
+	 */
+	public boolean removeListener(SimulationEventListener lis) {
+		return listeners.remove(lis);
 	}
 
 	public static interface SimulationEventListener {
+		/**	Triggered when this simulation starts running. */
 		public void started();
 
+		/**	Triggered on each iteration of this simulation. */
 		public void iteration();
 
+		/**	Triggered when two nodes in this simulation interact. */
 		public void interaction(int i, int j, int[] oldState, int[] newState);
 
+		/**	Triggered at each n iterations, n being the 
+		 * number of nodes in the network. */
 		public void epoch();
 
+		/**	Triggered when this simulation quits or reaches an 
+		 * absorbent state, if such a state exists for the current 
+		 * simulation. */
 		public void finished();
 	}
 
@@ -238,12 +288,16 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 		}
 	}
 
-	public int epoch() {
-		return this.iterations / this.nw.n_nodes;
+	public int iterations() {
+		return iterations;
 	}
-
+	
 	public Integer interactions() {
 		return interactions;
+	}
+	
+	public int epoch() {
+		return this.iterations / this.nw.n_nodes;
 	}
 
 	public CultureDisseminationSimulation(CulturalNetwork nw) {

@@ -6,6 +6,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -38,10 +39,14 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JSlider;
+import javax.swing.JSpinner;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
@@ -80,8 +85,8 @@ public class MainApplicationFrame extends JFrame {
 	@SuppressWarnings("unused")
 	private static final int FRAME_WIDTH = 1000;
 	@SuppressWarnings("unused")
-	private static final int FRAME_HEIGHT = 800;
-	private static final int CANVAS_WIDTH = 800;
+	private static final int FRAME_HEIGHT = (int) (Toolkit.getDefaultToolkit().getScreenSize().height*0.96);
+	private static final int CANVAS_WIDTH = (int) (Toolkit.getDefaultToolkit().getScreenSize().height*0.9);
 
 	private static final String APP_TITLE = "Axelrod Simulation";
 
@@ -101,6 +106,12 @@ public class MainApplicationFrame extends JFrame {
 	private DefaultListModel activePlotsListModel;
 
 	JPanel controls = new JPanel(new MigLayout("fillx"));
+	
+	JFrame simulationPropertiesFrame = new JFrame("Simulation Properties");
+	JPanel simulationProperties = new JPanel(new MigLayout("fillx"));
+	
+	SpinnerNumberModel stop_spinner_model = new SpinnerNumberModel(10, 0, 100, 1);
+	JSpinner stop_after_iterations = new JSpinner(stop_spinner_model);
 
 	JLabel lLbl = new JLabel("Size:");
 	JTextField lTxtIn = new JTextField("100");
@@ -115,58 +126,57 @@ public class MainApplicationFrame extends JFrame {
 	JTextField paintTxtIn = new JTextField();
 	PaintSample paintSample = new PaintSample();
 
-	JButton resetBtn = new JButton("Reset");
-	JButton toggleSimBtn = new JButton("Start");
-	JButton stepSimBtn = new JButton("Step");
-	JCheckBox enableVisualOut = new JCheckBox("Enable visual representation");
+	JButton reset_simulation_button = new JButton("Reset");
+	JButton toggle_simulation_button = new JButton("Start");
+	JButton step_simulation_button = new JButton("Step");
+	JCheckBox enable_visual_representation = new JCheckBox("Enable visual representation");
 	
 	ButtonGroup representations = new ButtonGroup();
 	JRadioButton colorRepresentation = new JRadioButton(new AbstractAction() {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			final Container pane = MainApplicationFrame.this.getContentPane();
-			if (canvas != null) {
-				pane.remove(canvas);
-			}
-			if(MainApplicationFrame.this.sim.state.equals(CultureDisseminationSimulation.SimulationState.RUNNING)){
-				MainApplicationFrame.this.toggleSim.actionPerformed(null);
-			}
-			canvas = new CultureColorsCanvas(CANVAS_WIDTH, sim.nw);
-			SwingUtilities.invokeLater(new Runnable() {
-				
-				@Override
-				public void run() {
-					pane.add(canvas);
-					pane.repaint();
-				}
-			});
-			MainApplicationFrame.this.repaint();
-//			MainApplicationFrame.this.toggleSim.actionPerformed(null);
+			MainApplicationFrame.this.switchCanvas(new CultureColorsCanvas(CANVAS_WIDTH, sim.nw));
 		}
 	});
 	JRadioButton bordersRepresentation = new JRadioButton(new AbstractAction() {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			final Container pane = MainApplicationFrame.this.getContentPane();
-			if (canvas != null) {
-				pane.remove(canvas);
-			}
-			if(MainApplicationFrame.this.sim.state.equals(CultureDisseminationSimulation.SimulationState.RUNNING)){
-				MainApplicationFrame.this.toggleSim.actionPerformed(null);
-			}
-			canvas = new CultureBordersCanvas(CANVAS_WIDTH, sim.nw);
+			MainApplicationFrame.this.switchCanvas(new CultureBordersCanvas(CANVAS_WIDTH, sim.nw));
+		}
+	});
+	
+	protected void switchCanvas(final CultureCanvas cnv){
+		final Container pane = MainApplicationFrame.this.getContentPane();
+		if (canvas != null) {
+			pane.remove(canvas);
 			SwingUtilities.invokeLater(new Runnable() {
-				
 				@Override
-				public void run() {
-					pane.add(canvas);
+				public void run() { 
+					MainApplicationFrame.this.pack();
+					MainApplicationFrame.this.repaint();
 					pane.repaint();
 				}
 			});
-//			MainApplicationFrame.this.repaint();
-//			MainApplicationFrame.this.toggleSim.actionPerformed(null);
 		}
-	});
+		boolean toggled = false;
+		if(MainApplicationFrame.this.sim.state.equals(CultureDisseminationSimulation.SimulationState.RUNNING)){
+			MainApplicationFrame.this.toggleSim.actionPerformed(null);
+			toggled = true;
+		}
+		canvas = cnv;
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				pane.add(canvas);
+				MainApplicationFrame.this.pack();
+				MainApplicationFrame.this.repaint();
+				pane.repaint();
+			}
+		});
+		if(toggled){
+			MainApplicationFrame.this.toggleSim.actionPerformed(null);
+		}
+	}
 	
 	JSlider speedSlider = new JSlider(JSlider.HORIZONTAL, 0, 100, 100);
 	JSlider networkRefreshRateSlider = new JSlider(JSlider.HORIZONTAL, 1, 100, 10);
@@ -196,6 +206,8 @@ public class MainApplicationFrame extends JFrame {
 	public MainApplicationFrame() {
 
 		setTitle(APP_TITLE);
+		
+		simulationPropertiesFrame.add(simulationProperties);
 
 		simulationSelect = new JComboBox();
 		simulationSelect
@@ -212,13 +224,14 @@ public class MainApplicationFrame extends JFrame {
 		periodicBoundarySelect = new JCheckBox("Periodic boundary condition");
 		deferredUpdateSelect = new JCheckBox("Defer representation updates (optimization)");
 
-		resetBtn.addActionListener(resetSim);
-		toggleSimBtn.addActionListener(toggleSim);
-		stepSimBtn.addActionListener(stepSim);
-		enableVisualOut.setSelected(true);
+		reset_simulation_button.addActionListener(resetSim);
+		toggle_simulation_button.addActionListener(toggleSim);
+		step_simulation_button.addActionListener(stepSim);
+		enable_visual_representation.setSelected(true);
 
-		fileMenu.add(loadFromFile);
-		fileMenu.add(saveToFile);
+		fileMenu.add(simulation_properties);
+		fileMenu.add(load_from_file);
+		fileMenu.add(save_to_file);
 		fileMenu.add(quit);
 
 		Dimension listSize = new Dimension(200, 100);
@@ -249,21 +262,22 @@ public class MainApplicationFrame extends JFrame {
 		fTxtIn.setPreferredSize(new Dimension(30, 18));
 		qTxtIn.setPreferredSize(new Dimension(30, 18));
 
-		resetBtn.setPreferredSize(new Dimension(80, 20));
-		toggleSimBtn.setPreferredSize(new Dimension(80, 20));
-		stepSimBtn.setPreferredSize(new Dimension(80, 20));
+		reset_simulation_button.setPreferredSize(new Dimension(80, 20));
+		toggle_simulation_button.setPreferredSize(new Dimension(80, 20));
+		step_simulation_button.setPreferredSize(new Dimension(80, 20));
 
-		speedSlider.setPreferredSize(new Dimension(240, 36));
-		networkRefreshRateSlider.setPreferredSize(new Dimension(240, 36));
+		speedSlider.setPreferredSize(new Dimension(240, 18));
+		networkRefreshRateSlider.setPreferredSize(new Dimension(240, 18));
+		networkRefreshRateSlider.setValue(100);
 		
-		enableVisualOut.setPreferredSize(new Dimension(240, 36));
+		enable_visual_representation.setPreferredSize(new Dimension(240, 36));
 		colorRepresentation.setText("Colors");
 		representations.add(colorRepresentation);
 		bordersRepresentation.setText("Borders");
 		representations.add(bordersRepresentation);
-		JPanel repPan = new JPanel();
-		repPan.add(colorRepresentation);
-		repPan.add(bordersRepresentation);
+		JPanel representations_panel = new JPanel();
+		representations_panel.add(colorRepresentation);
+		representations_panel.add(bordersRepresentation);
 
 		paintTxtIn.setPreferredSize(new Dimension(320, 18));
 		paintSample.setPreferredSize(new Dimension(16, 16));
@@ -282,40 +296,55 @@ public class MainApplicationFrame extends JFrame {
 		networkRefreshRateSlider.setMinorTickSpacing(1);
 		networkRefreshRateSlider.setPaintTicks(true);
 		networkRefreshRateSlider.setPaintLabels(true);
+		
+		simulationProperties.add(new JSeparator(SwingConstants.HORIZONTAL), "span 3, grow, wrap, gaptop 9, gapbottom 9");
+		simulationProperties.add(new JLabel("Stop simulation after 10^"),"");
+		simulationProperties.add(stop_after_iterations, "al left");
+		simulationProperties.add(new JLabel("iterations."), "grow, wrap");
+		simulationProperties.add(new JSeparator(SwingConstants.HORIZONTAL), "span 3, grow, wrap, gaptop 9, gapbottom 9");
+		
+		simulationProperties.add(deferredUpdateSelect, "span3, grow, wrap");
+		simulationProperties.add(new JLabel("Network refresh adjust:"), "wrap");
+		simulationProperties.add(networkRefreshRateSlider, "span 3, grow, wrap, gapbottom 18");
+		simulationProperties.add(new JSeparator(SwingConstants.HORIZONTAL), "span 3, grow, wrap, gaptop 9, gapbottom 9");
 
+		controls.add(new JSeparator(SwingConstants.HORIZONTAL), "span 3, grow, wrap, gaptop 9, gapbottom 9");
 		controls.add(simulationSelect, "span 3, grow, wrap");
-		controls.add(periodicBoundarySelect, "span 3, grow, wrap");
-		controls.add(deferredUpdateSelect, "span 3, grow, wrap");
-
+		
 		controls.add(lLbl, "split 6");
 		controls.add(lTxtIn, "");
-
 		controls.add(fLbl, "");
 		controls.add(fTxtIn, "");
-
 		controls.add(qLbl, "");
-		controls.add(qTxtIn, "wrap, gapbottom 18");
+		controls.add(qTxtIn, "wrap");
+		
+		controls.add(periodicBoundarySelect, "span 3, grow, wrap");
+		controls.add(new JSeparator(SwingConstants.HORIZONTAL), "span 3, grow, wrap, gaptop 9, gapbottom 9");
 
 		controls.add(paintLbl, "wrap, gapbottom 3");
 		controls.add(paintTxtIn, "span 3, split 2, growx");
 		controls.add(paintSample, "wrap");
+		controls.add(new JSeparator(SwingConstants.HORIZONTAL), "span 3, grow, wrap, gaptop 9, gapbottom 9");
 
 		controls.add(new JLabel("Plots:"), "wrap");
 		controls.add(plotListScrollPane, "span 3, split 2, grow");
 		controls.add(activePlotListScrollPane, "wrap, grow");
-		controls.add(new JLabel("Representations:"), "wrap, gapTop 18");
-		controls.add(repPan, "wrap");
-		controls.add(enableVisualOut, "span 3, wrap, gapbottom 18");
-
-		controls.add(toggleSimBtn, "span 3, split 3, growx");
-		controls.add(stepSimBtn, "growx");
-		controls.add(resetBtn, "growx, wrap, gapbottom 18");
+		controls.add(new JSeparator(SwingConstants.HORIZONTAL), "span 3, grow, wrap, gaptop 9, gapbottom 9");
+		
+		controls.add(new JLabel("Representations:"), "wrap");
+		controls.add(representations_panel, "wrap");
+		controls.add(enable_visual_representation, "span 3, wrap");
+		controls.add(new JSeparator(SwingConstants.HORIZONTAL), "span 3, grow, wrap, gaptop 9, gapbottom 9");
 
 		controls.add(new JLabel("Speed:"), "wrap");
 		controls.add(speedSlider, "span 3, grow, wrap, gapbottom 18");
 		
-		controls.add(new JLabel("Network refresh adjust:"), "wrap");
-		controls.add(networkRefreshRateSlider, "span 3, grow, wrap, gapbottom 18");
+		controls.add(new JSeparator(SwingConstants.HORIZONTAL), "span 3, grow, wrap, gaptop 9, gapbottom 9");
+
+		controls.add(toggle_simulation_button, "span 3, split 3, growx");
+		controls.add(step_simulation_button, "growx");
+		controls.add(reset_simulation_button, "growx, wrap");
+//		controls.add(new JSeparator(SwingConstants.HORIZONTAL), "span 3, grow, wrap, gaptop 9, gapbottom 9");
 
 		controls.setPreferredSize(new Dimension(400, 800));
 
@@ -448,7 +477,11 @@ public class MainApplicationFrame extends JFrame {
 			pane.remove(canvas);
 		}
 		deferredUpdateSelect.setSelected(true);
-		if (enableVisualOut.isSelected()) {
+		if(!colorRepresentation.isSelected() && !bordersRepresentation.isSelected()){
+			colorRepresentation.setSelected(true);
+		}
+		
+		if (enable_visual_representation.isSelected()) {
 			if(colorRepresentation.isSelected()){
 				canvas = new CultureColorsCanvas(CANVAS_WIDTH, sim.nw);
 			}else{
@@ -465,8 +498,8 @@ public class MainApplicationFrame extends JFrame {
 			sim.setDefer_update(deferredUpdateSelect.isSelected());
 		}
 		simThr = new Thread(sim);
-		toggleSimBtn.setText("Start");
-		stepSimBtn.setEnabled(true);
+		toggle_simulation_button.setText("Start");
+		step_simulation_button.setEnabled(true);
 		lTxtIn.setText(String.valueOf(sim.nw.size));
 		fTxtIn.setText(String.valueOf(sim.nw.features));
 		qTxtIn.setText(String.valueOf(sim.nw.traits));
@@ -569,6 +602,7 @@ public class MainApplicationFrame extends JFrame {
 								.parseInt(fTxtIn.getText()), Integer
 								.parseInt(qTxtIn.getText()), periodicBoundarySelect.isSelected(), networkRefreshRateSlider.getValue()));
 				
+				sim.stop_after_iterations((long) Math.pow(10, ((SpinnerNumberModel)stop_after_iterations.getModel()).getNumber().longValue()));
 				sim.addListener(new SimulationEventAdapter(){
 					public void finished(){
 						System.out.println("Simulation finished.");
@@ -602,13 +636,13 @@ public class MainApplicationFrame extends JFrame {
 			}
 			if (sim.state == SimulationState.RUNNING) {
 				sim.stop();
-				toggleSimBtn.setText("Start");
-				stepSimBtn.setEnabled(true);
+				toggle_simulation_button.setText("Start");
+				step_simulation_button.setEnabled(true);
 			} else {
 				System.out.println("starting simulation thread...");
 				sim.start();
-				toggleSimBtn.setText("Stop");
-				stepSimBtn.setEnabled(false);
+				toggle_simulation_button.setText("Stop");
+				step_simulation_button.setEnabled(false);
 			}
 		}
 	};
@@ -619,7 +653,7 @@ public class MainApplicationFrame extends JFrame {
 		}
 	};
 
-	Action saveToFile = new AbstractAction("Save...") {
+	Action save_to_file = new AbstractAction("Save...") {
 		private static final long serialVersionUID = -4675654942388512094L;
 
 		public void actionPerformed(ActionEvent e) {
@@ -637,7 +671,7 @@ public class MainApplicationFrame extends JFrame {
 		}
 	};
 
-	Action loadFromFile = new AbstractAction("Load...") {
+	Action load_from_file = new AbstractAction("Load...") {
 		private static final long serialVersionUID = -4675654942388512094L;
 
 		public void actionPerformed(ActionEvent e) {
@@ -657,6 +691,15 @@ public class MainApplicationFrame extends JFrame {
 							"Error!", JOptionPane.ERROR_MESSAGE);
 				}
 			}
+		}
+	};
+	
+	Action simulation_properties = new AbstractAction("Simulation Properties...") {
+		private static final long serialVersionUID = -4675654942388512094L;
+
+		public void actionPerformed(ActionEvent e) {
+			simulationPropertiesFrame.pack();
+			simulationPropertiesFrame.setVisible(true);
 		}
 	};
 
@@ -770,6 +813,7 @@ public class MainApplicationFrame extends JFrame {
 		axelrod.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		axelrod.pack();
 		axelrod.setVisible(true);
+		axelrod.setExtendedState(axelrod.getExtendedState() | JFrame.MAXIMIZED_BOTH);
 	}
 
 	public static JFileChooser getFileChooser() {

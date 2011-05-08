@@ -32,7 +32,7 @@ public class CultureBordersCanvas extends CultureCanvas {
 		this.gap = new Insets(1, 1, 1, 1);
 	}
 	
-	public void paintComponent(Graphics g){
+	public void paintExtension(Graphics g){
 		for (int nd = 0; nd < nw.n_nodes; nd++) {
 			int[] site = {nd / nw.size, nd % nw.size};
 			int node = site[0] * nw.size + site[1];

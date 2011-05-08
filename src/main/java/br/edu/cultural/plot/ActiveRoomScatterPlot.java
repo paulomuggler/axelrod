@@ -20,7 +20,7 @@ public class ActiveRoomScatterPlot extends Plot<CultureDisseminationSimulation, 
 		seriesList = new ArrayList<double[]>();
 		lastMonitoredNodeToChange = 0;
 		this.sim = s;
-		for (Integer node : s.nw.monitorNodes) {
+		for (Integer node : s.nw.nodes_listened) {
 			if (s.nw.interactiveNodes.contains(node)) {
 				lastMonitoredNodeToChange = node;
 				break;
@@ -37,7 +37,7 @@ public class ActiveRoomScatterPlot extends Plot<CultureDisseminationSimulation, 
 	@Override
 	public void interaction(int i, int j, int[] oldState, int[] newState){
 		Integer nbr = sim.nw.size * i + j;
-		if (sim.nw.monitorNodes.contains(nbr)
+		if (sim.nw.nodes_listened.contains(nbr)
 				&& !nbr.equals(lastMonitoredNodeToChange)) {
 			plot();
 			lastMonitoredNodeToChange = nbr;
@@ -47,7 +47,7 @@ public class ActiveRoomScatterPlot extends Plot<CultureDisseminationSimulation, 
 	@Override
 	public void plot() {
 		reallocate_series();
-		double[] point = { sim.iterations(), sim.nw.monitorNodes.indexOf(lastMonitoredNodeToChange) };
+		double[] point = { sim.iterations(), sim.nw.nodes_listened.indexOf(lastMonitoredNodeToChange) };
 		seriesList.add(point);
 	}
 	

@@ -33,7 +33,7 @@ public class OrderParametersScatterPlot extends Plot<CultureDisseminationSimulat
 		if(sim.epoch() % SERIES_UPDATE_INTERVAL == 0){
 			reallocate_series();
 		}
-		addPoints(sim.interactions());
+		addPoints(sim.epoch());
 	}
 
 	private void reallocate_series() {
@@ -45,6 +45,7 @@ public class OrderParametersScatterPlot extends Plot<CultureDisseminationSimulat
 				s[0][i] = point[0];
 				s[1][i++] = point[1];
 			}
+			dataset.removeSeries(f);
 			dataset.addSeries(f++, s);
 		}
 	}
@@ -79,7 +80,7 @@ public class OrderParametersScatterPlot extends Plot<CultureDisseminationSimulat
 	}
 
 	private void addPoints(double time) {
-		for (int i = 0; i < points.length; i ++) {
+		for (int i = 0; i < points.length; i++) {
 			double[] point = {time, points[i]/sim.nw.n_edges()};
 			serieses.get(i).add(point);
 		}

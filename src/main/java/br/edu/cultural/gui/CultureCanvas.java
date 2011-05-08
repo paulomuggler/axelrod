@@ -12,6 +12,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.RepaintManager;
 
 import br.edu.cultural.network.CulturalNetwork;
 import br.edu.cultural.network.State;
@@ -32,7 +33,7 @@ public abstract class CultureCanvas extends JPanel {
 	protected final CulturalNetwork nw;
 	
 	public CultureCanvas(int canvasWidth, CulturalNetwork nw) {
-		super();
+		super(true);
 		this.nw = nw;
 		this.canvasWidth = canvasWidth - (canvasWidth % this.nw.size);
 		this.siteWidth = (int) canvasWidth / this.nw.size;
@@ -59,8 +60,15 @@ public abstract class CultureCanvas extends JPanel {
 		this.setPreferredSize(new Dimension(this.canvasWidth, this.canvasWidth));
 		
 	}
+	
+	int n = 0;
+	public void paintComponent(Graphics g){
+		paintExtension(g);
+		if(++n % 100 == 0)
+			RepaintManager.currentManager(this).addDirtyRegion(this, this.getX(), this.getY(), this.getWidth(), this.getHeight());	
+	}
 
-	public abstract void paintComponent(Graphics g);
+	public abstract void paintExtension(Graphics g);
 	
 
 	public int getCanvasWidth() {
@@ -90,7 +98,7 @@ public abstract class CultureCanvas extends JPanel {
 		public void actionPerformed(ActionEvent e) {
 			Component parent = getParent();
 			do parent = parent.getParent(); while (!(parent instanceof MainApplicationFrame));
-			boolean monitoring = ((MainApplicationFrame)parent).sim.toggleMonitor(nodeClicked);
+			boolean monitoring = ((MainApplicationFrame)parent).sim.toggle_listening(nodeClicked);
 			String out = String.format((monitoring ? "added node to monitoring" : "removed node from monitoring")+": %d, %d, %d, state %s", (clickNwCoords[1]*nw.size + clickNwCoords[0]), clickNwCoords[0], clickNwCoords[1], State.toString(CultureCanvas.this.nw.states[nodeClicked]));
 			System.out.println(out);
 		}
