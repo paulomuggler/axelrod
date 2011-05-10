@@ -12,6 +12,7 @@ import sun.misc.Launcher;
 import br.edu.cultural.network.CulturalNetwork;
 import br.edu.cultural.plot.Plot;
 
+@SuppressWarnings("restriction")
 public abstract class CultureDisseminationSimulation implements Runnable {
 	public enum SimulationState {
 		RUNNING, STOPPED, FINISHED
@@ -28,8 +29,8 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 	// Statistics
 	protected long sim_start_ms;
 	protected long sim_finish_ms = -1;
-	protected int iterations = 0;
-	protected int interactions = 0;
+	protected long iterations = 0;
+	protected long interactions = 0;
 	
 	protected long stop_after_iterations = Long.MAX_VALUE;
 
@@ -291,15 +292,15 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 		}
 	}
 
-	public int iterations() {
+	public long iterations() {
 		return iterations;
 	}
 	
-	public Integer interactions() {
+	public Long interactions() {
 		return interactions;
 	}
 	
-	public int epoch() {
+	public long epoch() {
 		return this.iterations / this.nw.n_nodes;
 	}
 

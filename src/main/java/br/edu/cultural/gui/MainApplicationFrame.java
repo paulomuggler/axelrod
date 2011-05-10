@@ -97,7 +97,7 @@ public class MainApplicationFrame extends JFrame {
 	JFrame simulationPropertiesFrame = new JFrame("Simulation Properties");
 	JPanel simulationProperties = new JPanel(new MigLayout("fillx"));
 	
-	SpinnerNumberModel stop_spinner_model = new SpinnerNumberModel(10, 0, 100, 1);
+	SpinnerNumberModel stop_spinner_model = new SpinnerNumberModel(10, 0, (int)Math.log10(Long.MAX_VALUE), 1);
 	JSpinner stop_after_iterations = new JSpinner(stop_spinner_model);
 
 	JLabel lLbl = new JLabel("Size:");
@@ -120,11 +120,7 @@ public class MainApplicationFrame extends JFrame {
 	
 	ButtonGroup representations = new ButtonGroup();
 	JRadioButton colorRepresentation = new JRadioButton(new AbstractAction() {
-		/**
-		 * 
-		 */
 		private static final long serialVersionUID = 8478401213428301372L;
-
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			MainApplicationFrame.this.switchCanvas(new CultureColorsCanvas(CANVAS_WIDTH, sim.nw));

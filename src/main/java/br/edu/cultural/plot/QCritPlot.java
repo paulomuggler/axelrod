@@ -39,28 +39,34 @@ public class QCritPlot extends StandAlonePlot {
 		
 		SpinnerNumberModel size_spinner_model = new SpinnerNumberModel(240, 2, Integer.MAX_VALUE, 1);
 		final JSpinner size_in = new JSpinner(size_spinner_model);
-		setup.add(new JLabel("Size: "));
+		setup.add(new JLabel("Size: "), "split 2");
 		setup.add(size_in, "");
 		
 		SpinnerNumberModel features_in_model = new SpinnerNumberModel(2, 2, Integer.MAX_VALUE, 1);
 		final JSpinner features_in = new JSpinner(features_in_model);
-		setup.add(new JLabel("Features: "));
+		setup.add(new JLabel("Features: "), "split 2");
 		setup.add(features_in, "wrap");
 		
 		SpinnerNumberModel traits_lower_spinner_model = new SpinnerNumberModel(2, 2, Integer.MAX_VALUE, 1);
 		final JSpinner traits_lower_in = new JSpinner(traits_lower_spinner_model);
-		setup.add(new JLabel("Q lower bound: "));
+		setup.add(new JLabel("Q lower bound: "), "split 2");
 		setup.add(traits_lower_in, "");
 		
 		SpinnerNumberModel traits_upper_spinner_model = new SpinnerNumberModel(60, 2, Integer.MAX_VALUE, 1);
 		final JSpinner traits_upper_in = new JSpinner(traits_upper_spinner_model);
-		setup.add(new JLabel("Q upper bound: "));
+		setup.add(new JLabel("Q upper bound: "), "split 2");
 		setup.add(traits_upper_in, "wrap");
+		
+		SpinnerNumberModel simulation_count_model = new SpinnerNumberModel(10, 1, Integer.MAX_VALUE, 1);
+		final JSpinner simulation_count_in = new JSpinner(simulation_count_model);
+		setup.add(new JLabel("Average from: "), "split 3, span 2");
+		setup.add(simulation_count_in, "");
+		setup.add(new JLabel(" simulations."), "wrap");
 
 		final JDialog bam = new JDialog(parent, "New Plot...");
 		
-		final JButton go = new JButton("Go!");
-		go.setAction(new AbstractAction() {
+		final JButton go = new JButton();
+		go.setAction(new AbstractAction("Start.") {
 			private static final long serialVersionUID = -9175379487336433833L;
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -70,13 +76,14 @@ public class QCritPlot extends StandAlonePlot {
 						((Number)size_in.getValue()).intValue(), 
 						((Number)features_in.getValue()).intValue(),
 						((Number)traits_lower_in.getValue()).intValue(),
-						((Number)traits_upper_in.getValue()).intValue());
+						((Number)traits_upper_in.getValue()).intValue(),
+						((Number)simulation_count_in.getValue()).intValue());
 				new Thread(pl).start();
 				bam.setVisible(false);
 				bam.dispose();
 			}
 		});
-		setup.add(go, "span 4, al center");
+		setup.add(go, "span 2, al center");
 		
 		bam.getContentPane().add(setup);
 		bam.pack();
@@ -91,10 +98,11 @@ public class QCritPlot extends StandAlonePlot {
 	int features;
 	int traits_lower;
 	int traits_upper;
+	int simulation_count;
 	
 	public QCritPlot(Class<? extends CultureDisseminationSimulation> simulation_type,
 			boolean periodic_boundary, int network_size, int features,
-			int traits_lower, int traits_upper) {
+			int traits_lower, int traits_upper, int simulation_count) {
 		super();
 		this.simulation_type = simulation_type;
 		this.periodic_boundary = periodic_boundary;
@@ -102,6 +110,7 @@ public class QCritPlot extends StandAlonePlot {
 		this.features = features;
 		this.traits_lower = traits_lower;
 		this.traits_upper = traits_upper;
+		this.simulation_count = simulation_count;
 	}
 
 
@@ -109,15 +118,13 @@ public class QCritPlot extends StandAlonePlot {
 	@Override
 	public void run() {
 		
-			int numSims = 10;
-
 			double[][] series = new double[2][(traits_upper - traits_lower + 1)];
 			int si = 0;
 			ScatterPlotter plotter = null;
 			for (int q = traits_lower; q <= traits_upper; q++) {
 				System.out.println("q: " + q);
-				double[][] cSizes = new double[2][numSims];
-				for (int i = 0; i < numSims; i++) {
+				double[][] cSizes = new double[2][simulation_count];
+				for (int i = 0; i < simulation_count; i++) {
 					CultureDisseminationSimulation sim =
 						CultureDisseminationSimulation.factory(
 								(Class<? extends CultureDisseminationSimulation>) this.simulation_type,
