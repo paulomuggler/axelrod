@@ -2,7 +2,6 @@ package br.edu.cultural.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -15,10 +14,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -51,12 +46,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
 import net.miginfocom.swing.MigLayout;
 import br.edu.cultural.network.CulturalNetwork;
 import br.edu.cultural.network.State;
-import br.edu.cultural.network.Utils;
 import br.edu.cultural.plot.ActiveEdgesScatterPlot;
 import br.edu.cultural.plot.ActiveNodesScatterPlot;
 import br.edu.cultural.plot.ActiveRoomScatterPlot;
@@ -65,14 +58,8 @@ import br.edu.cultural.plot.CommonFeaturesScatterPlot;
 import br.edu.cultural.plot.CultureDistributionScatterPlot;
 import br.edu.cultural.plot.OrderParametersScatterPlot;
 import br.edu.cultural.plot.Plot;
-import br.edu.cultural.plot.ScatterPlotter;
-import br.edu.cultural.simulation.AxelrodSimulation;
-import br.edu.cultural.simulation.BelousovZhabotinskySimulation;
+import br.edu.cultural.plot.QCritPlot;
 import br.edu.cultural.simulation.CultureDisseminationSimulation;
-import br.edu.cultural.simulation.FacilitatedDisseminationWithSurfaceTension;
-import br.edu.cultural.simulation.FacilitatedDisseminationWithoutSurfaceTension;
-import br.edu.cultural.simulation.KupermanSimulationOneFeatureOverlap;
-import br.edu.cultural.simulation.KupermanSimulationOverallOverlap;
 import br.edu.cultural.simulation.CultureDisseminationSimulation.SimulationEventAdapter;
 import br.edu.cultural.simulation.CultureDisseminationSimulation.SimulationEventListener;
 import br.edu.cultural.simulation.CultureDisseminationSimulation.SimulationState;
@@ -92,7 +79,7 @@ public class MainApplicationFrame extends JFrame {
 
 	private static JFileChooser fc;
 
-	JComboBox simulationSelect;
+	JComboBox simulation_type_in;
 	JCheckBox periodicBoundarySelect;
 	JCheckBox deferredUpdateSelect;
 
@@ -133,12 +120,19 @@ public class MainApplicationFrame extends JFrame {
 	
 	ButtonGroup representations = new ButtonGroup();
 	JRadioButton colorRepresentation = new JRadioButton(new AbstractAction() {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 8478401213428301372L;
+
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			MainApplicationFrame.this.switchCanvas(new CultureColorsCanvas(CANVAS_WIDTH, sim.nw));
 		}
 	});
 	JRadioButton bordersRepresentation = new JRadioButton(new AbstractAction() {
+		private static final long serialVersionUID = 2178464349352290560L;
+
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			MainApplicationFrame.this.switchCanvas(new CultureBordersCanvas(CANVAS_WIDTH, sim.nw));
@@ -209,17 +203,11 @@ public class MainApplicationFrame extends JFrame {
 		
 		simulationPropertiesFrame.add(simulationProperties);
 
-		simulationSelect = new JComboBox();
-		simulationSelect
-				.addItem(FacilitatedDisseminationWithSurfaceTension.class);
-		simulationSelect
-				.addItem(FacilitatedDisseminationWithoutSurfaceTension.class);
-		simulationSelect.addItem(BelousovZhabotinskySimulation.class);
-		simulationSelect.addItem(AxelrodSimulation.class);
-		simulationSelect.addItem(KupermanSimulationOneFeatureOverlap.class);
-		simulationSelect.addItem(KupermanSimulationOverallOverlap.class);
-
-		simulationSelect.setRenderer(new ClassNameComboBoxRenderer());
+		simulation_type_in = new JComboBox();
+		simulation_type_in.setRenderer(new ClassNameComboBoxRenderer());
+		for (Class<? extends CultureDisseminationSimulation> cl : CultureDisseminationSimulation.subclasses()) {
+			simulation_type_in.addItem(cl);
+		}
 		
 		periodicBoundarySelect = new JCheckBox("Periodic boundary condition");
 		deferredUpdateSelect = new JCheckBox("Defer representation updates (optimization)");
@@ -309,7 +297,7 @@ public class MainApplicationFrame extends JFrame {
 		simulationProperties.add(new JSeparator(SwingConstants.HORIZONTAL), "span 3, grow, wrap, gaptop 9, gapbottom 9");
 
 		controls.add(new JSeparator(SwingConstants.HORIZONTAL), "span 3, grow, wrap, gaptop 9, gapbottom 9");
-		controls.add(simulationSelect, "span 3, grow, wrap");
+		controls.add(simulation_type_in, "span 3, grow, wrap");
 		
 		controls.add(lLbl, "split 6");
 		controls.add(lTxtIn, "");
@@ -569,13 +557,8 @@ public class MainApplicationFrame extends JFrame {
 		}
 		plotMenu.add(new AbstractAction("critical Q plot...") {
 			private static final long serialVersionUID = -1945523231629447680L;
-
 			public void actionPerformed(ActionEvent e) {
-				new Thread(new Runnable() {
-					public void run() {
-						q_crit_plot();
-					}
-				}).start();
+				QCritPlot.start_from_dialog(MainApplicationFrame.this);
 			}
 		});
 	}
@@ -587,6 +570,7 @@ public class MainApplicationFrame extends JFrame {
 	}
 
 	private ActionListener resetSim = new ActionListener() {
+		@SuppressWarnings("unchecked")
 		public void actionPerformed(ActionEvent e) {
 			System.out.println("resetting simulation thread...");
 			if (sim != null){
@@ -596,7 +580,7 @@ public class MainApplicationFrame extends JFrame {
 			}
 			try {
 				sim = CultureDisseminationSimulation.factory(
-						(Class<? extends CultureDisseminationSimulation>) simulationSelect
+						(Class<? extends CultureDisseminationSimulation>) simulation_type_in
 								.getSelectedItem(), new CulturalNetwork(Integer
 								.parseInt(lTxtIn.getText()), Integer
 								.parseInt(fTxtIn.getText()), Integer
@@ -674,6 +658,7 @@ public class MainApplicationFrame extends JFrame {
 	Action load_from_file = new AbstractAction("Load...") {
 		private static final long serialVersionUID = -4675654942388512094L;
 
+		@SuppressWarnings("unchecked")
 		public void actionPerformed(ActionEvent e) {
 			System.out.println("load simulation from file...");
 			int select = getFileChooser().showOpenDialog(MainApplicationFrame.this);
@@ -683,7 +668,7 @@ public class MainApplicationFrame extends JFrame {
 					CulturalNetwork nw = new CulturalNetwork(f);
 					if (sim != null)
 						sim.quit();
-					sim = CultureDisseminationSimulation.factory((Class<? extends CultureDisseminationSimulation>) simulationSelect.getSelectedItem(), nw);
+					sim = CultureDisseminationSimulation.factory((Class<? extends CultureDisseminationSimulation>) simulation_type_in.getSelectedItem(), nw);
 					resetGui();
 				} catch (IOException e1) {
 					JOptionPane.showMessageDialog(MainApplicationFrame.this,
@@ -717,6 +702,7 @@ public class MainApplicationFrame extends JFrame {
 		protected Plot<CultureDisseminationSimulation, ?> plot;
 		private String pTitle;
 
+		@SuppressWarnings("unchecked")
 		public PlotAction(String actionCaption, String plotTitle, Plot<?, ?> p) {
 			super(actionCaption);
 			plot = (Plot<CultureDisseminationSimulation, ?>) p;
@@ -744,67 +730,6 @@ public class MainApplicationFrame extends JFrame {
 
 		public String toString() {
 			return pTitle;
-		}
-	}
-
-	private void q_crit_plot() {
-		int size = Integer.parseInt(lTxtIn.getText());
-		int f = Integer.parseInt(fTxtIn.getText());
-		int numSims = 10;
-		int qMin = 2;
-		int qMax = 100;
-
-		double[][] series = new double[2][(qMax - qMin + 1)];
-		int si = 0;
-		ScatterPlotter plotter = null;
-		for (int q = qMin; q <= qMax; q++) {
-			System.out.println("q: " + q);
-			double[][] cSizes = new double[2][numSims];
-			for (int i = 0; i < numSims; i++) {
-				CultureDisseminationSimulation sim =
-					CultureDisseminationSimulation.factory(
-							(Class<? extends CultureDisseminationSimulation>) simulationSelect.getSelectedItem(),
-							new CulturalNetwork(size, f, q, periodicBoundarySelect.isSelected(), networkRefreshRateSlider.getValue()));
-				sim.start();
-				sim.run();
-				Integer[] culture_sizes = new ArrayList<Integer>(sim.nw
-						.count_cultures().values()).toArray(new Integer[0]);
-				Arrays.sort(culture_sizes);
-				Integer largest_culture = (Integer) culture_sizes[culture_sizes.length - 1];
-				cSizes[0][i] = q; // current q
-				cSizes[1][i] = ((double) largest_culture)
-						/ (sim.nw.size * sim.nw.size); // largest culture,
-				// normalized
-			}
-			double average = Utils.array_average(cSizes[1]);
-			series[0][si] = cSizes[0][0];
-			series[1][si] = average;
-			si++;
-			if (plotter == null) {
-				plotter = new ScatterPlotter("Axelrod Simulation Plot", String
-						.format("L = %d, F = %d", size, f), series);
-				plotter.mostra();
-			}
-			plotter.setSeries(series);
-		}
-	}
-
-	class ClassNameComboBoxRenderer extends BasicComboBoxRenderer{
-		private static final long serialVersionUID = 6965028171205010114L;
-		public Component getListCellRendererComponent(JList list, Object value,
-				int index, boolean isSelected, boolean cellHasFocus) {
-			Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-			setText(humanize(((Class<?>) value).getSimpleName()));
-			return c;
-		}
-		
-		private String humanize(String camelized){
-			Pattern upper = Pattern.compile("[A-Z][a-z]*");
-			Matcher m = upper.matcher(camelized);
-			StringBuilder sb = new StringBuilder();
-			while(m.find())
-			sb.append(m.group().toLowerCase()+" ");
-			return sb.toString();
 		}
 	}
 

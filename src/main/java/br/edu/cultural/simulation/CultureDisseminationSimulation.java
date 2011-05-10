@@ -1,11 +1,14 @@
 package br.edu.cultural.simulation;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+import sun.misc.Launcher;
 import br.edu.cultural.network.CulturalNetwork;
 import br.edu.cultural.plot.Plot;
 
@@ -329,5 +332,38 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 			return null;
 		}
 	}
+	
+	@SuppressWarnings("unchecked")
+	public static List<Class<? extends CultureDisseminationSimulation>> subclasses(){
+		List<Class<? extends CultureDisseminationSimulation>>  subclasses = new ArrayList<Class<? extends CultureDisseminationSimulation>>();
+		String pckgname = CultureDisseminationSimulation.class.getPackage().getName();
+        String name = new String(pckgname);
+        if (!name.startsWith("/")) {
+            name = "/" + name;
+        }        
+        name = name.replace('.','/');
+        URL url = Launcher.class.getResource(name);
+        File directory = new File(url.getFile());
+        if (directory.exists()) {
+            String [] files = directory.list();
+            for (int i=0;i<files.length;i++) {
+                if (files[i].endsWith(".class")) {
+                    String classname = files[i].substring(0,files[i].length()-6);
+                    try {
+                    	Class<?> cl = Class.forName(pckgname+"."+classname);
+                        if (CultureDisseminationSimulation.class.isAssignableFrom(
+                        					Class.forName(pckgname+"."+classname)) 
+                        		&& !cl.equals(CultureDisseminationSimulation.class)) {
+                        	subclasses.add((Class<? extends CultureDisseminationSimulation>) cl);
+                        }
+                    } catch (ClassNotFoundException cnfex) {
+                        System.err.println(cnfex);
+                    }
+                }
+            }
+        }
+		return subclasses;
+	}
+	
 
 }
