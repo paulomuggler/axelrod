@@ -25,7 +25,7 @@ public class ActiveRoomsHistogram extends Plot<CultureDisseminationSimulation, S
 	private static final long serialVersionUID = -5160449133785015019L;
 	
 	private Integer lastMonitoredNodeToChange;
-	private Integer timeOfLastChange;
+	private Long timeOfLastChange;
 	
 	final static int MIN_VAL = 0;
 	final static int MAX_VAL = 1000000;
@@ -37,7 +37,7 @@ public class ActiveRoomsHistogram extends Plot<CultureDisseminationSimulation, S
 	public JFreeChart createPlot(CultureDisseminationSimulation sim) {
 		this.sim = sim;
 		lastMonitoredNodeToChange = 0;
-		timeOfLastChange = 0;
+		timeOfLastChange = 0l;
 		for (Integer node : sim.nw.nodes_listened) {
 			if (sim.nw.interactiveNodes.contains(node)) {
 				lastMonitoredNodeToChange = node;
@@ -52,7 +52,7 @@ public class ActiveRoomsHistogram extends Plot<CultureDisseminationSimulation, S
 		return chart;
 	}
 	
-	private int iteration;
+	private long iteration;
 	
 	@Override
 	public void interaction(int i, int j, int[] oldState, int[] newState){
@@ -68,7 +68,7 @@ public class ActiveRoomsHistogram extends Plot<CultureDisseminationSimulation, S
 	
 	@Override
 	public void plot() {
-		Integer delta = iteration - timeOfLastChange;
+		Long delta = iteration - timeOfLastChange;
 		dataset.addObservation((delta == 0 ? 1 : delta));
 	}
 	

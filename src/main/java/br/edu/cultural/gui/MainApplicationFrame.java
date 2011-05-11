@@ -205,9 +205,13 @@ public class MainApplicationFrame extends JFrame {
 
 		simulation_type_in = new JComboBox();
 		simulation_type_in.setRenderer(new ClassNameComboBoxRenderer());
-		for (Class<? extends CultureDisseminationSimulation> cl : CultureDisseminationSimulation.subclasses()) {
+		
+		for (Class<? extends CultureDisseminationSimulation> cl : CultureDisseminationSimulation.simulationClasses) {
 			simulation_type_in.addItem(cl);
 		}
+//		for (Class<? extends CultureDisseminationSimulation> cl : CultureDisseminationSimulation.subclasses()) {
+//			simulation_type_in.addItem(cl);
+//		}
 		
 		periodicBoundarySelect = new JCheckBox("Periodic boundary condition");
 		deferredUpdateSelect = new JCheckBox("Defer representation updates (optimization)");

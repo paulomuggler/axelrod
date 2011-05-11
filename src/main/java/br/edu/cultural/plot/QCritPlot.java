@@ -28,9 +28,12 @@ public class QCritPlot extends StandAlonePlot {
 		
 		final JComboBox simulation_type_in = new JComboBox();
 		simulation_type_in.setRenderer(new ClassNameComboBoxRenderer());
-		for (Class<? extends CultureDisseminationSimulation> cl : CultureDisseminationSimulation.subclasses()) {
+		for (Class<? extends CultureDisseminationSimulation> cl : CultureDisseminationSimulation.simulationClasses) {
 			simulation_type_in.addItem(cl);
 		}
+//		for (Class<? extends CultureDisseminationSimulation> cl : CultureDisseminationSimulation.subclasses()) {
+//			simulation_type_in.addItem(cl);
+//		}
 		setup.add(simulation_type_in, "span 2, wrap");
 		
 		final JCheckBox periodic_boundary_in = new JCheckBox("Periodic network boundary:");

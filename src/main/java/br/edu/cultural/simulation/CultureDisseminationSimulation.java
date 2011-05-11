@@ -11,11 +11,22 @@ import java.util.Random;
 import sun.misc.Launcher;
 import br.edu.cultural.network.CulturalNetwork;
 import br.edu.cultural.plot.Plot;
+import br.edu.cultural.util.SubClassFinder;
 
 public abstract class CultureDisseminationSimulation implements Runnable {
 	public enum SimulationState {
 		RUNNING, STOPPED, FINISHED
 	}
+	
+	
+  public static final Class[] simulationClasses = {
+                                                                    AxelrodSimulation.class,
+                                                                    BelousovZhabotinskySimulation.class,
+                                                                    FacilitatedDisseminationWithoutSurfaceTension.class,
+                                                                    FacilitatedDisseminationWithSurfaceTension.class,
+                                                                    KupermanSimulationOneFeatureOverlap.class,
+                                                                    KupermanSimulationOverallOverlap.class
+                                                                    };
 
 	public CulturalNetwork nw;
 	protected final List<Plot<?, ?>> plots = new ArrayList<Plot<?, ?>>();
@@ -335,34 +346,38 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 	
 	@SuppressWarnings("unchecked")
 	public static List<Class<? extends CultureDisseminationSimulation>> subclasses(){
-		List<Class<? extends CultureDisseminationSimulation>>  subclasses = new ArrayList<Class<? extends CultureDisseminationSimulation>>();
-		String pckgname = CultureDisseminationSimulation.class.getPackage().getName();
-        String name = new String(pckgname);
-        if (!name.startsWith("/")) {
-            name = "/" + name;
-        }        
-        name = name.replace('.','/');
-        URL url = Launcher.class.getResource(name);
-        File directory = new File(url.getFile());
-        if (directory.exists()) {
-            String [] files = directory.list();
-            for (int i=0;i<files.length;i++) {
-                if (files[i].endsWith(".class")) {
-                    String classname = files[i].substring(0,files[i].length()-6);
-                    try {
-                    	Class<?> cl = Class.forName(pckgname+"."+classname);
-                        if (CultureDisseminationSimulation.class.isAssignableFrom(
-                        					Class.forName(pckgname+"."+classname)) 
-                        		&& !cl.equals(CultureDisseminationSimulation.class)) {
-                        	subclasses.add((Class<? extends CultureDisseminationSimulation>) cl);
-                        }
-                    } catch (ClassNotFoundException cnfex) {
-                        System.err.println(cnfex);
-                    }
-                }
-            }
-        }
-		return subclasses;
+	    List<Class<? extends CultureDisseminationSimulation>> subclasses = 
+	                              new ArrayList<Class<? extends CultureDisseminationSimulation>>();
+	    Collections.copy(new SubClassFinder().findSubclasses(CultureDisseminationSimulation.class.getName()), subclasses);
+      return subclasses;
+//		List<Class<? extends CultureDisseminationSimulation>>  subclasses = new ArrayList<Class<? extends CultureDisseminationSimulation>>();
+//		String pckgname = CultureDisseminationSimulation.class.getPackage().getName();
+//        String name = new String(pckgname);
+//        if (!name.startsWith("/")) {
+//            name = "/" + name;
+//        }        
+//        name = name.replace('.','/');
+//        URL url = Launcher.class.getResource(name);
+//        File directory = new File(url.getFile());
+//        if (directory.exists()) {
+//            String [] files = directory.list();
+//            for (int i=0;i<files.length;i++) {
+//                if (files[i].endsWith(".class")) {
+//                    String classname = files[i].substring(0,files[i].length()-6);
+//                    try {
+//                    	Class<?> cl = Class.forName(pckgname+"."+classname);
+//                        if (CultureDisseminationSimulation.class.isAssignableFrom(
+//                        					Class.forName(pckgname+"."+classname)) 
+//                        		&& !cl.equals(CultureDisseminationSimulation.class)) {
+//                        	subclasses.add((Class<? extends CultureDisseminationSimulation>) cl);
+//                        }
+//                    } catch (ClassNotFoundException cnfex) {
+//                        System.err.println(cnfex);
+//                    }
+//                }
+//            }
+//        }
+//		return subclasses;
 	}
 	
 
