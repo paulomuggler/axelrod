@@ -43,20 +43,20 @@ public class CultureBordersCanvas extends CultureCanvas {
 			for(int ni = 0; ni < nw.degree(node); ni++){
 				int nbr = nw.node_neighbor(node, ni);
 				int overlap = nw.overlap(node, nbr);
-				int color = -1;
-				double cos = 255 * Math.cos((overlap -1)*(Math.PI/this.nw.features-1));
-				double bCos = cos > 0? cos : 0;
-				double gSin = 255 * Math.sin((overlap -1)*(Math.PI/this.nw.features-1));
-				double rCos = -cos > 0? -cos : 0;
 				
+				int color = -1;
+				double cos = 255 * Math.cos((overlap - 1)*(Math.PI/(this.nw.features-2)));
+				double bCos = cos > 0? cos : 0;
+				double gSin = 255 * Math.sin((overlap - 1)*(Math.PI/(this.nw.features-2)));
+				double rCos = -cos > 0? -cos : 0;
 				if(overlap == 0){
 					color = 0;
 				}else if(overlap == nw.features){
 					color = 0xFFFFFF;
 				}else{
-					color = (int) (rCos * 0x10000 + gSin* 0x100 + bCos);
-//					color = (int) (rCos * 0x10000 + bCos);
+					color = (((int)rCos) * 0x10000 + ((int)gSin)* 0x100 + ((int)bCos));
 				}
+				
 				
 				if(nbr == node - nw.size){
 					bColorUp = color;
