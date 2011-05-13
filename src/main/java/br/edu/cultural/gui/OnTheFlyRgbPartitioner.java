@@ -3,8 +3,11 @@ package br.edu.cultural.gui;
 
 public class OnTheFlyRgbPartitioner implements RgbPartitioner {
 	
+	@SuppressWarnings("unused")
 	private final int features;
+	@SuppressWarnings("unused")
 	private final int traits;
+	@SuppressWarnings("unused")
 	private final int usedFeatures;
 	
 	public OnTheFlyRgbPartitioner(int features, int traits){

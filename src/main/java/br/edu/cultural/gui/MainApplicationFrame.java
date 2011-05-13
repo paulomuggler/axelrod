@@ -59,21 +59,21 @@ import br.edu.cultural.plot.CultureDistributionScatterPlot;
 import br.edu.cultural.plot.OrderParametersScatterPlot;
 import br.edu.cultural.plot.Plot;
 import br.edu.cultural.plot.QCritPlot;
+import br.edu.cultural.plot.StandAlonePlot;
+import br.edu.cultural.plot.TruncatedQCritPlot;
 import br.edu.cultural.simulation.CultureDisseminationSimulation;
-import br.edu.cultural.simulation.CultureDisseminationSimulation.SimulationEventAdapter;
-import br.edu.cultural.simulation.CultureDisseminationSimulation.SimulationEventListener;
 import br.edu.cultural.simulation.CultureDisseminationSimulation.SimulationState;
+import br.edu.cultural.simulation.SimulationEventListener;
+import br.edu.cultural.simulation.SimulationEventListener.SimulationEventAdapter;
 
 public class MainApplicationFrame extends JFrame {
 
 	/** */
 	private static final long serialVersionUID = -2360890643572400835L;
 
-	@SuppressWarnings("unused")
-	private static final int FRAME_WIDTH = 1000;
-	@SuppressWarnings("unused")
+	private static final int FRAME_WIDTH = (int) (Toolkit.getDefaultToolkit().getScreenSize().width*0.96);;
 	private static final int FRAME_HEIGHT = (int) (Toolkit.getDefaultToolkit().getScreenSize().height*0.96);
-	private static final int CANVAS_WIDTH = (int) (Toolkit.getDefaultToolkit().getScreenSize().height*0.9);
+	private static final int CANVAS_HEIGHT = (int) (Toolkit.getDefaultToolkit().getScreenSize().height*0.9);
 
 	private static final String APP_TITLE = "Axelrod Simulation";
 
@@ -123,7 +123,7 @@ public class MainApplicationFrame extends JFrame {
 		private static final long serialVersionUID = 8478401213428301372L;
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			MainApplicationFrame.this.switchCanvas(new CultureColorsCanvas(CANVAS_WIDTH, sim.nw));
+			MainApplicationFrame.this.switchCanvas(new CultureColorsCanvas(CANVAS_HEIGHT, sim.nw));
 		}
 	});
 	JRadioButton bordersRepresentation = new JRadioButton(new AbstractAction() {
@@ -131,7 +131,7 @@ public class MainApplicationFrame extends JFrame {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			MainApplicationFrame.this.switchCanvas(new CultureBordersCanvas(CANVAS_WIDTH, sim.nw));
+			MainApplicationFrame.this.switchCanvas(new CultureBordersCanvas(CANVAS_HEIGHT, sim.nw));
 		}
 	});
 	
@@ -150,7 +150,7 @@ public class MainApplicationFrame extends JFrame {
 		}
 		boolean toggled = false;
 		if(MainApplicationFrame.this.sim.state.equals(CultureDisseminationSimulation.SimulationState.RUNNING)){
-			MainApplicationFrame.this.toggleSim.actionPerformed(null);
+			MainApplicationFrame.this.toggle_simulation.actionPerformed(null);
 			toggled = true;
 		}
 		canvas = cnv;
@@ -164,7 +164,7 @@ public class MainApplicationFrame extends JFrame {
 			}
 		});
 		if(toggled){
-			MainApplicationFrame.this.toggleSim.actionPerformed(null);
+			MainApplicationFrame.this.toggle_simulation.actionPerformed(null);
 		}
 	}
 	
@@ -201,16 +201,22 @@ public class MainApplicationFrame extends JFrame {
 
 		simulation_type_in = new JComboBox();
 		simulation_type_in.setRenderer(new ClassNameComboBoxRenderer());
-		for (Class<? extends CultureDisseminationSimulation> cl : CultureDisseminationSimulation.subclasses()) {
+		
+		for (Class<?> cl : CultureDisseminationSimulation.simulationClasses) {
 			simulation_type_in.addItem(cl);
 		}
+//		for (Class<? extends CultureDisseminationSimulation> cl : CultureDisseminationSimulation.subclasses()) {
+//			simulation_type_in.addItem(cl);
+//		}
 		
 		periodicBoundarySelect = new JCheckBox("Periodic boundary condition");
+		periodicBoundarySelect.setSelected(true);
+		
 		deferredUpdateSelect = new JCheckBox("Defer representation updates (optimization)");
 
-		reset_simulation_button.addActionListener(resetSim);
-		toggle_simulation_button.addActionListener(toggleSim);
-		step_simulation_button.addActionListener(stepSim);
+		reset_simulation_button.addActionListener(reset_simulation);
+		toggle_simulation_button.addActionListener(toggle_simulation);
+		step_simulation_button.addActionListener(step_simulation);
 		enable_visual_representation.setSelected(true);
 
 		fileMenu.add(simulation_properties);
@@ -237,7 +243,7 @@ public class MainApplicationFrame extends JFrame {
 		JScrollPane activePlotListScrollPane = new JScrollPane(activePlotsJList);
 		activePlotListScrollPane.setPreferredSize(listSize);
 
-		resetSim.actionPerformed(null);
+		reset_simulation.actionPerformed(null);
 
 		menuBar.add(fileMenu);
 		menuBar.add(plotMenu);
@@ -328,9 +334,6 @@ public class MainApplicationFrame extends JFrame {
 		controls.add(toggle_simulation_button, "span 3, split 3, growx");
 		controls.add(step_simulation_button, "growx");
 		controls.add(reset_simulation_button, "growx, wrap");
-//		controls.add(new JSeparator(SwingConstants.HORIZONTAL), "span 3, grow, wrap, gaptop 9, gapbottom 9");
-
-		controls.setPreferredSize(new Dimension(400, 800));
 
 		Container pane = this.getContentPane();
 		pane.add(menuBar, BorderLayout.NORTH);
@@ -467,9 +470,9 @@ public class MainApplicationFrame extends JFrame {
 		
 		if (enable_visual_representation.isSelected()) {
 			if(colorRepresentation.isSelected()){
-				canvas = new CultureColorsCanvas(CANVAS_WIDTH, sim.nw);
+				canvas = new CultureColorsCanvas(CANVAS_HEIGHT, sim.nw);
 			}else{
-				canvas = new CultureBordersCanvas(CANVAS_WIDTH, sim.nw);
+				canvas = new CultureBordersCanvas(CANVAS_HEIGHT, sim.nw);
 			}
 			pane.add(canvas, BorderLayout.CENTER);
 			SimulationEventListener canvasRepaintListener = new SimulationEventAdapter() {
@@ -546,15 +549,20 @@ public class MainApplicationFrame extends JFrame {
 		this.repaint();
 	}
 
+	@SuppressWarnings("serial")
 	private void addPlots(PlotAction... plotActions) {
 		for (PlotAction plot : plotActions) {
 			plotMenu.add(plot);
 			plotsListModel.addElement(plot);
 		}
 		plotMenu.add(new AbstractAction("critical Q plot...") {
-			private static final long serialVersionUID = -1945523231629447680L;
 			public void actionPerformed(ActionEvent e) {
-				QCritPlot.start_from_dialog(MainApplicationFrame.this);
+				StandAlonePlot.start_from_dialog(MainApplicationFrame.this, QCritPlot.class);
+			}
+		});
+		plotMenu.add(new AbstractAction("critical Q plot(truncated)...") {
+			public void actionPerformed(ActionEvent e) {
+				StandAlonePlot.start_from_dialog(MainApplicationFrame.this, TruncatedQCritPlot.class);
 			}
 		});
 	}
@@ -565,14 +573,14 @@ public class MainApplicationFrame extends JFrame {
 		activePlotsListModel.removeAllElements();
 	}
 
-	private ActionListener resetSim = new ActionListener() {
+	private ActionListener reset_simulation = new ActionListener() {
 		@SuppressWarnings("unchecked")
 		public void actionPerformed(ActionEvent e) {
 			System.out.println("resetting simulation thread...");
 			if (sim != null){
+				sim.finish();
 				System.out.println("Simulation interrupted.");
 				System.out.println(sim.execution_statistics_string());
-				sim.quit();
 			}
 			try {
 				sim = CultureDisseminationSimulation.factory(
@@ -584,9 +592,29 @@ public class MainApplicationFrame extends JFrame {
 				
 				sim.stop_after_iterations((long) Math.pow(10, ((SpinnerNumberModel)stop_after_iterations.getModel()).getNumber().longValue()));
 				sim.addListener(new SimulationEventAdapter(){
+					public void started(){
+						System.out.println("Simulation started.");
+						can_be_stopped();
+					}
+					public void toggled_pause(){
+						if(sim.state == SimulationState.RUNNING){
+							can_be_stopped();
+						} else if(sim.state == SimulationState.PAUSED){
+							can_be_started();
+						}
+					}
 					public void finished(){
 						System.out.println("Simulation finished.");
 						System.out.println(sim.execution_statistics_string());
+						can_be_started();
+					}
+					private void can_be_started(){
+						toggle_simulation_button.setText("Start");
+						step_simulation_button.setEnabled(true);
+					}
+					private void can_be_stopped(){
+						toggle_simulation_button.setText("Stop");
+						step_simulation_button.setEnabled(false);
 					}
 				});
 				
@@ -609,27 +637,21 @@ public class MainApplicationFrame extends JFrame {
 
 	};
 
-	private ActionListener toggleSim = new ActionListener() {
+	private ActionListener toggle_simulation = new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
-			if (!simThr.isAlive()) {
+			if (!simThr.isAlive() && !(sim.state == SimulationState.FINISHED)) {
 				simThr.start();
+				return;
 			}
-			if (sim.state == SimulationState.RUNNING) {
-				sim.stop();
-				toggle_simulation_button.setText("Start");
-				step_simulation_button.setEnabled(true);
-			} else {
-				System.out.println("starting simulation thread...");
-				sim.start();
-				toggle_simulation_button.setText("Stop");
-				step_simulation_button.setEnabled(false);
-			}
+			sim.toggle_pause();
 		}
 	};
 
-	private ActionListener stepSim = new ActionListener() {
+	private ActionListener step_simulation = new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
-			sim.simulation_step();
+			if(sim.state == SimulationState.PAUSED){
+				sim.simulation_step();
+			}
 		}
 	};
 
@@ -663,7 +685,7 @@ public class MainApplicationFrame extends JFrame {
 				try {
 					CulturalNetwork nw = new CulturalNetwork(f);
 					if (sim != null)
-						sim.quit();
+						sim.finish();
 					sim = CultureDisseminationSimulation.factory((Class<? extends CultureDisseminationSimulation>) simulation_type_in.getSelectedItem(), nw);
 					resetGui();
 				} catch (IOException e1) {
@@ -732,6 +754,7 @@ public class MainApplicationFrame extends JFrame {
 	public static void main(String[] args) {
 		MainApplicationFrame axelrod = new MainApplicationFrame();
 		axelrod.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		axelrod.setSize(FRAME_WIDTH, FRAME_HEIGHT);
 		axelrod.pack();
 		axelrod.setVisible(true);
 		axelrod.setExtendedState(axelrod.getExtendedState() | JFrame.MAXIMIZED_BOTH);

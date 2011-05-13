@@ -30,10 +30,10 @@ public class OrderParametersScatterPlot extends Plot<CultureDisseminationSimulat
 	}
 
 	public void plot() {
-		if(sim.epoch() % SERIES_UPDATE_INTERVAL == 0){
+		if(sim.current_epoch() % SERIES_UPDATE_INTERVAL == 0){
 			reallocate_series();
 		}
-		addPoints(sim.epoch());
+		addPoints(sim.current_epoch());
 	}
 
 	private void reallocate_series() {

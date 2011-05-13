@@ -12,17 +12,17 @@ import br.edu.cultural.simulation.CultureDisseminationSimulation;
 
 public class ActiveRoomScatterPlot extends Plot<CultureDisseminationSimulation, DefaultXYDataset> {
 	
-	private Integer lastMonitoredNodeToChange;
+	private Integer last_node_to_change;
 	List<double[]> seriesList;
 	
 	@Override
 	public JFreeChart createPlot(CultureDisseminationSimulation s) {
 		seriesList = new ArrayList<double[]>();
-		lastMonitoredNodeToChange = 0;
+		last_node_to_change = 0;
 		this.sim = s;
-		for (Integer node : s.nw.nodes_listened) {
+		for (Integer node : s.nw.nodes_to_listen) {
 			if (s.nw.interactiveNodes.contains(node)) {
-				lastMonitoredNodeToChange = node;
+				last_node_to_change = node;
 				break;
 			}
 		}
@@ -37,17 +37,17 @@ public class ActiveRoomScatterPlot extends Plot<CultureDisseminationSimulation, 
 	@Override
 	public void interaction(int i, int j, int[] oldState, int[] newState){
 		Integer nbr = sim.nw.size * i + j;
-		if (sim.nw.nodes_listened.contains(nbr)
-				&& !nbr.equals(lastMonitoredNodeToChange)) {
+		if (sim.nw.nodes_to_listen.contains(nbr)
+				&& !nbr.equals(last_node_to_change)) {
 			plot();
-			lastMonitoredNodeToChange = nbr;
+			last_node_to_change = nbr;
 		}
 	}
 
 	@Override
 	public void plot() {
 		reallocate_series();
-		double[] point = { sim.iterations(), sim.nw.nodes_listened.indexOf(lastMonitoredNodeToChange) };
+		double[] point = { sim.iterations(), sim.nw.nodes_to_listen.indexOf(last_node_to_change) };
 		seriesList.add(point);
 	}
 	

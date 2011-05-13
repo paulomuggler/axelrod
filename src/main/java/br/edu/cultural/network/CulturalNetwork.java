@@ -46,7 +46,10 @@ public class CulturalNetwork {
 	/** Stores all nodes that may interact */
 	public final List<Integer> interactiveNodes = new ArrayList<Integer>();
 
-	public final List<Integer> nodes_listened = new ArrayList<Integer>();
+	/** This list is used by some plots which are only interested in certain nodes in the network. */
+	// TODO: Refactor. Should be in the Plot class structure somehow. 
+	// Refactoring the save to file solution to have a broader scope would probably help with this.
+	public final List<Integer> nodes_to_listen = new ArrayList<Integer>();
 
 	/** Stores the activity state of each node */
 	public final boolean[] is_node_active;
@@ -101,7 +104,7 @@ public class CulturalNetwork {
 			if (line != null && line.startsWith("monitor:")){
 				String[] monitor = line.substring(line.indexOf("[")+1, line.indexOf("]")).split(",");
 				for (String s : monitor) {
-					this.nodes_listened.add(Integer.parseInt(s));
+					this.nodes_to_listen.add(Integer.parseInt(s));
 				}
 			}
 		}else {
@@ -437,10 +440,10 @@ public class CulturalNetwork {
 				}
 				fw.write('\n');
 			}
-			if(!nodes_listened.isEmpty()) fw.write("monitor:[");
-			for (Integer node : nodes_listened) {
+			if(!nodes_to_listen.isEmpty()) fw.write("monitor:[");
+			for (Integer node : nodes_to_listen) {
 				fw.write(Integer.toString(node));
-				fw.write(nodes_listened.indexOf(node) == nodes_listened.size() -1 ? ']' : ',');
+				fw.write(nodes_to_listen.indexOf(node) == nodes_to_listen.size() -1 ? ']' : ',');
 			}
 			fw.close();
 		}

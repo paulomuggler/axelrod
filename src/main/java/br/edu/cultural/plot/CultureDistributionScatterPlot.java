@@ -37,41 +37,45 @@ public class CultureDistributionScatterPlot extends Plot<CultureDisseminationSim
 	}
 
 	public void plot() {
-		if(sim.epoch() % SERIES_UPDATE_INTERVAL != 0){
+		// defer plotting for a little while... too busy!
+		if(sim.current_epoch() % SERIES_UPDATE_INTERVAL != 0){
 			return;
 		}
 		
-		List<Integer> cSizes = new ArrayList<Integer>(sim.nw.count_cultures().values());
-		while (cSizes.contains(new Integer(0))) {
-			cSizes.remove(new Integer(0));
+		// let's retrieve the size of each culture
+		List<Integer> culture_sizes = new ArrayList<Integer>(sim.nw.count_cultures().values());
+		
+		// zeros are a no-no on a log scale
+		while (culture_sizes.contains(new Integer(0))) {
+			culture_sizes.remove(new Integer(0));
 		}
-		Collections.sort(cSizes);
+		Collections.sort(culture_sizes);
 
-		int[] cumulativeSizes = new int[cSizes.size() + 1];
-		cumulativeSizes[0] = 0;
-
-		for (int i = 0; i < cSizes.size(); i++) {
-			cumulativeSizes[i + 1] = cumulativeSizes[i] + cSizes.get(i);
+		// i-th element contains accumulated size of the i smallest cultures in the network
+		int[] cumulative_size = new int[culture_sizes.size() + 1];
+		cumulative_size[0] = 0;
+		for (int i = 0; i < culture_sizes.size(); i++) {
+			cumulative_size[i+1] = cumulative_size[i] + culture_sizes.get(i);
 		}
 
 		int diff = 0;
 		int y = sim.nw.n_nodes;
-		int x = 2;
+		int diff_threshold = 2;
 
 		int count = 1;
 
-		double result[][] = new double[2][cumulativeSizes.length];
+		double result[][] = new double[2][cumulative_size.length];
 		result[0][0] = 1;
 		result[1][0] = 1;
 
-		for (int i = 0; i < cumulativeSizes.length - 1; i++) {
-			diff = cumulativeSizes[i + 1] - cumulativeSizes[i];
-			if (diff < x) {
+		for (int i = 0; i < cumulative_size.length - 1; i++) {
+			diff = cumulative_size[i + 1] - cumulative_size[i];
+			if (diff < diff_threshold) {
 				y = y - diff;
 			} else {
-				result[0][count] = x;
+				result[0][count] = diff_threshold;
 				result[1][count++] = ((double) y) / (sim.nw.n_nodes);
-				x = diff + 1;
+				diff_threshold = diff + 1;
 				y = y - diff;
 			}
 		}

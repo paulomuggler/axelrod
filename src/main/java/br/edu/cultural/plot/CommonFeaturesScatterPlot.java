@@ -30,7 +30,7 @@ public class CommonFeaturesScatterPlot extends Plot<CultureDisseminationSimulati
 	}
 
 	public void plot() {
-		if(sim.epoch() % SERIES_UPDATE_INTERVAL == 0){
+		if(sim.current_epoch() % SERIES_UPDATE_INTERVAL == 0){
 			reallocate_series();
 		}
 		addPoints(sim.interactions());

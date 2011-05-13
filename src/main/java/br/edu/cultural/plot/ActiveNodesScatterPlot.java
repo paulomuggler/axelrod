@@ -30,7 +30,7 @@ public class ActiveNodesScatterPlot extends Plot<CultureDisseminationSimulation,
 		if(seriesList.size() % SERIES_UPDATE_INTERVAL == 0){
 			reallocate_series();
 		}
-		double[] point = { sim.epoch() == 0? 1 : sim.epoch(), 
+		double[] point = { sim.current_epoch() == 0? 1 : sim.current_epoch(), 
 						   sim.nw.interactiveNodes.size()/(double)sim.nw.n_nodes };
 		seriesList.add(point);
 	}

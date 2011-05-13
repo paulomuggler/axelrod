@@ -21,10 +21,10 @@ public class ScatterPlotter extends JFrame{
 	DefaultXYDataset ds;
 	public JFreeChart chart;
 	
-	public ScatterPlotter(String applicationTitle, String chartTitle, double[][] dataset) {
+	public ScatterPlotter(String applicationTitle, String chartTitle, double[][] dataset, String xAx, String yAx) {
 		super(applicationTitle);
 		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		chart = createChart(dataset, chartTitle);
+		chart = createChart(dataset, chartTitle, xAx, yAx);
 		ChartPanel chartPanel = new ChartPanel(chart);
 		chartPanel.setPreferredSize(new java.awt.Dimension(800, 600));
 		setContentPane(chartPanel);
@@ -33,10 +33,10 @@ public class ScatterPlotter extends JFrame{
 	/**
 	 * Creates a chart
 	 */
-	private JFreeChart createChart(double[][] dataset, String title) {
+	private JFreeChart createChart(double[][] dataset, String title, String xAx, String yAx) {
 		ds = new DefaultXYDataset();
 		ds.addSeries(1, dataset);
-		JFreeChart chart = ChartFactory.createScatterPlot(title, "q", "Smax/N", ds,
+		JFreeChart chart = ChartFactory.createScatterPlot(title, xAx, yAx, ds,
 		PlotOrientation.VERTICAL, false, false, false);
 		return chart;
 	}
@@ -49,6 +49,9 @@ public class ScatterPlotter extends JFrame{
 	public void setSeries(double[][] series){
 		ds.addSeries(1, series);
 	}
-
+	
+	public void addSeries(double[][] series, int series_index){
+		ds.addSeries(series_index, series);
+	}
 
 }

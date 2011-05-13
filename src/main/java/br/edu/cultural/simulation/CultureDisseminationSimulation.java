@@ -1,22 +1,29 @@
 package br.edu.cultural.simulation;
 
-import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-import sun.misc.Launcher;
+import br.edu.cultural.gui.ClassNameComboBoxRenderer;
 import br.edu.cultural.network.CulturalNetwork;
 import br.edu.cultural.plot.Plot;
 
-@SuppressWarnings("restriction")
 public abstract class CultureDisseminationSimulation implements Runnable {
 	public enum SimulationState {
-		RUNNING, STOPPED, FINISHED
+		RUNNING, PAUSED, FINISHED
 	}
+	
+	
+  public static final Class<?>[] simulationClasses = {
+                                FacilitatedDisseminationWithSurfaceTension.class,
+                                FacilitatedDisseminationWithoutSurfaceTension.class,
+                                AxelrodSimulation.class,
+                                BelousovZhabotinskySimulation.class,
+                                KupermanSimulationOneFeatureOverlap.class,
+                                KupermanSimulationOverallOverlap.class
+                                };
 
 	public CulturalNetwork nw;
 	protected final List<Plot<?, ?>> plots = new ArrayList<Plot<?, ?>>();
@@ -24,7 +31,7 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 
 	protected final Random rand = new Random();
 	protected int speed = 100;
-	public SimulationState state = SimulationState.STOPPED;
+	public SimulationState state = SimulationState.PAUSED;
 
 	// Statistics
 	protected long sim_start_ms;
@@ -39,13 +46,8 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 	private boolean defer_update;
 
 	public void run() {
-		this.iterations = 0;
-		this.sim_start_ms = System.currentTimeMillis();
-
-		for (SimulationEventListener lis : listeners) {
-			lis.started();
-		}
-
+		this.start();
+		
 		while (!(this.state == SimulationState.FINISHED)) {
 			pause();
 			throttle();
@@ -53,14 +55,6 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 			if (iterations % 100000 == 0) {
 				nw.reset_interaction_list(false);
 			}
-			if(iterations >= stop_after_iterations){
-				this.quit();
-			}
-		}
-		this.sim_finish_ms = System.currentTimeMillis();
-
-		for (SimulationEventListener lis : listeners) {
-			lis.finished();
 		}
 	}
 
@@ -100,54 +94,56 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 				nw.reset_interaction_list(true);
 		}
 	}
-	
-	/** pretty prints information on the running simulation */
-	public String execution_statistics_string() {
-		float iterations_per_second = iterations() / elapsed_time_in_seconds();
-		float interactions_per_second = interactions()
-				/ elapsed_time_in_seconds();
-		StringBuilder sb = new StringBuilder();
-		sb.append("\n");
-		sb.append(String.format(
-				"Simulation: %d iterations elapsed in %f seconds.",
-				iterations(), elapsed_time_in_seconds()));
-		sb.append("\n");
-		sb.append(String.format(
-				"Average execution speed: %f iterations/second",
-				iterations_per_second));
-		sb.append("\n");
-		sb.append(String.format("Time: %d epochs", epoch()));
-		sb.append("\n");
-		sb.append(String.format("%d node interactions.", interactions()));
-		sb.append("\n");
-		sb.append(String.format(
-				"Average node interaction speed: %f interactions/second",
-				interactions_per_second));
-		sb.append("\n");
-		return sb.toString();
-	}
 
 	/** Performs a single step of the simulation */
-	public abstract void simulation_step();
-
-	public void stop() {
-		this.state = SimulationState.STOPPED;
+	public void simulation_step() {
+		if ((this.nw.interactive_nodes().size() == 0) || (iterations >= stop_after_iterations)) {
+			this.finish();
+			return;
+		}
+		this.simulation_dynamic();
+		this.iterations++;
 	}
+	
+	protected abstract void simulation_dynamic();
 
-	/** set simulation state to RUNNING */
-	public void start() {
+	private void start() {
+		this.iterations = 0;
+		this.sim_start_ms = System.currentTimeMillis();
 		this.state = SimulationState.RUNNING;
+		for (SimulationEventListener lis : listeners) {
+			lis.started();
+		}
+	}
+	
+	public void toggle_pause() {
+		if (this.state == SimulationState.RUNNING){
+			this.state = SimulationState.PAUSED;
+			notify_listeners_toggled();
+		}else if (this.state ==  SimulationState.PAUSED){
+			this.state = SimulationState.RUNNING;
+			notify_listeners_toggled();
+		}
+	}
+	
+	private void notify_listeners_toggled(){
+		for (SimulationEventListener lis : listeners) {
+			lis.toggled_pause();
+		}
 	}
 
-	/** set simulation state to FINISHED */
-	public void quit() {
+	public void finish() {
 		this.state = SimulationState.FINISHED;
+		this.sim_finish_ms = System.currentTimeMillis();
+		for (SimulationEventListener lis : listeners) {
+			lis.finished();
+		}
 	}
 	
 
-	/** Idle loop used to emulate the STOPPED state; */
+	/** Idle loop used to emulate the PAUSED state; */
 	private void pause() {
-		while (this.state == SimulationState.STOPPED) {
+		while (this.state == SimulationState.PAUSED) {
 			try {
 				Thread.sleep(33);
 			} catch (InterruptedException e) {
@@ -173,8 +169,8 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 		this.stop_after_iterations = n;
 	}
 
-	public void setDefer_update(boolean deferUpdate) {
-		defer_update = deferUpdate;
+	public void setDefer_update(boolean defer_update) {
+		this.defer_update = defer_update;
 	}
 	
 	/** Toggle this simulation's optimization on/off */
@@ -183,13 +179,13 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 	}
 
 	/** adds a plot to the list of running plots */
-	public void addPlot(Plot<?, ?> p) {
+	public void add_plot(Plot<?, ?> p) {
 		if (!plots.contains(p))
 			plots.add(p);
 	}
 
 	/** removes a plot from the list of running plots */
-	public void removePlot(Plot<?, ?> p) {
+	public void remove_plot(Plot<?, ?> p) {
 		plots.remove(p);
 	}
 
@@ -201,11 +197,11 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 	 * @return
 	 */
 	public boolean toggle_listening(int node) {
-		if (this.nw.nodes_listened.contains(node)) {
-			this.nw.nodes_listened.remove(new Integer(node));
+		if (this.nw.nodes_to_listen.contains(node)) {
+			this.nw.nodes_to_listen.remove(new Integer(node));
 			return false;
 		} else {
-			this.nw.nodes_listened.add(node);
+			this.nw.nodes_to_listen.add(node);
 			return true;
 		}
 	}
@@ -254,53 +250,15 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 		return listeners.remove(lis);
 	}
 
-	public static interface SimulationEventListener {
-		/**	Triggered when this simulation starts running. */
-		public void started();
-
-		/**	Triggered on each iteration of this simulation. */
-		public void iteration();
-
-		/**	Triggered when two nodes in this simulation interact. */
-		public void interaction(int i, int j, int[] oldState, int[] newState);
-
-		/**	Triggered at each n iterations, n being the 
-		 * number of nodes in the network. */
-		public void epoch();
-
-		/**	Triggered when this simulation quits or reaches an 
-		 * absorbent state, if such a state exists for the current 
-		 * simulation. */
-		public void finished();
-	}
-
-	public static class SimulationEventAdapter implements
-			SimulationEventListener {
-		public void started() {
-		}
-
-		public void iteration() {
-		}
-
-		public void interaction(int i, int j, int[] oldState, int[] newState) {
-		}
-
-		public void epoch() {
-		}
-
-		public void finished() {
-		}
-	}
-
 	public long iterations() {
 		return iterations;
 	}
 	
-	public Long interactions() {
+	public long interactions() {
 		return interactions;
 	}
 	
-	public long epoch() {
+	public long current_epoch() {
 		return this.iterations / this.nw.n_nodes;
 	}
 
@@ -308,11 +266,20 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 		this.nw = nw;
 	}
 
-	public static CultureDisseminationSimulation factory(
-			Class<? extends CultureDisseminationSimulation> clazz,
-			CulturalNetwork nw) {
+	/**
+	 * Builds you a pristine {@link CultureDisseminationSimulation}.
+	 * @param clazz which type of simulation do you want to build?
+	 * @param nw the network on which this simulation will be run.
+	 * @return the simulation, duh!
+	 */
+	public static CultureDisseminationSimulation factory( 
+								Class<? extends CultureDisseminationSimulation> clazz,
+								CulturalNetwork nw)
+	{
 		try {
 			return clazz.getConstructor(CulturalNetwork.class).newInstance(nw);
+		
+		// gotta love checked exceptions...
 		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
 			return null;
@@ -334,37 +301,30 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
-	public static List<Class<? extends CultureDisseminationSimulation>> subclasses(){
-		List<Class<? extends CultureDisseminationSimulation>>  subclasses = new ArrayList<Class<? extends CultureDisseminationSimulation>>();
-		String pckgname = CultureDisseminationSimulation.class.getPackage().getName();
-        String name = new String(pckgname);
-        if (!name.startsWith("/")) {
-            name = "/" + name;
-        }        
-        name = name.replace('.','/');
-        URL url = Launcher.class.getResource(name);
-        File directory = new File(url.getFile());
-        if (directory.exists()) {
-            String [] files = directory.list();
-            for (int i=0;i<files.length;i++) {
-                if (files[i].endsWith(".class")) {
-                    String classname = files[i].substring(0,files[i].length()-6);
-                    try {
-                    	Class<?> cl = Class.forName(pckgname+"."+classname);
-                        if (CultureDisseminationSimulation.class.isAssignableFrom(
-                        					Class.forName(pckgname+"."+classname)) 
-                        		&& !cl.equals(CultureDisseminationSimulation.class)) {
-                        	subclasses.add((Class<? extends CultureDisseminationSimulation>) cl);
-                        }
-                    } catch (ClassNotFoundException cnfex) {
-                        System.err.println(cnfex);
-                    }
-                }
-            }
-        }
-		return subclasses;
+	/** pretty prints information about the running simulation */
+	public String execution_statistics_string() {
+		float iterations_per_second = iterations() / elapsed_time_in_seconds();
+		float interactions_per_second = interactions()
+				/ elapsed_time_in_seconds();
+		StringBuilder sb = new StringBuilder();
+		sb.append("\n");
+		sb.append(String.format(
+				"%s: %d iterations elapsed in %f seconds.",
+				ClassNameComboBoxRenderer.humanize(this.getClass().getSimpleName()),
+				iterations(), elapsed_time_in_seconds()));
+		sb.append("\n");
+		sb.append(String.format(
+				"Average execution speed: %f iterations/second",
+				iterations_per_second));
+		sb.append("\n");
+		sb.append(String.format("Time: %d epochs", current_epoch()));
+		sb.append("\n");
+		sb.append(String.format("%d node interactions.", interactions()));
+		sb.append("\n");
+		sb.append(String.format(
+				"Average node interaction speed: %f interactions/second",
+				interactions_per_second));
+		sb.append("\n");
+		return sb.toString();
 	}
-	
-
 }

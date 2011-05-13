@@ -11,9 +11,9 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.xy.XYDataset;
 
 import br.edu.cultural.simulation.CultureDisseminationSimulation;
-import br.edu.cultural.simulation.CultureDisseminationSimulation.SimulationEventListener;
+import br.edu.cultural.simulation.SimulationEventListener.SimulationEventAdapter;
 
-public abstract class Plot<S extends CultureDisseminationSimulation, D extends XYDataset> implements SimulationEventListener {
+public abstract class Plot<S extends CultureDisseminationSimulation, D extends XYDataset> extends SimulationEventAdapter{
 	
 	protected static final int DEFAULT_SERIES_KEY = 0;
 	protected JFreeChart chart;
@@ -37,17 +37,6 @@ public abstract class Plot<S extends CultureDisseminationSimulation, D extends X
 		return String.format("L = %d, F = %d, q = %d", sim.nw.size, 
 							 sim.nw.features, sim.nw.traits);
 	}
-	
-	@Override
-	public void iteration() {}
-	@Override
-	public void interaction(int i, int j, int[] oldState, int[] newState) {}
-	@Override
-	public void epoch() {}
-	@Override
-	public void started() {}
-	@Override
-	public void finished() {}
 	
 	public void linearX(String axisLabel){
 		((XYPlot) chart.getPlot()).setDomainAxis(new NumberAxis(axisLabel));

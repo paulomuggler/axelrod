@@ -16,7 +16,7 @@ import javax.swing.plaf.basic.BasicComboBoxRenderer;
 			return c;
 		}
 		
-		private String humanize(String camelized){
+		public static String humanize(String camelized){
 			Pattern upper = Pattern.compile("[A-Z][a-z]*");
 			Matcher m = upper.matcher(camelized);
 			StringBuilder sb = new StringBuilder();
