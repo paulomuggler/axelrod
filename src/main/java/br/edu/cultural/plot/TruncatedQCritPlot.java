@@ -75,7 +75,7 @@ public class TruncatedQCritPlot extends StandAlonePlot {
 			si++;
 			if (plotter == null) {
 				plotter = new ScatterPlotter("Truncated Criticality Plot", String
-						.format("L = %d, F = %d", network_size, traits), new double[2][2], "F", "% overlap");
+						.format("L = %d, Q = %d", network_size, traits), new double[2][2], "F", "% overlap");
 				plotter.addWindowListener(new WindowAdapter() {
 					public void windowClosing(WindowEvent e) {
 						TruncatedQCritPlot.this.stopPlot();
@@ -138,7 +138,7 @@ public class TruncatedQCritPlot extends StandAlonePlot {
 			si++;
 			if (plotter == null) {
 				plotter = new ScatterPlotter("Truncated Criticality Plot", String
-						.format("L = %d, Q = %d", network_size, features), new double[2][2], "Q", "% overlap");
+						.format("L = %d, F = %d", network_size, features), new double[2][2], "Q", "% overlap");
 				plotter.addWindowListener(new WindowAdapter() {
 					public void windowClosing(WindowEvent e) {
 						TruncatedQCritPlot.this.stopPlot();

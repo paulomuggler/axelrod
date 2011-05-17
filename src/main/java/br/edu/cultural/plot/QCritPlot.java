@@ -102,7 +102,7 @@ public class QCritPlot extends StandAlonePlot {
 			si++;
 			if (plotter == null) {
 				plotter = new ScatterPlotter("Criticality Plot", String
-						.format("L = %d, F = %d", network_size, invar_param), series, "q", "% overlap");
+						.format("L = %d, F = %d", network_size, invar_param), series, "Q", "% overlap");
 				plotter.addWindowListener(new WindowAdapter() {
 					public void windowClosing(WindowEvent e) {
 						QCritPlot.this.stopPlot();

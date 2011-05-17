@@ -8,8 +8,8 @@ import javax.swing.JMenuItem;
 import br.edu.cultural.plot.Plot;
 import br.edu.cultural.simulation.CultureDisseminationSimulation;
 
+@SuppressWarnings("serial")
 class PlotAction extends AbstractAction {
-	private static final long serialVersionUID = 8874503720547085785L;
 	protected Plotter plotter;
 	protected Plot<CultureDisseminationSimulation, ?> plot;
 	private String pTitle;

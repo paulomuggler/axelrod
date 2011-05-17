@@ -29,7 +29,7 @@
           </descriptorRefs>
           <archive>
             <manifest>
-              <mainClass>br.edu.cultural.gui.MainApplicationFrame</mainClass>
+              <mainClass>br.edu.cultural.ui.MainApplicationFrame</mainClass>
             </manifest>
           </archive>
         </configuration>

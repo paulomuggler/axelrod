@@ -410,7 +410,6 @@ public class MainApplicationFrame extends JFrame {
 			}
 			pane.add(canvas, BorderLayout.CENTER);
 			SimulationEventListener canvasRepaintListener = new SimulationEventAdapter() {
-				@Override
 				public void interaction(int i, int j, int[] oldState, int[] newState) {
 					canvas.repaint();
 				}

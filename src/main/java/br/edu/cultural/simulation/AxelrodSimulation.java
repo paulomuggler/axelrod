@@ -19,15 +19,6 @@ public class AxelrodSimulation extends CultureDisseminationSimulation {
 		super(nw);
 	}
 
-	protected void defer_run() {
-		this.simulation_step();
-		if (this.iterations % (nw.n_nodes) == 0) {
-			for (SimulationEventListener lis : listeners) {
-				lis.epoch();
-			}
-		}
-	}
-
 	protected void simulation_dynamic() {
 		int node = nw.random_interactive_node();
 
