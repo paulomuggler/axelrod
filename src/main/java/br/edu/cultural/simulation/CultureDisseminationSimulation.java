@@ -250,6 +250,47 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 		return listeners.remove(lis);
 	}
 
+<<<<<<< HEAD
+=======
+	public static interface SimulationEventListener {
+		/**	Triggered when this simulation starts running. */
+		public void started();
+
+		/**	Triggered on each iteration of this simulation. */
+		public void iteration();
+
+		/**	Triggered when two nodes in this simulation interact. */
+		public void interaction(int i, int j, int[] oldState, int[] newState);
+
+		/**	Triggered at each n iterations, n being the 
+		 * number of nodes in the network. */
+		public void epoch();
+
+		/**	Triggered when this simulation quits or reaches an 
+		 * absorbent state, if such a state exists for the current 
+		 * simulation. */
+		public void finished();
+	}
+
+	public static class SimulationEventAdapter implements
+			SimulationEventListener {
+		public void started() {
+		}
+
+		public void iteration() {
+		}
+
+		public void interaction(int i, int j, int[] oldState, int[] newState) {
+		}
+
+		public void epoch() {
+		}
+
+		public void finished() {
+		}
+	}
+
+>>>>>>> origin/master
 	public long iterations() {
 		return iterations;
 	}
@@ -258,7 +299,11 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 		return interactions;
 	}
 	
+<<<<<<< HEAD
 	public long current_epoch() {
+=======
+	public long epoch() {
+>>>>>>> origin/master
 		return this.iterations / this.nw.n_nodes;
 	}
 
@@ -301,6 +346,7 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 		}
 	}
 	
+<<<<<<< HEAD
 	/** pretty prints information about the running simulation */
 	public String execution_statistics_string() {
 		float iterations_per_second = iterations() / elapsed_time_in_seconds();
@@ -326,5 +372,41 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 				interactions_per_second));
 		sb.append("\n");
 		return sb.toString();
+=======
+	@SuppressWarnings("unchecked")
+	public static List<Class<? extends CultureDisseminationSimulation>> subclasses(){
+	    List<Class<? extends CultureDisseminationSimulation>> subclasses = 
+	                              new ArrayList<Class<? extends CultureDisseminationSimulation>>();
+	    Collections.copy(new SubClassFinder().findSubclasses(CultureDisseminationSimulation.class.getName()), subclasses);
+      return subclasses;
+//		List<Class<? extends CultureDisseminationSimulation>>  subclasses = new ArrayList<Class<? extends CultureDisseminationSimulation>>();
+//		String pckgname = CultureDisseminationSimulation.class.getPackage().getName();
+//        String name = new String(pckgname);
+//        if (!name.startsWith("/")) {
+//            name = "/" + name;
+//        }        
+//        name = name.replace('.','/');
+//        URL url = Launcher.class.getResource(name);
+//        File directory = new File(url.getFile());
+//        if (directory.exists()) {
+//            String [] files = directory.list();
+//            for (int i=0;i<files.length;i++) {
+//                if (files[i].endsWith(".class")) {
+//                    String classname = files[i].substring(0,files[i].length()-6);
+//                    try {
+//                    	Class<?> cl = Class.forName(pckgname+"."+classname);
+//                        if (CultureDisseminationSimulation.class.isAssignableFrom(
+//                        					Class.forName(pckgname+"."+classname)) 
+//                        		&& !cl.equals(CultureDisseminationSimulation.class)) {
+//                        	subclasses.add((Class<? extends CultureDisseminationSimulation>) cl);
+//                        }
+//                    } catch (ClassNotFoundException cnfex) {
+//                        System.err.println(cnfex);
+//                    }
+//                }
+//            }
+//        }
+//		return subclasses;
+>>>>>>> origin/master
 	}
 }
