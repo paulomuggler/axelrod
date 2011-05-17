@@ -1,4 +1,4 @@
-package br.edu.cultural.gui;
+package br.edu.cultural.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

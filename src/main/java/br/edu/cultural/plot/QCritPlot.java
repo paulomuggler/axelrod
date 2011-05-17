@@ -1,5 +1,7 @@
 package br.edu.cultural.plot;
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -12,9 +14,9 @@ public class QCritPlot extends StandAlonePlot {
 	
 	public QCritPlot(
 			Class<? extends CultureDisseminationSimulation> simulation_type,
-			boolean periodic_boundary, int network_size, int invar_param,
-			int var_param_lower, int var_param_upper,
-			boolean is_features_variable, int simulation_count, int vary_in_steps_of, long max_iterations) {
+			Boolean periodic_boundary, Integer network_size, Integer invar_param,
+			Integer var_param_lower, Integer var_param_upper,
+			Boolean is_features_variable, Integer simulation_count, Integer vary_in_steps_of, Long max_iterations) {
 		super();
 		this.simulation_type = simulation_type;
 		this.periodic_boundary = periodic_boundary;
@@ -35,10 +37,10 @@ public class QCritPlot extends StandAlonePlot {
 		double[][] series = new double[2][(var_param_upper - var_param_lower + 1)];
 		int si = 0;
 		ScatterPlotter plotter = null;
-		for (int f = f_low; f <= f_hi; f+=vary_in_steps_of) {
+		for (int f = f_low; f <= f_hi  && !plot_aborted; f+=vary_in_steps_of) {
 			System.out.println("F: " + f);
 			double[][] cSizes = new double[2][simulation_count];
-			for (int i = 0; i < simulation_count; i++) {
+			for (int i = 0; i < simulation_count && !plot_aborted; i++) {
 				CultureDisseminationSimulation sim =
 					CultureDisseminationSimulation.factory(
 							(Class<? extends CultureDisseminationSimulation>) this.simulation_type,
@@ -58,8 +60,13 @@ public class QCritPlot extends StandAlonePlot {
 			series[1][si] = average;
 			si++;
 			if (plotter == null) {
-				plotter = new ScatterPlotter("Axelrod Simulation Plot", String
-						.format("L = %d, q = %d", network_size, traits), series, "F", "% overlap");
+				plotter = new ScatterPlotter("Criticality Plot", String
+						.format("L = %d, Q = %d", network_size, traits), series, "F", "% overlap");
+				plotter.addWindowListener(new WindowAdapter() {
+					public void windowClosing(WindowEvent e) {
+						QCritPlot.this.stopPlot();
+					}
+				});
 				plotter.mostra();
 			}
 			plotter.setSeries(series);
@@ -71,10 +78,10 @@ public class QCritPlot extends StandAlonePlot {
 		double[][] series = new double[2][(var_param_upper - var_param_lower + 1)];
 		int si = 0;
 		ScatterPlotter plotter = null;
-		for (int q = var_param_lower; q <= var_param_upper; q+=vary_in_steps_of) {
+		for (int q = var_param_lower; q <= var_param_upper && !plot_aborted; q+=vary_in_steps_of) {
 			System.out.println("q: " + q);
 			double[][] cSizes = new double[2][simulation_count];
-			for (int i = 0; i < simulation_count; i++) {
+			for (int i = 0; i < simulation_count && !plot_aborted; i++) {
 				CultureDisseminationSimulation sim =
 					CultureDisseminationSimulation.factory(
 							(Class<? extends CultureDisseminationSimulation>) this.simulation_type,
@@ -94,8 +101,13 @@ public class QCritPlot extends StandAlonePlot {
 			series[1][si] = average;
 			si++;
 			if (plotter == null) {
-				plotter = new ScatterPlotter("Axelrod Simulation Plot", String
+				plotter = new ScatterPlotter("Criticality Plot", String
 						.format("L = %d, F = %d", network_size, invar_param), series, "q", "% overlap");
+				plotter.addWindowListener(new WindowAdapter() {
+					public void windowClosing(WindowEvent e) {
+						QCritPlot.this.stopPlot();
+					}
+				});
 				plotter.mostra();
 			}
 			plotter.setSeries(series);

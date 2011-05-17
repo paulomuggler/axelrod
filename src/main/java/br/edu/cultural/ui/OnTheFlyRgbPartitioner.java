@@ -1,4 +1,4 @@
-package br.edu.cultural.gui;
+package br.edu.cultural.ui;
 
 
 public class OnTheFlyRgbPartitioner implements RgbPartitioner {

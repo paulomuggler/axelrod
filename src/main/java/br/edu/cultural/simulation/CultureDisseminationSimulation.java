@@ -6,9 +6,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-import br.edu.cultural.gui.ClassNameComboBoxRenderer;
 import br.edu.cultural.network.CulturalNetwork;
 import br.edu.cultural.plot.Plot;
+import br.edu.cultural.ui.ClassNameComboBoxRenderer;
 
 public abstract class CultureDisseminationSimulation implements Runnable {
 	public enum SimulationState {

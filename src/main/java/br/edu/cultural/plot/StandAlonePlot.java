@@ -1,5 +1,6 @@
 package br.edu.cultural.plot;
 
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.lang.reflect.InvocationTargetException;
 
@@ -17,10 +18,11 @@ import javax.swing.JSeparator;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 import net.miginfocom.swing.MigLayout;
-import br.edu.cultural.gui.ClassNameComboBoxRenderer;
 import br.edu.cultural.simulation.CultureDisseminationSimulation;
+import br.edu.cultural.ui.ClassNameComboBoxRenderer;
 
 public abstract class StandAlonePlot implements Runnable {
 	
@@ -28,89 +30,82 @@ public abstract class StandAlonePlot implements Runnable {
 
 	@SuppressWarnings("serial")
 	public static void start_from_dialog(JFrame parent, final Class<? extends StandAlonePlot> plot_type) {
-		JPanel setup = new JPanel(new MigLayout("fillx"));
+		final JPanel setup = new JPanel(new MigLayout("fillx"));
 		
 		final JComboBox simulation_type_in = new JComboBox();
 		simulation_type_in.setRenderer(new ClassNameComboBoxRenderer());
 		for (Class<?> cl : CultureDisseminationSimulation.simulationClasses) {
 			simulation_type_in.addItem(cl);
 		}
-		setup.add(simulation_type_in, "span 2, wrap");
 		
-		final JCheckBox periodic_boundary_in = new JCheckBox("Periodic network boundary:");
+		final JCheckBox periodic_boundary_in = new JCheckBox("Periodic network boundary");
 		periodic_boundary_in.setSelected(true);
-		setup.add(periodic_boundary_in, "span 2, wrap");
 		
-		SpinnerNumberModel size_spinner_model = new SpinnerNumberModel(240, 2, Integer.MAX_VALUE, 1);
+		SpinnerNumberModel size_spinner_model = new SpinnerNumberModel(240, 2, 9999, 1);
 		final JSpinner size_in = new JSpinner(size_spinner_model);
-		setup.add(new JLabel("Size: "), "split 2");
-		setup.add(size_in, "");
 		
-		final JLabel invar_in_lbl = new JLabel();
-		final JLabel var_in_low_lbl = new JLabel();
-		final JLabel var_in_hi_lbl = new JLabel();
+		final JLabel invar_in_lbl = new JLabel("Features");
+		final JLabel var_in_lbl = new JLabel("Traits");
 		
 		ButtonGroup variable_parameter_in = new ButtonGroup();
 
 		final JRadioButton traits_is_variable = new JRadioButton();
-		traits_is_variable.setAction(new AbstractAction("features") {
+		traits_is_variable.setAction(new AbstractAction("traits") {
 			public void actionPerformed(ActionEvent e) {
-				invar_in_lbl.setText(traits_is_variable.isSelected()? "Features: " : "Traits");
-				var_in_low_lbl.setText((traits_is_variable.isSelected()? "Features: " : "Traits")+" lower bound");
-				var_in_hi_lbl.setText((traits_is_variable.isSelected()? "Features: " : "Traits")+" upper bound");
+				updateLabels();
+			}
+
+			private void updateLabels() {
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						invar_in_lbl.setText(traits_is_variable.isSelected()? "Features: " : "Traits: ");
+						var_in_lbl.setText((traits_is_variable.isSelected()? "Traits: " : "Features: "));
+					}
+				});
 			}
 		});
+		
 		final JRadioButton features_is_variable = new JRadioButton(new AbstractAction("features") {
 			public void actionPerformed(ActionEvent e) {
-				var_in_low_lbl.setText((traits_is_variable.isSelected()? "Features: " : "Traits")+" lower bound");
-				var_in_hi_lbl.setText((traits_is_variable.isSelected()? "Features: " : "Traits")+" upper bound");
+				updateLabels();
+			}
+			
+			private void updateLabels() {
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						invar_in_lbl.setText(traits_is_variable.isSelected()? "Features: " : "Traits: ");
+						var_in_lbl.setText((traits_is_variable.isSelected()? "Traits: " : "Features: "));
+					}
+				});
 			}
 		});
+		
 		variable_parameter_in.add(features_is_variable);
 		variable_parameter_in.add(traits_is_variable);
 		traits_is_variable.doClick();
 		
-		setup.add(new JLabel("Vary: "));
-		setup.add(features_is_variable, "");
-		setup.add(traits_is_variable, "wrap");
-		
-		SpinnerNumberModel invar_param_in_model = new SpinnerNumberModel(2, 2, Integer.MAX_VALUE, 1);
+		SpinnerNumberModel invar_param_in_model = new SpinnerNumberModel(2, 2, 9999, 1);
 		final JSpinner invar_in = new JSpinner(invar_param_in_model);
-		setup.add(invar_in_lbl, "split 2");
-		setup.add(invar_in, "wrap");
 		
-		SpinnerNumberModel var_param_lower_in_model = new SpinnerNumberModel(2, 2, Integer.MAX_VALUE, 1);
+		SpinnerNumberModel var_param_lower_in_model = new SpinnerNumberModel(2, 2, 9999, 1);
 		final JSpinner var_lower_in = new JSpinner(var_param_lower_in_model);
-		setup.add(var_in_low_lbl, "split 2");
-		setup.add(var_lower_in, "");
 		
-		SpinnerNumberModel var_param_upper_in_model = new SpinnerNumberModel(60, 2, Integer.MAX_VALUE, 1);
-		final JSpinner invar_upper_in = new JSpinner(var_param_upper_in_model);
-		setup.add(new JLabel(var_in_hi_lbl+" upper bound: "), "split 2");
-		setup.add(invar_upper_in, "wrap");
+		SpinnerNumberModel var_param_upper_in_model = new SpinnerNumberModel(60, 2, 9999, 1);
+		final JSpinner var_upper_in = new JSpinner(var_param_upper_in_model);
 		
-		SpinnerNumberModel steps_in_model = new SpinnerNumberModel(1, 1, Integer.MAX_VALUE, 1);
+		SpinnerNumberModel steps_in_model = new SpinnerNumberModel(1, 1, 9999, 1);
 		final JSpinner steps_in = new JSpinner(steps_in_model);
-		setup.add(new JLabel("vary in steps of: "), "split 2");
-		setup.add(steps_in, "wrap");
 		
-		SpinnerNumberModel simulation_count_model = new SpinnerNumberModel(10, 1, Integer.MAX_VALUE, 1);
+		SpinnerNumberModel simulation_count_model = new SpinnerNumberModel(10, 1, 9999, 1);
 		final JSpinner simulation_count_in = new JSpinner(simulation_count_model);
-		setup.add(new JLabel("Average from: "), "split 3, span 2");
-		setup.add(simulation_count_in, "");
-		setup.add(new JLabel(" simulations."), "wrap");
 		
 		final SpinnerNumberModel stop_spinner_model = new SpinnerNumberModel(10, 0, (int)Math.log10(Long.MAX_VALUE), 1);
 		JSpinner stop_after_iterations = new JSpinner(stop_spinner_model);
-		setup.add(new JSeparator(SwingConstants.HORIZONTAL), "span 3, grow, wrap, gaptop 9, gapbottom 9");
-		setup.add(new JLabel("Stop simulation after 10^"),"");
-		setup.add(stop_after_iterations, "al left");
-		setup.add(new JLabel("iterations."), "grow, wrap");
-		setup.add(new JSeparator(SwingConstants.HORIZONTAL), "span 3, grow, wrap, gaptop 9, gapbottom 9");
 	
-		final JDialog bam = new JDialog(parent, "New Plot...");
+		final JDialog plotDialog = new JDialog(parent, "New Plot...");
 		
 		final JButton go = new JButton();
+		go.setText("Start.");
 		go.setAction(new AbstractAction("Start.") {
 			private static final long serialVersionUID = -9175379487336433833L;
 			@SuppressWarnings("unchecked")
@@ -127,7 +122,7 @@ public abstract class StandAlonePlot implements Runnable {
 								((Number)size_in.getValue()).intValue(), 
 								((Number)invar_in.getValue()).intValue(),
 								((Number)var_lower_in.getValue()).intValue(),
-								((Number)invar_upper_in.getValue()).intValue(),
+								((Number)var_upper_in.getValue()).intValue(),
 								(features_is_variable.isSelected()),
 								((Number)simulation_count_in.getValue()).intValue(), 
 								((Number)steps_in.getValue()).intValue(),
@@ -148,16 +143,74 @@ public abstract class StandAlonePlot implements Runnable {
 					e1.printStackTrace();
 				}
 
-				new Thread(pl).start();
-				bam.setVisible(false);
-				bam.dispose();
+				pl.startPlot();
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						plotDialog.setVisible(false);
+						plotDialog.dispose();
+					}
+				});
 			}
 		});
-		setup.add(go, "span 2, al center");
 		
-		bam.getContentPane().add(setup);
-		bam.pack();
-		bam.setVisible(true);
+		Dimension four_digit_spinner_dim = new Dimension(36,18);
+		size_in.setPreferredSize(four_digit_spinner_dim);
+		invar_in.setPreferredSize(four_digit_spinner_dim);
+		var_lower_in.setPreferredSize(four_digit_spinner_dim);
+		var_upper_in.setPreferredSize(four_digit_spinner_dim);
+		steps_in.setPreferredSize(four_digit_spinner_dim);
+		simulation_count_in.setPreferredSize(four_digit_spinner_dim);
+		
+		setup.add(simulation_type_in, "spanx 3, wrap");
+		setup.add(periodic_boundary_in, "spanx 3, wrap");
+		setup.add(new JLabel("Network size: "), "wrap");
+		setup.add(size_in, "wrap");
+		setup.add(new JSeparator(SwingConstants.HORIZONTAL), "span 3, grow, wrap, gaptop 9, gapbottom 9");
+		setup.add(new JLabel("Vary: "), "split 3, spanx 3");
+		setup.add(features_is_variable, "");
+		setup.add(traits_is_variable, "wrap");
+		setup.add(invar_in_lbl, "wrap");
+		setup.add(invar_in, "wrap");
+		setup.add(var_in_lbl, "spany 2");
+		setup.add(new JLabel("Lower bound: "), "split 2");
+		setup.add(var_lower_in, "wrap");
+		setup.add(new JLabel("Upper bound: "), "split 2");
+		setup.add(var_upper_in, "wrap");
+		setup.add(new JSeparator(SwingConstants.HORIZONTAL), "span 3, grow, wrap, gaptop 9, gapbottom 9");
+		setup.add(new JLabel("Step size: "), "wrap");
+		setup.add(steps_in, "wrap");
+		setup.add(new JSeparator(SwingConstants.HORIZONTAL), "span 3, grow, wrap, gaptop 9, gapbottom 9");
+		setup.add(new JLabel("Average results from: "), "split 3, spanx 3");
+		setup.add(simulation_count_in, "");
+		setup.add(new JLabel(" simulations."), "wrap");
+		setup.add(new JSeparator(SwingConstants.HORIZONTAL), "spanx 3, grow, wrap, gaptop 9, gapbottom 9");
+		setup.add(new JLabel("Stop simulation after 10^"), "split 3, spanx 3");
+		setup.add(stop_after_iterations, "");
+		setup.add(new JLabel("iterations."), "wrap");
+		setup.add(new JSeparator(SwingConstants.HORIZONTAL), "spanx 3, grow, wrap, gaptop 9, gapbottom 9");
+		setup.add(go, "spanx 3, al center, wrap");
+		
+		plotDialog.add(setup);
+		plotDialog.setPreferredSize(new Dimension(420, 560));
+
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				plotDialog.pack();
+				plotDialog.setVisible(true);
+			}
+		});
+	}
+
+	private Thread worker;
+
+	protected void startPlot() {
+		this.worker = new Thread(this);
+		this.worker.start();
+	}
+	
+	protected boolean plot_aborted = false;
+	protected void stopPlot(){
+		this.plot_aborted  = true;
 	}
 
 	protected Class<? extends CultureDisseminationSimulation> simulation_type;
@@ -183,5 +236,10 @@ public abstract class StandAlonePlot implements Runnable {
 	protected abstract void run_with_variable_traits();
 
 	protected abstract void run_with_variable_features();
+	
+	public static void main(String [] args){
+		start_from_dialog(null, QCritPlot.class);
+		start_from_dialog(null, TruncatedQCritPlot.class);
+	}
 
 }

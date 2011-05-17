@@ -1,8 +1,7 @@
 package br.edu.cultural.plot;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import br.edu.cultural.network.CulturalNetwork;
 import br.edu.cultural.network.Utils;
@@ -12,9 +11,9 @@ public class TruncatedQCritPlot extends StandAlonePlot {
 	
 	public TruncatedQCritPlot(
 			Class<? extends CultureDisseminationSimulation> simulation_type,
-			boolean periodic_boundary, int network_size, int invar_param,
-			int var_param_lower, int var_param_upper,
-			boolean is_features_variable, int simulation_count, int vary_in_steps_of) {
+			Boolean periodic_boundary, Integer network_size, Integer invar_param,
+			Integer var_param_lower, Integer var_param_upper,
+			Boolean is_features_variable, Integer simulation_count, Integer vary_in_steps_of, Long max_iterations) {
 		super();
 		this.simulation_type = simulation_type;
 		this.periodic_boundary = periodic_boundary;
@@ -36,10 +35,10 @@ public class TruncatedQCritPlot extends StandAlonePlot {
 		double[][][] series = new double[3][2][(var_param_upper - var_param_lower + 1)];
 		int si = 0;
 		ScatterPlotter plotter = null;
-		for (int cur_f = f_low; cur_f <= f_hi; cur_f+=vary_in_steps_of) {
+		for (int cur_f = f_low; cur_f <= f_hi  && !plot_aborted; cur_f+=vary_in_steps_of) {
 			System.out.println("F: " + cur_f);
 			double[][] overlaps = new double[3][simulation_count];
-			for (int i = 0; i < simulation_count; i++) {
+			for (int i = 0; i < simulation_count  && !plot_aborted; i++) {
 				CultureDisseminationSimulation sim =
 					CultureDisseminationSimulation.factory(
 							(Class<? extends CultureDisseminationSimulation>) this.simulation_type,
@@ -68,15 +67,20 @@ public class TruncatedQCritPlot extends StandAlonePlot {
 			double overlap_some_average = Utils.array_average(overlaps[1]);
 			double overlap_all_average = Utils.array_average(overlaps[2]);
 			series[0][0][si] = cur_f;
-			series[0][1][si] = overlap_none_average;
+			series[0][1][si] = overlap_none_average / (network_size*network_size);
 			series[1][0][si] = cur_f;
-			series[1][1][si] = overlap_some_average;
+			series[1][1][si] = overlap_some_average / (network_size*network_size);
 			series[2][0][si] = cur_f;
-			series[2][1][si] = overlap_all_average;
+			series[2][1][si] = overlap_all_average / (network_size*network_size);
 			si++;
 			if (plotter == null) {
-				plotter = new ScatterPlotter("Axelrod Simulation Plot", String
-						.format("L = %d, q = %d", network_size, traits), new double[0][0], "F", "% overlap");
+				plotter = new ScatterPlotter("Truncated Criticality Plot", String
+						.format("L = %d, F = %d", network_size, traits), new double[2][2], "F", "% overlap");
+				plotter.addWindowListener(new WindowAdapter() {
+					public void windowClosing(WindowEvent e) {
+						TruncatedQCritPlot.this.stopPlot();
+					}
+				});
 				plotter.mostra();
 			}
 			for(int i = 0; i < 3; i++){
@@ -94,10 +98,10 @@ public class TruncatedQCritPlot extends StandAlonePlot {
 		double[][][] series = new double[3][2][(var_param_upper - var_param_lower + 1)];
 		int si = 0;
 		ScatterPlotter plotter = null;
-		for (int cur_q = q_low; cur_q <= q_hi; cur_q+=vary_in_steps_of) {
+		for (int cur_q = q_low; cur_q <= q_hi && !plot_aborted; cur_q+=vary_in_steps_of) {
 			System.out.println("F: " + cur_q);
 			double[][] overlaps = new double[3][simulation_count];
-			for (int i = 0; i < simulation_count; i++) {
+			for (int i = 0; i < simulation_count && !plot_aborted; i++) {
 				CultureDisseminationSimulation sim =
 					CultureDisseminationSimulation.factory(
 							(Class<? extends CultureDisseminationSimulation>) this.simulation_type,
@@ -126,15 +130,20 @@ public class TruncatedQCritPlot extends StandAlonePlot {
 			double overlap_some_average = Utils.array_average(overlaps[1]);
 			double overlap_all_average = Utils.array_average(overlaps[2]);
 			series[0][0][si] = cur_q;
-			series[0][1][si] = overlap_none_average;
+			series[0][1][si] = overlap_none_average / (network_size*network_size);
 			series[1][0][si] = cur_q;
-			series[1][1][si] = overlap_some_average;
+			series[1][1][si] = overlap_some_average / (network_size*network_size);
 			series[2][0][si] = cur_q;
-			series[2][1][si] = overlap_all_average;
+			series[2][1][si] = overlap_all_average / (network_size*network_size);
 			si++;
 			if (plotter == null) {
-				plotter = new ScatterPlotter("Axelrod Simulation Plot", String
-						.format("L = %d, q = %d", network_size, features), new double[0][0], "Q", "% overlap");
+				plotter = new ScatterPlotter("Truncated Criticality Plot", String
+						.format("L = %d, Q = %d", network_size, features), new double[2][2], "Q", "% overlap");
+				plotter.addWindowListener(new WindowAdapter() {
+					public void windowClosing(WindowEvent e) {
+						TruncatedQCritPlot.this.stopPlot();
+					}
+				});
 				plotter.mostra();
 			}
 			for(int i = 0; i < 3; i++){

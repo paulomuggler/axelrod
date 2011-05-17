@@ -23,14 +23,6 @@ public abstract class Plot<S extends CultureDisseminationSimulation, D extends X
 	public abstract JFreeChart createPlot(S simulation);
 	public abstract void plot();
 	
-	public void link(S simulation) {
-		createPlot(simulation);
-		sim.addListener(this);
-	}
-	public void unlink() {
-		sim.removeListener(this);
-	}
-	
 	public JFreeChart chart(){ return chart; }
 	
 	public String simInfo(){

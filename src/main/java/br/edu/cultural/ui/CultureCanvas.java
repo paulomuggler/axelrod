@@ -1,4 +1,4 @@
-package br.edu.cultural.gui;
+package br.edu.cultural.ui;
 
 import java.awt.Component;
 import java.awt.Dimension;

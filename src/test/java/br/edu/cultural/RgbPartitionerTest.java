@@ -10,9 +10,9 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-import br.edu.cultural.gui.PreCalcRgbPartitioner;
-import br.edu.cultural.gui.RgbPartitioner;
 import br.edu.cultural.network.State;
+import br.edu.cultural.ui.PreCalcRgbPartitioner;
+import br.edu.cultural.ui.RgbPartitioner;
 
 /**
  * @author muggler

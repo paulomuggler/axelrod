@@ -1,7 +1,7 @@
 /**
  * 
  */
-package br.edu.cultural.gui;
+package br.edu.cultural.ui;
 
 import java.awt.Color;
 import java.awt.Graphics;

@@ -1,4 +1,4 @@
-package br.edu.cultural.gui;
+package br.edu.cultural.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -12,7 +12,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintStream;
 
 import javax.swing.AbstractAction;
@@ -57,7 +56,6 @@ import br.edu.cultural.plot.ActiveRoomsHistogram;
 import br.edu.cultural.plot.CommonFeaturesScatterPlot;
 import br.edu.cultural.plot.CultureDistributionScatterPlot;
 import br.edu.cultural.plot.OrderParametersScatterPlot;
-import br.edu.cultural.plot.Plot;
 import br.edu.cultural.plot.QCritPlot;
 import br.edu.cultural.plot.StandAlonePlot;
 import br.edu.cultural.plot.TruncatedQCritPlot;
@@ -100,16 +98,15 @@ public class MainApplicationFrame extends JFrame {
 	SpinnerNumberModel stop_spinner_model = new SpinnerNumberModel(10, 0, (int)Math.log10(Long.MAX_VALUE), 1);
 	JSpinner stop_after_iterations = new JSpinner(stop_spinner_model);
 
-	JLabel lLbl = new JLabel("Size:");
-	JTextField lTxtIn = new JTextField("100");
+	SpinnerNumberModel nw_size_in_model = new SpinnerNumberModel(80, 2, 9999, 1);
+	JSpinner nw_size_in = new JSpinner(nw_size_in_model);
+	
+	SpinnerNumberModel f_in_model = new SpinnerNumberModel(2, 2, 9999, 1);
+	JSpinner f_in = new JSpinner(f_in_model);
+	
+	SpinnerNumberModel q_in_model = new SpinnerNumberModel(2, 2, 9999, 1);
+	JSpinner q_in = new JSpinner(q_in_model);
 
-	JLabel fLbl = new JLabel("F:");
-	JTextField fTxtIn = new JTextField("2");
-
-	JLabel qLbl = new JLabel("q:");
-	JTextField qTxtIn = new JTextField("2");
-
-	JLabel paintLbl = new JLabel("Paint with state: ");
 	JTextField paintTxtIn = new JTextField();
 	PaintSample paintSample = new PaintSample();
 
@@ -119,67 +116,23 @@ public class MainApplicationFrame extends JFrame {
 	JCheckBox enable_visual_representation = new JCheckBox("Enable visual representation");
 	
 	ButtonGroup representations = new ButtonGroup();
+	@SuppressWarnings("serial")
 	JRadioButton colorRepresentation = new JRadioButton(new AbstractAction() {
-		private static final long serialVersionUID = 8478401213428301372L;
-		@Override
 		public void actionPerformed(ActionEvent e) {
 			MainApplicationFrame.this.switchCanvas(new CultureColorsCanvas(CANVAS_HEIGHT, sim.nw));
 		}
 	});
+	@SuppressWarnings("serial")
 	JRadioButton bordersRepresentation = new JRadioButton(new AbstractAction() {
-		private static final long serialVersionUID = 2178464349352290560L;
-
-		@Override
 		public void actionPerformed(ActionEvent e) {
 			MainApplicationFrame.this.switchCanvas(new CultureBordersCanvas(CANVAS_HEIGHT, sim.nw));
 		}
 	});
 	
-	protected void switchCanvas(final CultureCanvas cnv){
-		final Container pane = MainApplicationFrame.this.getContentPane();
-		if (canvas != null) {
-			pane.remove(canvas);
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() { 
-					MainApplicationFrame.this.pack();
-					MainApplicationFrame.this.repaint();
-					pane.repaint();
-				}
-			});
-		}
-		boolean toggled = false;
-		if(MainApplicationFrame.this.sim.state.equals(CultureDisseminationSimulation.SimulationState.RUNNING)){
-			MainApplicationFrame.this.toggle_simulation.actionPerformed(null);
-			toggled = true;
-		}
-		canvas = cnv;
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				pane.add(canvas);
-				MainApplicationFrame.this.pack();
-				MainApplicationFrame.this.repaint();
-				pane.repaint();
-			}
-		});
-		if(toggled){
-			MainApplicationFrame.this.toggle_simulation.actionPerformed(null);
-		}
-	}
-	
 	JSlider speedSlider = new JSlider(JSlider.HORIZONTAL, 0, 100, 100);
 	JSlider networkRefreshRateSlider = new JSlider(JSlider.HORIZONTAL, 1, 100, 10);
 
-	JTextArea out;
-
-	// JLabel tLbl = new JLabel("Time: ");
-	JLabel iterationsLbl = new JLabel("Iterations: ");
-	JLabel iterationsLblOut = new JLabel("0");
-	JLabel interactionsLbl = new JLabel("Interactions: ");
-	JLabel interactionsLblOut = new JLabel("0");
-	JLabel epochsLbl = new JLabel("Epochs: ");
-	JLabel epochsLblOut = new JLabel("0");
+	JTextArea console_out;
 
 	public CultureCanvas canvas;
 	public CultureDisseminationSimulation sim;
@@ -205,9 +158,6 @@ public class MainApplicationFrame extends JFrame {
 		for (Class<?> cl : CultureDisseminationSimulation.simulationClasses) {
 			simulation_type_in.addItem(cl);
 		}
-//		for (Class<? extends CultureDisseminationSimulation> cl : CultureDisseminationSimulation.subclasses()) {
-//			simulation_type_in.addItem(cl);
-//		}
 		
 		periodicBoundarySelect = new JCheckBox("Periodic boundary condition");
 		periodicBoundarySelect.setSelected(true);
@@ -248,10 +198,6 @@ public class MainApplicationFrame extends JFrame {
 		menuBar.add(fileMenu);
 		menuBar.add(plotMenu);
 
-		lTxtIn.setPreferredSize(new Dimension(60, 18));
-		fTxtIn.setPreferredSize(new Dimension(30, 18));
-		qTxtIn.setPreferredSize(new Dimension(30, 18));
-
 		reset_simulation_button.setPreferredSize(new Dimension(80, 20));
 		toggle_simulation_button.setPreferredSize(new Dimension(80, 20));
 		step_simulation_button.setPreferredSize(new Dimension(80, 20));
@@ -274,14 +220,12 @@ public class MainApplicationFrame extends JFrame {
 		paintTxtIn.addActionListener(stateStrokeActionHandler());
 
 		speedSlider.addChangeListener(speedSliderChangeHandler());
-		// Turn on labels at major tick marks.
 		speedSlider.setMajorTickSpacing(10);
 		speedSlider.setMinorTickSpacing(1);
 		speedSlider.setPaintTicks(true);
 		speedSlider.setPaintLabels(true);
 		
 		networkRefreshRateSlider.addChangeListener(networkRefreshSliderHandler());
-		// Turn on labels at major tick marks.
 		networkRefreshRateSlider.setMajorTickSpacing(10);
 		networkRefreshRateSlider.setMinorTickSpacing(1);
 		networkRefreshRateSlider.setPaintTicks(true);
@@ -301,17 +245,17 @@ public class MainApplicationFrame extends JFrame {
 		controls.add(new JSeparator(SwingConstants.HORIZONTAL), "span 3, grow, wrap, gaptop 9, gapbottom 9");
 		controls.add(simulation_type_in, "span 3, grow, wrap");
 		
-		controls.add(lLbl, "split 6");
-		controls.add(lTxtIn, "");
-		controls.add(fLbl, "");
-		controls.add(fTxtIn, "");
-		controls.add(qLbl, "");
-		controls.add(qTxtIn, "wrap");
+		controls.add(new JLabel("Size:"), "split 6");
+		controls.add(nw_size_in, "");
+		controls.add(new JLabel("F:"), "");
+		controls.add(f_in, "");
+		controls.add(new JLabel("q:"), "");
+		controls.add(q_in, "wrap");
 		
 		controls.add(periodicBoundarySelect, "span 3, grow, wrap");
 		controls.add(new JSeparator(SwingConstants.HORIZONTAL), "span 3, grow, wrap, gaptop 9, gapbottom 9");
 
-		controls.add(paintLbl, "wrap, gapbottom 3");
+		controls.add(new JLabel("State pencil color: "), "wrap, gapbottom 3");
 		controls.add(paintTxtIn, "span 3, split 2, growx");
 		controls.add(paintSample, "wrap");
 		controls.add(new JSeparator(SwingConstants.HORIZONTAL), "span 3, grow, wrap, gaptop 9, gapbottom 9");
@@ -344,22 +288,22 @@ public class MainApplicationFrame extends JFrame {
 			private static final long serialVersionUID = 5606674484787535063L;
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				out.setText("");
+				console_out.setText("");
 			}
 		});
-		out = new JTextArea(5, 30);
-		out.setEditable(false);
-		out.addMouseListener( new MouseAdapter() {
+		console_out = new JTextArea(5, 30);
+		console_out.setEditable(false);
+		console_out.addMouseListener( new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				if(e.getButton() == MouseEvent.BUTTON3){
-					outputMenu.show(out, e.getX(), e.getY());
+					outputMenu.show(console_out, e.getX(), e.getY());
 				}
 			}
 		});
 		
-		JScrollPane scrollOut = new JScrollPane(out);
-		System.setOut(new PrintStream(textAreaOutputStream(out)));
-		System.setErr(new PrintStream(textAreaOutputStream(out)));
+		JScrollPane scrollOut = new JScrollPane(console_out);
+		System.setOut(new PrintStream(new TextAreaOutputStream(console_out)));
+		System.setErr(new PrintStream(new TextAreaOutputStream(console_out)));
 		pane.add(scrollOut, BorderLayout.SOUTH);
 	}
 
@@ -402,9 +346,10 @@ public class MainApplicationFrame extends JFrame {
 					PlotAction plot = (PlotAction) activePlotsListModel
 							.getElementAt(index);
 					activePlotsJList.ensureIndexIsVisible(index);
+					plot.unlink(sim);
 					activePlotsListModel.removeElement(plot);
 					plotsListModel.addElement(plot);
-					plot.unlink();
+					plotMenu.remove(plot.menuItemForThisThanksVeryMuchJavaForNotBeingTooMuchVerbose());
 				}
 			}
 		};
@@ -418,9 +363,10 @@ public class MainApplicationFrame extends JFrame {
 					PlotAction plot = (PlotAction) plotsListModel
 							.getElementAt(index);
 					plotsJList.ensureIndexIsVisible(index);
+					plot.link(sim);
 					plotsListModel.removeElement(plot);
 					activePlotsListModel.addElement(plot);
-					plot.link();
+					plotMenu.add(plot.menuItemForThisThanksVeryMuchJavaForNotBeingTooMuchVerbose());
 				}
 			}
 		};
@@ -441,24 +387,12 @@ public class MainApplicationFrame extends JFrame {
 		}
 	}
 
-	private OutputStream textAreaOutputStream(final JTextArea t) {
-		return new OutputStream() {
-			JTextArea ta = t;
-
-			public void write(int b) {
-				byte[] bs = new byte[1];
-				bs[0] = (byte) b;
-				ta.append(new String(bs));
-				ta.setCaretPosition(ta.getDocument().getLength());
-			}
-		};
-	}
-
 	public void updateStroke() {
 		paintSample.repaint();
 	}
 
-	private void resetGui() {
+	@SuppressWarnings("serial")
+	private void resetSimulation() {
 		Container pane = this.getContentPane();
 		if (canvas != null) {
 			pane.remove(canvas);
@@ -487,90 +421,56 @@ public class MainApplicationFrame extends JFrame {
 		simThr = new Thread(sim);
 		toggle_simulation_button.setText("Start");
 		step_simulation_button.setEnabled(true);
-		lTxtIn.setText(String.valueOf(sim.nw.size));
-		fTxtIn.setText(String.valueOf(sim.nw.features));
-		qTxtIn.setText(String.valueOf(sim.nw.traits));
+		nw_size_in.setValue(sim.nw.size);
+		f_in.setValue(sim.nw.features);
+		q_in.setValue(sim.nw.traits);
 		
 		activeNodesPlotAction = new PlotAction("Active Nodes",
-				"Active Nodes - Scatter Plot", new ActiveNodesScatterPlot()) {
-			private static final long serialVersionUID = -2489956318996611551L;
-
-			public void defer_init() {
-				plotter.addChartScaleSelectorX("time");
-				plotter.validate();
-				plotter.repaint();
-			}
-		};
+				"Active Nodes - Scatter Plot", new ActiveNodesScatterPlot());
 		
 		activeEdgesPlotAction = new PlotAction("Active Edges",
-				"Active Edges - Scatter Plot", new ActiveEdgesScatterPlot()) {
-			private static final long serialVersionUID = -2489956318996611551L;
-
-			public void defer_init() {
-				plotter.addChartScaleSelectorX("time");
-				plotter.validate();
-				plotter.repaint();
-			}
-		};
+				"Active Edges - Scatter Plot", new ActiveEdgesScatterPlot());
 
 		cultureDistributionPlotAction = new PlotAction("Culture Distribution",
 				"Cultures sizes distribution plot",
 				new CultureDistributionScatterPlot());
+
+		// PLOT ACTIONS
 		activeRoomsPlotAction = new PlotAction("Rooms plot",
 				"Active Rooms - Scatter Plot", new ActiveRoomScatterPlot());
+		
 		activeRoomsHistogramAction = new PlotAction("Rooms histogram",
 				"Active Rooms - Histogram", new ActiveRoomsHistogram());
+		
 		commonFeaturesPlotAction = new PlotAction("Common features plot",
-				"Common Features - Scatter Plot", new CommonFeaturesScatterPlot()){
-			private static final long serialVersionUID = -2489956318996611551L;
-			public void defer_init() {
-				plotter.addChartScaleSelectorX("time");
-				plotter.validate();
-				plotter.repaint();
-			}
-		};
+				"Common Features - Scatter Plot", new CommonFeaturesScatterPlot());
 		
 		orderParametersPlotAction = new PlotAction("Order parameters plot",
-				"Order parameters - Scatter Plot", new OrderParametersScatterPlot()){
-			private static final long serialVersionUID = -2489956318996611551L;
-			public void defer_init() {
-				plotter.addChartScaleSelectorX("time");
-				plotter.validate();
-				plotter.repaint();
-			}
-		};
-
-
-		clearPlots();
-		addPlots(activeNodesPlotAction, activeEdgesPlotAction, cultureDistributionPlotAction,
-				activeRoomsPlotAction, activeRoomsHistogramAction, commonFeaturesPlotAction, orderParametersPlotAction);
-
-		this.pack();
-		this.repaint();
-	}
-
-	@SuppressWarnings("serial")
-	private void addPlots(PlotAction... plotActions) {
-		for (PlotAction plot : plotActions) {
-			plotMenu.add(plot);
-			plotsListModel.addElement(plot);
-		}
-		plotMenu.add(new AbstractAction("critical Q plot...") {
+				"Order parameters - Scatter Plot", new OrderParametersScatterPlot());
+		
+		// STANDALONE PLOTS
+		JMenu standalonePlots = new JMenu("Standalone Plots");
+		standalonePlots.add(new AbstractAction("Criticality Plot") {
 			public void actionPerformed(ActionEvent e) {
 				StandAlonePlot.start_from_dialog(MainApplicationFrame.this, QCritPlot.class);
 			}
 		});
-		plotMenu.add(new AbstractAction("critical Q plot(truncated)...") {
+		standalonePlots.add(new AbstractAction("Truncated Criticality Plot") {
 			public void actionPerformed(ActionEvent e) {
 				StandAlonePlot.start_from_dialog(MainApplicationFrame.this, TruncatedQCritPlot.class);
 			}
 		});
-	}
-
-	private void clearPlots() {
 		plotMenu.removeAll();
+		plotMenu.add(standalonePlots);
 		plotsListModel.removeAllElements();
 		activePlotsListModel.removeAllElements();
+		PlotAction[] plotActions = { activeNodesPlotAction, activeEdgesPlotAction, cultureDistributionPlotAction,
+				activeRoomsPlotAction, activeRoomsHistogramAction, commonFeaturesPlotAction, orderParametersPlotAction };
+		for (PlotAction plot : plotActions) {
+			plotsListModel.addElement(plot);
+		}
+		this.pack();
+		this.repaint();
 	}
 
 	private ActionListener reset_simulation = new ActionListener() {
@@ -582,13 +482,13 @@ public class MainApplicationFrame extends JFrame {
 				System.out.println("Simulation interrupted.");
 				System.out.println(sim.execution_statistics_string());
 			}
-			try {
 				sim = CultureDisseminationSimulation.factory(
 						(Class<? extends CultureDisseminationSimulation>) simulation_type_in
-								.getSelectedItem(), new CulturalNetwork(Integer
-								.parseInt(lTxtIn.getText()), Integer
-								.parseInt(fTxtIn.getText()), Integer
-								.parseInt(qTxtIn.getText()), periodicBoundarySelect.isSelected(), networkRefreshRateSlider.getValue()));
+								.getSelectedItem(), new CulturalNetwork((Integer)nw_size_in.getValue(), 
+																		(Integer) f_in.getValue(), 
+																		(Integer) q_in.getValue(), 
+																		periodicBoundarySelect.isSelected(), 
+																		networkRefreshRateSlider.getValue()));
 				
 				sim.stop_after_iterations((long) Math.pow(10, ((SpinnerNumberModel)stop_after_iterations.getModel()).getNumber().longValue()));
 				sim.addListener(new SimulationEventAdapter(){
@@ -626,13 +526,7 @@ public class MainApplicationFrame extends JFrame {
 				});
 				sim.setDefer_update(deferredUpdateSelect.isSelected());
 				
-			} catch (NumberFormatException ex) {
-				JOptionPane.showMessageDialog(MainApplicationFrame.this,
-						"Numbers only please!", "Error",
-						JOptionPane.ERROR_MESSAGE);
-				return;
-			}
-			resetGui();
+			resetSimulation();
 		}
 
 	};
@@ -687,7 +581,7 @@ public class MainApplicationFrame extends JFrame {
 					if (sim != null)
 						sim.finish();
 					sim = CultureDisseminationSimulation.factory((Class<? extends CultureDisseminationSimulation>) simulation_type_in.getSelectedItem(), nw);
-					resetGui();
+					resetSimulation();
 				} catch (IOException e1) {
 					JOptionPane.showMessageDialog(MainApplicationFrame.this,
 							"Error saving to file: " + e1.getMessage(),
@@ -714,40 +608,40 @@ public class MainApplicationFrame extends JFrame {
 		}
 	};
 
-	class PlotAction extends AbstractAction {
-		private static final long serialVersionUID = 8874503720547085785L;
-		protected Plotter plotter;
-		protected Plot<CultureDisseminationSimulation, ?> plot;
-		private String pTitle;
-
-		@SuppressWarnings("unchecked")
-		public PlotAction(String actionCaption, String plotTitle, Plot<?, ?> p) {
-			super(actionCaption);
-			plot = (Plot<CultureDisseminationSimulation, ?>) p;
-			pTitle = plotTitle;
+	public static JFileChooser getFileChooser() {
+		return fc == null? fc = new JFileChooser() : fc;
+	}
+	
+	protected void switchCanvas(final CultureCanvas cnv){
+		final Container pane = MainApplicationFrame.this.getContentPane();
+		if (canvas != null) {
+			pane.remove(canvas);
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() { 
+					MainApplicationFrame.this.pack();
+					MainApplicationFrame.this.repaint();
+					pane.repaint();
+				}
+			});
 		}
-
-		public void actionPerformed(ActionEvent e) {
-			if (plotter == null) {
-				plotter = new Plotter(pTitle, plot);
-				defer_init();
+		boolean toggled = false;
+		if(MainApplicationFrame.this.sim.state.equals(CultureDisseminationSimulation.SimulationState.RUNNING)){
+			MainApplicationFrame.this.toggle_simulation.actionPerformed(null);
+			toggled = true;
+		}
+		canvas = cnv;
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				pane.add(canvas);
+				MainApplicationFrame.this.pack();
+				MainApplicationFrame.this.repaint();
+				pane.repaint();
 			}
-			plotter.mostra();
-		}
-
-		public void defer_init() {
-		};
-
-		public void link() {
-			plot.link(sim);
-		}
-
-		public void unlink() {
-			plot.unlink();
-		}
-
-		public String toString() {
-			return pTitle;
+		});
+		if(toggled){
+			MainApplicationFrame.this.toggle_simulation.actionPerformed(null);
 		}
 	}
 
@@ -758,9 +652,5 @@ public class MainApplicationFrame extends JFrame {
 		axelrod.pack();
 		axelrod.setVisible(true);
 		axelrod.setExtendedState(axelrod.getExtendedState() | JFrame.MAXIMIZED_BOTH);
-	}
-
-	public static JFileChooser getFileChooser() {
-		return fc == null? fc = new JFileChooser() : fc;
 	}
 }

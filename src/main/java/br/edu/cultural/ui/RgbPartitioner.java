@@ -1,4 +1,4 @@
-package br.edu.cultural.gui;
+package br.edu.cultural.ui;
 
 
 public interface RgbPartitioner {
