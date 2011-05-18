@@ -56,9 +56,9 @@ import br.edu.cultural.plot.ActiveRoomsHistogram;
 import br.edu.cultural.plot.CommonFeaturesScatterPlot;
 import br.edu.cultural.plot.CultureDistributionScatterPlot;
 import br.edu.cultural.plot.OrderParametersScatterPlot;
-import br.edu.cultural.plot.QCritPlot;
+import br.edu.cultural.plot.CriticalityPlot;
 import br.edu.cultural.plot.StandAlonePlot;
-import br.edu.cultural.plot.TruncatedQCritPlot;
+import br.edu.cultural.plot.TruncatedCriticalityPlot;
 import br.edu.cultural.simulation.CultureDisseminationSimulation;
 import br.edu.cultural.simulation.CultureDisseminationSimulation.SimulationState;
 import br.edu.cultural.simulation.SimulationEventListener;
@@ -451,12 +451,12 @@ public class MainApplicationFrame extends JFrame {
 		JMenu standalonePlots = new JMenu("Standalone Plots");
 		standalonePlots.add(new AbstractAction("Criticality Plot") {
 			public void actionPerformed(ActionEvent e) {
-				StandAlonePlot.start_from_dialog(MainApplicationFrame.this, QCritPlot.class);
+				StandAlonePlot.start_from_dialog(MainApplicationFrame.this, CriticalityPlot.class);
 			}
 		});
 		standalonePlots.add(new AbstractAction("Truncated Criticality Plot") {
 			public void actionPerformed(ActionEvent e) {
-				StandAlonePlot.start_from_dialog(MainApplicationFrame.this, TruncatedQCritPlot.class);
+				StandAlonePlot.start_from_dialog(MainApplicationFrame.this, TruncatedCriticalityPlot.class);
 			}
 		});
 		plotMenu.removeAll();
@@ -489,7 +489,7 @@ public class MainApplicationFrame extends JFrame {
 																		periodicBoundarySelect.isSelected(), 
 																		networkRefreshRateSlider.getValue()));
 				
-				sim.stop_after_iterations((long) Math.pow(10, ((SpinnerNumberModel)stop_after_iterations.getModel()).getNumber().longValue()));
+				sim.stop_after_epochs((long) Math.pow(10, ((SpinnerNumberModel)stop_after_iterations.getModel()).getNumber().longValue()));
 				sim.addListener(new SimulationEventAdapter(){
 					public void started(){
 						System.out.println("Simulation started.");

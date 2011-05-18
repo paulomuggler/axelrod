@@ -39,7 +39,7 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 	protected long iterations = 0;
 	protected long interactions = 0;
 	
-	protected long stop_after_iterations = Long.MAX_VALUE;
+	protected long stop_after_epochs = Long.MAX_VALUE;
 
 	protected List<SimulationEventListener> listeners = Collections
 			.synchronizedList(new ArrayList<SimulationEventListener>());
@@ -100,7 +100,7 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 
 	/** Performs a single step of the simulation */
 	public void simulation_step() {
-		if ((this.nw.interactive_nodes().size() == 0) || (iterations >= stop_after_iterations)) {
+		if ((this.nw.interactive_nodes().size() == 0) || (this.current_epoch() >= stop_after_epochs)) {
 			this.finish();
 			return;
 		}
@@ -168,8 +168,8 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 		this.speed = speed;
 	}
 	
-	public void stop_after_iterations(long n){
-		this.stop_after_iterations = n;
+	public void stop_after_epochs(long n){
+		this.stop_after_epochs = n;
 	}
 
 	public void setDefer_update(boolean defer_update) {

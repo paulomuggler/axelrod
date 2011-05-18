@@ -2,6 +2,8 @@ package br.edu.cultural.plot;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.AbstractAction;
@@ -186,7 +188,7 @@ public abstract class StandAlonePlot implements Runnable {
 		setup.add(new JSeparator(SwingConstants.HORIZONTAL), "spanx 3, grow, wrap, gaptop 9, gapbottom 9");
 		setup.add(new JLabel("Stop simulation after 10^"), "split 3, spanx 3");
 		setup.add(stop_after_iterations, "");
-		setup.add(new JLabel("iterations."), "wrap");
+		setup.add(new JLabel("Monte Carlo steps."), "wrap");
 		setup.add(new JSeparator(SwingConstants.HORIZONTAL), "spanx 3, grow, wrap, gaptop 9, gapbottom 9");
 		setup.add(go, "spanx 3, al center, wrap");
 		
@@ -222,7 +224,9 @@ public abstract class StandAlonePlot implements Runnable {
 	protected int simulation_count;
 	protected boolean is_features_variable;
 	protected int vary_in_steps_of;
-	protected long max_iterations;
+	protected long max_epochs;
+	protected Integer edges = null;
+	protected ScatterPlotter plotter = null;
 
 	@Override
 	public void run() {
@@ -237,9 +241,16 @@ public abstract class StandAlonePlot implements Runnable {
 
 	protected abstract void run_with_variable_features();
 	
-	public static void main(String [] args){
-		start_from_dialog(null, QCritPlot.class);
-		start_from_dialog(null, TruncatedQCritPlot.class);
+	protected void addStopPlotWindowListener() {
+		plotter.addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+				StandAlonePlot.this.stopPlot();
+			}
+		});
 	}
-
+	
+	public static void main(String [] args){
+		start_from_dialog(null, CriticalityPlot.class);
+		start_from_dialog(null, TruncatedCriticalityPlot.class);
+	}
 }

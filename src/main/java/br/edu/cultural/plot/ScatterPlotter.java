@@ -37,13 +37,8 @@ public class ScatterPlotter extends JFrame{
 		ds = new DefaultXYDataset();
 		ds.addSeries(1, dataset);
 		JFreeChart chart = ChartFactory.createScatterPlot(title, xAx, yAx, ds,
-		PlotOrientation.VERTICAL, false, false, false);
+		PlotOrientation.VERTICAL, true, true, true);
 		return chart;
-	}
-	
-	public void mostra(){
-		this.pack();
-		this.setVisible(true);
 	}
 	
 	public void setSeries(double[][] series){
