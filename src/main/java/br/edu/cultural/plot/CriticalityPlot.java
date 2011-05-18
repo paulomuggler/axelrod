@@ -37,14 +37,14 @@ public class CriticalityPlot extends StandAlonePlot {
 		int traits = invar_param;
 		
 		plotter = new ScatterPlotter("Criticality Plot", String
-				.format("L = %d, Q = %d", network_size, traits), series, "F", "% largest culture");
+				.format("L = %d, q = %d, Truncate = 10^%d", network_size, traits, (int)Math.log10(max_epochs)), series, "F", "% largest culture");
 		addStopPlotWindowListener();
 		plotter.pack();
 		plotter.setVisible(true);
 		
 		for (int f = f_low; f <= f_hi  && !plot_aborted; f+=vary_in_steps_of) {
 			System.out.println("F: " + f);
-			plot_point(f, traits);
+			plot_point_features(f, traits);
 		}
 		
 	}
@@ -55,19 +55,41 @@ public class CriticalityPlot extends StandAlonePlot {
 		int features = invar_param;
 		
 		plotter = new ScatterPlotter("Criticality Plot", String
-				.format("L = %d, F = %d", network_size, invar_param), series, "Q", "% largest culture");
+				.format("L = %d, F = %d, Truncate = 10^%d", network_size, invar_param, (int)Math.log10(max_epochs)), series, "q", "% largest culture");
 		
 		addStopPlotWindowListener();
 		plotter.pack();
 		plotter.setVisible(true);
 		
 		for (int q = q_low; q <= q_hi && !plot_aborted; q+=vary_in_steps_of) {
-			System.out.println("Q: " + q);
-			plot_point(features, q);
+			System.out.println("q: " + q);
+			plot_point_traits(features, q);
 		}
 	}
 
-	private void plot_point(int features, int traits) {
+	private void plot_point_features(int features, int traits) {
+		double[][] cSizes = new double[2][simulation_count];
+		for (int i = 0; i < simulation_count && !plot_aborted; i++) {
+			CultureDisseminationSimulation sim =
+				CultureDisseminationSimulation.factory(
+						(Class<? extends CultureDisseminationSimulation>) this.simulation_type,
+						new CulturalNetwork(network_size, features, traits, this.periodic_boundary, NW_REFRESH_ADJUST));
+			sim.stop_after_epochs(max_epochs);
+			sim.run();
+			Integer[] culture_sizes = new ArrayList<Integer>(sim.nw
+					.count_cultures().values()).toArray(new Integer[0]);
+			Arrays.sort(culture_sizes);
+			Integer largest_culture = (Integer) culture_sizes[culture_sizes.length - 1];
+			cSizes[0][i] = features;
+			cSizes[1][i] = ((double) largest_culture) / (sim.nw.size * sim.nw.size);
+		}
+		double average = Utils.array_average(cSizes[1]);
+		series[0][series_i] = cSizes[0][0];
+		series[1][series_i] = average;
+		series_i++;
+		plotter.setSeries(series);
+	}
+	private void plot_point_traits(int features, int traits) {
 		double[][] cSizes = new double[2][simulation_count];
 		for (int i = 0; i < simulation_count && !plot_aborted; i++) {
 			CultureDisseminationSimulation sim =
@@ -85,7 +107,7 @@ public class CriticalityPlot extends StandAlonePlot {
 		}
 		double average = Utils.array_average(cSizes[1]);
 		series[0][series_i] = cSizes[0][0];
-		series[1][series_i] = 100 * average;
+		series[1][series_i] = average;
 		series_i++;
 		plotter.setSeries(series);
 	}

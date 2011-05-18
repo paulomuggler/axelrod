@@ -35,7 +35,7 @@ public class TruncatedCriticalityPlot extends StandAlonePlot {
 		int traits = invar_param;
 		
 		plotter = new ScatterPlotter("Truncated Criticality Plot", 
-													String.format("L = %d, Q = %d", network_size, traits),
+													String.format("L = %d, q = %d, Truncate = 10^%d", network_size, traits, (int)Math.log10(max_epochs)),
 													new double[2][2], 
 													"F", 
 													"% edges");
@@ -45,7 +45,7 @@ public class TruncatedCriticalityPlot extends StandAlonePlot {
 
 		for (int cur_f = f_low; cur_f <= f_hi  && !plot_aborted; cur_f+=vary_in_steps_of) {
 			System.out.println("F: " + cur_f);
-			plot_point(cur_f, traits);
+			plot_point_features(cur_f, traits);
 		}
 	}
 
@@ -55,21 +55,21 @@ public class TruncatedCriticalityPlot extends StandAlonePlot {
 		int features = invar_param;
 		
 		plotter = new ScatterPlotter("Truncated Criticality Plot", 
-									 String.format("L = %d, F = %d", network_size, features),
+									 String.format("L = %d, F = %d, Truncate = 10^%d", network_size, features, (int)Math.log10(max_epochs)),
 									 new double[2][2], 
-									 "Q", 
+									 "q", 
 									 "% edges");
 		addStopPlotWindowListener();
 		plotter.pack();
 		plotter.setVisible(true);
 		
 		for (int cur_q = q_low; cur_q <= q_hi && !plot_aborted; cur_q+=vary_in_steps_of) {
-			System.out.println("Q: " + cur_q);
-			plot_point(features, cur_q);
+			System.out.println("q: " + cur_q);
+			plot_point_traits(features, cur_q);
 		}
 	}
 	
-	private void plot_point(int features, int traits) {
+	private void plot_point_traits(int features, int traits) {
 		double[][] overlaps = new double[3][simulation_count];
 		for (int i = 0; i < simulation_count  && !plot_aborted; i++) {
 			CultureDisseminationSimulation sim =
@@ -102,14 +102,60 @@ public class TruncatedCriticalityPlot extends StandAlonePlot {
 		double overlap_some_average = Utils.array_average(overlaps[1]);
 		double overlap_all_average = Utils.array_average(overlaps[2]);
 		series[0][0][series_i] = traits;
-		series[0][1][series_i] = 100 * overlap_none_average / (2*this.edges);
+		series[0][1][series_i] = overlap_none_average / (2*this.edges);
 		series[1][0][series_i] = traits;
-		series[1][1][series_i] = 100 * overlap_some_average / (2*this.edges);
+		series[1][1][series_i] = overlap_some_average / (2*this.edges);
 		series[2][0][series_i] = traits;
-		series[2][1][series_i] = 100 * overlap_all_average / (2*this.edges);
+		series[2][1][series_i] = overlap_all_average / (2*this.edges);
 		for(int i = 0; i < 3; i++){
 			plotter.addSeries(series[i], i);
 		}
 		series_i++;
 	}
+
+
+
+private void plot_point_features(int features, int traits) {
+	double[][] overlaps = new double[3][simulation_count];
+	for (int i = 0; i < simulation_count  && !plot_aborted; i++) {
+		CultureDisseminationSimulation sim =
+			CultureDisseminationSimulation.factory(
+					(Class<? extends CultureDisseminationSimulation>) this.simulation_type,
+					new CulturalNetwork(network_size, features, traits, this.periodic_boundary, NW_REFRESH_ADJUST));
+		sim.stop_after_epochs(max_epochs);
+		if(this.edges == null) this.edges = sim.nw.n_edges();
+		sim.run();
+		for(int nd = 0; nd < sim.nw.n_nodes; nd++){
+			for(int nbr_idx = 0; nbr_idx < sim.nw.degree(nd); nbr_idx++){
+				int nbr = sim.nw.node_neighbor(nd, nbr_idx);
+				int overlap = 0;
+				for (int f = 0; f < sim.nw.features; f++){
+					if (sim.nw.states[nd][f] == sim.nw.states[nbr][f]){
+						overlap++;
+					}
+				}
+				if(overlap == 0){
+					overlaps[0][i]++;
+				}else if(overlap == sim.nw.features){
+					overlaps[2][i]++;
+				}else{
+					overlaps[1][i]++;
+				}
+			}
+		}
+	}
+	double overlap_none_average = Utils.array_average(overlaps[0]);
+	double overlap_some_average = Utils.array_average(overlaps[1]);
+	double overlap_all_average = Utils.array_average(overlaps[2]);
+	series[0][0][series_i] = features;
+	series[0][1][series_i] = overlap_none_average / (2*this.edges);
+	series[1][0][series_i] = features;
+	series[1][1][series_i] = overlap_some_average / (2*this.edges);
+	series[2][0][series_i] = features;
+	series[2][1][series_i] = overlap_all_average / (2*this.edges);
+	for(int i = 0; i < 3; i++){
+		plotter.addSeries(series[i], i);
+	}
+	series_i++;
+}
 }
