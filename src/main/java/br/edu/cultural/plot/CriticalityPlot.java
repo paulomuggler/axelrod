@@ -37,7 +37,7 @@ public class CriticalityPlot extends StandAlonePlot {
 		int traits = invar_param;
 		
 		plotter = new ScatterPlotter("Criticality Plot", String
-				.format("L = %d, q = %d, Truncate = 10^%d", network_size, traits, (int)Math.log10(max_epochs)), series, "F", "% largest culture");
+				.format("L = %d, q = %d, Truncate = 10^%d, %d Ensembles ", network_size, traits, (int)Math.log10(max_epochs), simulation_count), series, "F", "% largest culture");
 		addStopPlotWindowListener();
 		plotter.pack();
 		plotter.setVisible(true);
@@ -55,7 +55,7 @@ public class CriticalityPlot extends StandAlonePlot {
 		int features = invar_param;
 		
 		plotter = new ScatterPlotter("Criticality Plot", String
-				.format("L = %d, F = %d, Truncate = 10^%d", network_size, invar_param, (int)Math.log10(max_epochs)), series, "q", "% largest culture");
+				.format("L = %d, F = %d, Truncate = 10^%d, %d Ensembles", network_size, invar_param, (int)Math.log10(max_epochs), simulation_count), series, "q", "% largest culture");
 		
 		addStopPlotWindowListener();
 		plotter.pack();
