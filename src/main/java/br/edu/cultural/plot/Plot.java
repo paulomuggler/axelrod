@@ -62,15 +62,18 @@ public abstract class Plot<S extends CultureDisseminationSimulation, D extends X
 			FileWriter fw = new FileWriter(f);
 			fw.write(chart.getTitle().getText());
 			fw.write('\n');
-			fw.write(((XYPlot) chart.getPlot()).getDomainAxis().getLabel());
-			fw.write(',');
-			fw.write(((XYPlot) chart.getPlot()).getRangeAxis().getLabel());
-			fw.write('\n');
-			for (int i = 0; i < dataset.getItemCount(DEFAULT_SERIES_KEY); i++) {
-				fw.write(Double.toString(dataset.getXValue(DEFAULT_SERIES_KEY, i)));
+			for (int s = 0; s < dataset.getSeriesCount(); s++) {
+				fw.write(String.format("Series %s:\n", dataset.getSeriesKey(s)));
+				fw.write(((XYPlot) chart.getPlot()).getDomainAxis().getLabel());
 				fw.write(',');
-				fw.write(Double.toString(dataset.getYValue(DEFAULT_SERIES_KEY, i)));
+				fw.write(((XYPlot) chart.getPlot()).getRangeAxis().getLabel());
 				fw.write('\n');
+				for (int i = 0; i < dataset.getItemCount(s); i++) {
+					fw.write(Double.toString(dataset.getXValue(s, i)));
+					fw.write(',');
+					fw.write(Double.toString(dataset.getYValue(s, i)));
+					fw.write('\n');
+				}
 			}
 			fw.close();
 		}

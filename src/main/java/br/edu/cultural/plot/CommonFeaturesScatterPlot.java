@@ -14,16 +14,19 @@ public class CommonFeaturesScatterPlot extends Plot<CultureDisseminationSimulati
 	
 	private static final int SERIES_UPDATE_INTERVAL  = 3;
 	List<List<double[]>> serieses = new ArrayList<List<double[]>>();
+	private String[] series_keys;
 	double[] points;
 	
 	@Override
 	public JFreeChart createPlot(CultureDisseminationSimulation sim) {
 		this.sim = sim;
+		series_keys = new String[sim.nw.features+1];
 		for(int f = 0; f <= sim.nw.features; f++){
 			serieses.add(new ArrayList<double[]>());
+//			series_keys[f] = f + " feature"+(f!=1?'s':"")+" in common";
+			series_keys[f] = f+"";
 		}
 		dataset = new DefaultXYDataset();
-		dataset.addSeries(1, new double [2][0]);
 		chart = ChartFactory.createScatterPlot("Number of common features over time: "+simInfo(), "time", "nodes", dataset,
 		PlotOrientation.VERTICAL, true, true, false);
 		return chart;
@@ -33,7 +36,7 @@ public class CommonFeaturesScatterPlot extends Plot<CultureDisseminationSimulati
 		if(sim.current_epoch() % SERIES_UPDATE_INTERVAL == 0){
 			reallocate_series();
 		}
-		addPoints(sim.interactions());
+		addPoints(sim.current_epoch());
 	}
 
 	private void reallocate_series() {
@@ -45,7 +48,9 @@ public class CommonFeaturesScatterPlot extends Plot<CultureDisseminationSimulati
 				s[0][i] = point[0];
 				s[1][i++] = point[1];
 			}
-			dataset.addSeries(f++, s);
+			dataset.removeSeries(series_keys[f]);
+			dataset.addSeries(series_keys[f++], s);
+
 		}
 	}
 	

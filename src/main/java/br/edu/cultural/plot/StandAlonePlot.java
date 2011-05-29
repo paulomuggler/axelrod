@@ -4,6 +4,9 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.AbstractAction;
@@ -21,6 +24,8 @@ import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+
+import org.jfree.chart.plot.XYPlot;
 
 import net.miginfocom.swing.MigLayout;
 import br.edu.cultural.simulation.CultureDisseminationSimulation;

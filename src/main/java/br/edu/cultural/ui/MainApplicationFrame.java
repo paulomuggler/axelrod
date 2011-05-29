@@ -96,7 +96,7 @@ public class MainApplicationFrame extends JFrame {
 	JPanel simulationProperties = new JPanel(new MigLayout("fillx"));
 	
 	SpinnerNumberModel stop_spinner_model = new SpinnerNumberModel(10, 0, (int)Math.log10(Long.MAX_VALUE), 1);
-	JSpinner stop_after_iterations = new JSpinner(stop_spinner_model);
+	JSpinner stop_after_epochs = new JSpinner(stop_spinner_model);
 
 	SpinnerNumberModel nw_size_in_model = new SpinnerNumberModel(80, 2, 9999, 1);
 	JSpinner nw_size_in = new JSpinner(nw_size_in_model);
@@ -233,8 +233,8 @@ public class MainApplicationFrame extends JFrame {
 		
 		simulationProperties.add(new JSeparator(SwingConstants.HORIZONTAL), "span 3, grow, wrap, gaptop 9, gapbottom 9");
 		simulationProperties.add(new JLabel("Stop simulation after 10^"),"");
-		simulationProperties.add(stop_after_iterations, "al left");
-		simulationProperties.add(new JLabel("iterations."), "grow, wrap");
+		simulationProperties.add(stop_after_epochs, "al left");
+		simulationProperties.add(new JLabel("epochs."), "grow, wrap");
 		simulationProperties.add(new JSeparator(SwingConstants.HORIZONTAL), "span 3, grow, wrap, gaptop 9, gapbottom 9");
 		
 		simulationProperties.add(deferredUpdateSelect, "span3, grow, wrap");
@@ -349,7 +349,7 @@ public class MainApplicationFrame extends JFrame {
 					plot.unlink(sim);
 					activePlotsListModel.removeElement(plot);
 					plotsListModel.addElement(plot);
-					plotMenu.remove(plot.menuItemForThisThanksVeryMuchJavaForNotBeingTooMuchVerbose());
+					plotMenu.remove(plot.menuItemForThisAction());
 				}
 			}
 		};
@@ -366,7 +366,7 @@ public class MainApplicationFrame extends JFrame {
 					plot.link(sim);
 					plotsListModel.removeElement(plot);
 					activePlotsListModel.addElement(plot);
-					plotMenu.add(plot.menuItemForThisThanksVeryMuchJavaForNotBeingTooMuchVerbose());
+					plotMenu.add(plot.menuItemForThisAction());
 				}
 			}
 		};
@@ -489,7 +489,7 @@ public class MainApplicationFrame extends JFrame {
 																		periodicBoundarySelect.isSelected(), 
 																		networkRefreshRateSlider.getValue()));
 				
-				sim.stop_after_epochs((long) Math.pow(10, ((SpinnerNumberModel)stop_after_iterations.getModel()).getNumber().longValue()));
+				sim.stop_after_epochs((long) Math.pow(10, ((SpinnerNumberModel)stop_after_epochs.getModel()).getNumber().longValue()));
 				sim.addListener(new SimulationEventAdapter(){
 					public void started(){
 						System.out.println("Simulation started.");

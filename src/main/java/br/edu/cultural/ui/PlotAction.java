@@ -23,7 +23,7 @@ class PlotAction extends AbstractAction {
 		theJMenuItemForThisAction = new JMenuItem(this);
 	}
 	
-	public JMenuItem menuItemForThisThanksVeryMuchJavaForNotBeingTooMuchVerbose(){
+	public JMenuItem menuItemForThisAction(){
 		return theJMenuItemForThisAction;
 	}
 

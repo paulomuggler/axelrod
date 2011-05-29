@@ -68,7 +68,8 @@ public class Plotter extends JFrame {
 		});
 		group.add(logarithmic);
 		selectScale.add(logarithmic);
-
+		
+		linear.doClick();
 		content.add(selectScale);
 	}
 	

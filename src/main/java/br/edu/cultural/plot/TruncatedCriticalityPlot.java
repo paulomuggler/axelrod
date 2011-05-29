@@ -5,6 +5,8 @@ import br.edu.cultural.network.Utils;
 import br.edu.cultural.simulation.CultureDisseminationSimulation;
 
 public class TruncatedCriticalityPlot extends StandAlonePlot {
+	
+	private static final String[] series_keys = {"0: overlap = 0", "1: 0 < overlap < f", "2: overlap = f"};
 
 	int series_i = 0;
 	// 3 series of 2 axes
@@ -108,7 +110,7 @@ public class TruncatedCriticalityPlot extends StandAlonePlot {
 		series[2][0][series_i] = traits;
 		series[2][1][series_i] = overlap_all_average / (2*this.edges);
 		for(int i = 0; i < 3; i++){
-			plotter.addSeries(series[i], i);
+			plotter.addSeries(series[i], series_keys[i]);
 		}
 		series_i++;
 	}

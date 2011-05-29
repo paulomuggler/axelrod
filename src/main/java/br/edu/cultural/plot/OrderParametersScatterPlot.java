@@ -13,6 +13,7 @@ import br.edu.cultural.simulation.CultureDisseminationSimulation;
 public class OrderParametersScatterPlot extends Plot<CultureDisseminationSimulation, DefaultXYDataset> {
 	
 	private static final int SERIES_UPDATE_INTERVAL  = 3;
+	private static final String[] series_keys = {"0: overlap = 0", "1: 0 < overlap < f", "2: overlap = f"};
 	List<List<double[]>> serieses = new ArrayList<List<double[]>>();
 	double[] points;
 	
@@ -23,7 +24,6 @@ public class OrderParametersScatterPlot extends Plot<CultureDisseminationSimulat
 			serieses.add(new ArrayList<double[]>());
 		}
 		dataset = new DefaultXYDataset();
-		dataset.addSeries(1, new double [2][0]);
 		chart = ChartFactory.createScatterPlot("Size of cultural regions: "+simInfo(), "time", "nodes", dataset,
 		PlotOrientation.VERTICAL, true, true, false);
 		return chart;
@@ -45,8 +45,8 @@ public class OrderParametersScatterPlot extends Plot<CultureDisseminationSimulat
 				s[0][i] = point[0];
 				s[1][i++] = point[1];
 			}
-			dataset.removeSeries(f);
-			dataset.addSeries(f++, s);
+			dataset.removeSeries(series_keys[f]);
+			dataset.addSeries(series_keys[f++], s);
 		}
 	}
 	
