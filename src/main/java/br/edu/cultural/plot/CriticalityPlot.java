@@ -75,6 +75,7 @@ public class CriticalityPlot extends StandAlonePlot {
 						(Class<? extends CultureDisseminationSimulation>) this.simulation_type,
 						new CulturalNetwork(network_size, features, traits, this.periodic_boundary, NW_REFRESH_ADJUST));
 			sim.stop_after_epochs(max_epochs);
+			sim.setDefer_update(true);
 			sim.run();
 			Integer[] culture_sizes = new ArrayList<Integer>(sim.nw
 					.count_cultures().values()).toArray(new Integer[0]);
@@ -97,6 +98,7 @@ public class CriticalityPlot extends StandAlonePlot {
 						(Class<? extends CultureDisseminationSimulation>) this.simulation_type,
 						new CulturalNetwork(network_size, features, traits, this.periodic_boundary, NW_REFRESH_ADJUST));
 			sim.stop_after_epochs(max_epochs);
+			sim.setDefer_update(true);
 			sim.run();
 			Integer[] culture_sizes = new ArrayList<Integer>(sim.nw
 					.count_cultures().values()).toArray(new Integer[0]);

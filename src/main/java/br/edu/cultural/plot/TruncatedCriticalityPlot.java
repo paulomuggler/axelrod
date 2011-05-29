@@ -79,6 +79,7 @@ public class TruncatedCriticalityPlot extends StandAlonePlot {
 						(Class<? extends CultureDisseminationSimulation>) this.simulation_type,
 						new CulturalNetwork(network_size, features, traits, this.periodic_boundary, NW_REFRESH_ADJUST));
 			sim.stop_after_epochs(max_epochs);
+			sim.setDefer_update(true);
 			if(this.edges == null) this.edges = sim.nw.n_edges();
 			sim.run();
 			for(int nd = 0; nd < sim.nw.n_nodes; nd++){
@@ -125,6 +126,7 @@ private void plot_point_features(int features, int traits) {
 					(Class<? extends CultureDisseminationSimulation>) this.simulation_type,
 					new CulturalNetwork(network_size, features, traits, this.periodic_boundary, NW_REFRESH_ADJUST));
 		sim.stop_after_epochs(max_epochs);
+		sim.setDefer_update(true);
 		if(this.edges == null) this.edges = sim.nw.n_edges();
 		sim.run();
 		for(int nd = 0; nd < sim.nw.n_nodes; nd++){
