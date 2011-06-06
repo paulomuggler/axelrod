@@ -58,6 +58,7 @@ import br.edu.cultural.plot.CultureDistributionScatterPlot;
 import br.edu.cultural.plot.OrderParametersScatterPlot;
 import br.edu.cultural.plot.CriticalityPlot;
 import br.edu.cultural.plot.StandAlonePlot;
+import br.edu.cultural.plot.TimeToAbsortion;
 import br.edu.cultural.plot.TruncatedCriticalityPlot;
 import br.edu.cultural.simulation.CultureDisseminationSimulation;
 import br.edu.cultural.simulation.CultureDisseminationSimulation.SimulationState;
@@ -452,6 +453,11 @@ public class MainApplicationFrame extends JFrame {
 		standalonePlots.add(new AbstractAction("Criticality Plot") {
 			public void actionPerformed(ActionEvent e) {
 				StandAlonePlot.start_from_dialog(MainApplicationFrame.this, CriticalityPlot.class);
+			}
+		});
+		standalonePlots.add(new AbstractAction("Time to Absortion Plot") {
+			public void actionPerformed(ActionEvent e) {
+				StandAlonePlot.start_from_dialog(MainApplicationFrame.this, TimeToAbsortion.class);
 			}
 		});
 		standalonePlots.add(new AbstractAction("Truncated Criticality Plot") {
