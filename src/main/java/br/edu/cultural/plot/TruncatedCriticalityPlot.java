@@ -158,7 +158,7 @@ private void plot_point_features(int features, int traits) {
 	series[2][0][series_i] = features;
 	series[2][1][series_i] = overlap_all_average / (2*this.edges);
 	for(int i = 0; i < 3; i++){
-		plotter.addSeries(series[i], i);
+		plotter.addSeries(series[i], series_keys[i]);
 	}
 	series_i++;
 }
