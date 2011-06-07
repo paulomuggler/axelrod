@@ -28,7 +28,7 @@ public class CriticalityPlot extends StandAlonePlot {
 		this.simulation_count = simulation_count;
 		this.vary_in_steps_of = vary_in_steps_of;
 		this.max_epochs = max_epochs;
-		series = new double[2][(var_param_upper - var_param_lower + 1)];
+		series = new double[2][(var_param_upper - var_param_lower + 1)/this.vary_in_steps_of];
 	}
 	
 	protected void run_with_variable_features() {
