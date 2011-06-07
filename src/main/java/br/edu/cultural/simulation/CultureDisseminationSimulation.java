@@ -58,8 +58,10 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 				}
 			}
 //			if (iterations % 100000 == 0) {
-			if (nw.interactiveNodes.size() < 5*nw.refresh_rate){
-				nw.reset_interaction_list(false);
+			if (nw.interactiveNodes.size() < nw.refresh_rate/2){
+				if (iterations % 100 == 0){
+					nw.reset_interaction_list(false);
+				}
 			}
 		}
 	}
