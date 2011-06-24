@@ -59,6 +59,7 @@ import br.edu.cultural.plot.EnergyPlot;
 import br.edu.cultural.plot.EntropyPlot;
 import br.edu.cultural.plot.EntropyVsEnergyPlot;
 import br.edu.cultural.plot.EntropyTimePlot;
+import br.edu.cultural.plot.OrbitPlot;
 import br.edu.cultural.plot.OrderParametersScatterPlot;
 import br.edu.cultural.plot.LyapunovPlot;
 import br.edu.cultural.plot.RemainingTraitsPlot;
@@ -155,7 +156,8 @@ public class MainApplicationFrame extends JFrame {
 	private PlotAction lyapunovPlotAction;
 	private PlotAction remainingTraitsPlotAction;
 	private PlotAction entropyTimePlotAction;
-
+	private PlotAction orbitPlotAction;
+	
 	public MainApplicationFrame() {
 
 		setTitle(APP_TITLE);
@@ -466,6 +468,10 @@ public class MainApplicationFrame extends JFrame {
 		entropyTimePlotAction = new PlotAction("Entropy Time Series plot",
 				"Entropy Time Series Plot", new EntropyTimePlot());
 		
+		orbitPlotAction = new PlotAction("Orbit plot",
+				"Orbit Plot", new OrbitPlot());
+		
+		
 		// STANDALONE PLOTS
 		JMenu standalonePlots = new JMenu("Standalone Plots");
 		standalonePlots.add(new AbstractAction("Criticality Plot") {
@@ -503,7 +509,7 @@ public class MainApplicationFrame extends JFrame {
 		plotsListModel.removeAllElements();
 		activePlotsListModel.removeAllElements();
 		PlotAction[] plotActions = { activeNodesPlotAction, activeEdgesPlotAction, cultureDistributionPlotAction,
-				activeRoomsPlotAction, activeRoomsHistogramAction, commonFeaturesPlotAction, orderParametersPlotAction, lyapunovPlotAction, remainingTraitsPlotAction, entropyTimePlotAction};
+				activeRoomsPlotAction, activeRoomsHistogramAction, commonFeaturesPlotAction, orderParametersPlotAction, lyapunovPlotAction, remainingTraitsPlotAction, entropyTimePlotAction, orbitPlotAction};
 		for (PlotAction plot : plotActions) {
 			plotsListModel.addElement(plot);
 		}

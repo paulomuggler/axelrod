@@ -475,7 +475,7 @@ public class CulturalNetwork {
 		for (int i = 0; i < this.n_nodes; i++){
 			for (int nbr_idx = 0; nbr_idx < this.degree(i); nbr_idx++){
 				if (i < this.adj_matrix[i][nbr_idx]){
-					potential -= this.overlap(i, nbr_idx);
+					potential -= this.overlap(i, this.adj_matrix[i][nbr_idx]);
 				}
 			}
 		}

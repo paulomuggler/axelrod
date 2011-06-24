@@ -27,7 +27,7 @@ public class CommonFeaturesScatterPlot extends Plot<CultureDisseminationSimulati
 			series_keys[f] = f+"";
 		}
 		dataset = new DefaultXYDataset();
-		chart = ChartFactory.createScatterPlot("Number of common features over time: "+simInfo(), "time", "nodes", dataset,
+		chart = ChartFactory.createScatterPlot("Number of common features over time: "+simInfo(), "time", "ro f", dataset,
 		PlotOrientation.VERTICAL, true, true, false);
 		return chart;
 	}

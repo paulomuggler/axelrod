@@ -40,7 +40,7 @@ public class TruncatedCriticalityPlot extends StandAlonePlot {
 													String.format("L = %d, q = %d, Truncate = 10^%d, %d Ensembles", network_size, traits, (int)Math.log10(max_epochs), simulation_count),
 													new double[2][2], 
 													"F", 
-													"% edges");
+													"% edges (ro 0, ro a, ro F)");
 		addStopPlotWindowListener();
 		plotter.pack();
 		plotter.setVisible(true);
@@ -60,7 +60,7 @@ public class TruncatedCriticalityPlot extends StandAlonePlot {
 									 String.format("L = %d, F = %d, Truncate = 10^%d, %d Ensembles", network_size, features, (int)Math.log10(max_epochs), simulation_count),
 									 new double[2][2], 
 									 "q", 
-									 "% edges");
+									 "% edges (ro 0, ro a, ro F)");
 		addStopPlotWindowListener();
 		plotter.pack();
 		plotter.setVisible(true);

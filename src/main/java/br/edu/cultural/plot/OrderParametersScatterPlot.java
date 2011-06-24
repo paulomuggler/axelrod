@@ -24,7 +24,7 @@ public class OrderParametersScatterPlot extends Plot<CultureDisseminationSimulat
 			serieses.add(new ArrayList<double[]>());
 		}
 		dataset = new DefaultXYDataset();
-		chart = ChartFactory.createScatterPlot("Size of cultural regions: "+simInfo(), "time", "nodes", dataset,
+		chart = ChartFactory.createScatterPlot("Size of cultural regions: "+simInfo(), "time", "ro 0, ro a, ro F", dataset,
 		PlotOrientation.VERTICAL, true, true, false);
 		return chart;
 	}

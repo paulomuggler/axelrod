@@ -34,7 +34,7 @@ public class EntropyVsEnergyPlot extends StandAlonePlot {
 		int traits = invar_param;
 		
 		plotter = new ScatterPlotter("Entropy versus Energy Plot", String
-				.format("L = %d, q = %d, Truncate = 10^%d, %d Ensembles ", network_size, traits, (int)Math.log10(max_epochs), simulation_count), series, "Energy", "Entropy");
+				.format("L = %d, q = %d, Truncate = 10^%d, %d Ensembles ", network_size, traits, (int)Math.log10(max_epochs), simulation_count), series, "Energy/node", "Entropy/node");
 		addStopPlotWindowListener();
 		plotter.pack();
 		plotter.setVisible(true);
@@ -52,7 +52,7 @@ public class EntropyVsEnergyPlot extends StandAlonePlot {
 		int features = invar_param;
 		
 		plotter = new ScatterPlotter("Entropy vs Energy Plot", String
-				.format("L = %d, F = %d, Truncate = 10^%d, %d Ensembles", network_size, invar_param, (int)Math.log10(max_epochs), simulation_count), series, "Energy", "Entropy");
+				.format("L = %d, F = %d, Truncate = 10^%d, %d Ensembles", network_size, invar_param, (int)Math.log10(max_epochs), simulation_count), series, "Energy/node", "Entropy/node");
 		
 		addStopPlotWindowListener();
 		plotter.pack();
@@ -77,7 +77,7 @@ public class EntropyVsEnergyPlot extends StandAlonePlot {
 			sim.setDefer_update(true);
 			sim.run();
 			entropy = sim.nw.Entropy()/sim.nw.n_nodes;
-			energy = (sim.nw.LyapunovPotential() + 2*sim.nw.n_nodes*sim.nw.features)/sim.nw.n_nodes;
+			energy = (sim.nw.LyapunovPotential() + 2.*sim.nw.n_nodes*sim.nw.features)/sim.nw.n_nodes;
 //			absTime = sim.interactions();
 			sTimes[0][i] = energy;
 			sTimes[1][i] = entropy;
@@ -103,7 +103,7 @@ public class EntropyVsEnergyPlot extends StandAlonePlot {
 			sim.run();
 			
 			entropy = sim.nw.Entropy()/sim.nw.n_nodes;
-			energy = (sim.nw.LyapunovPotential() + 2*sim.nw.n_nodes*sim.nw.features)/sim.nw.n_nodes;
+			energy = (sim.nw.LyapunovPotential() + 2.*sim.nw.n_nodes*sim.nw.features)/sim.nw.n_nodes;
 //			absTime = sim.interactions();
 			sTimes[0][i] = energy;
 			sTimes[1][i] = entropy;

@@ -21,7 +21,7 @@ public class EntropyTimePlot extends Plot<CultureDisseminationSimulation, Defaul
 		seriesList= new ArrayList<double[]>();
 		dataset = new DefaultXYDataset();
 		dataset.addSeries(DEFAULT_SERIES_KEY, new double [2][0]);
-		chart = ChartFactory.createScatterPlot("Entropy Time Series: "+simInfo(), "time", "S", dataset,
+		chart = ChartFactory.createScatterPlot("Entropy Time Series: "+simInfo(), "time", "Entropy/node", dataset,
 		PlotOrientation.VERTICAL, false, true, false);
 		return chart;
 	}
@@ -31,7 +31,7 @@ public class EntropyTimePlot extends Plot<CultureDisseminationSimulation, Defaul
 			reallocate_series();
 		}
 		double[] point = { sim.current_epoch() + 1, 
-						   sim.nw.Entropy()};
+						   sim.nw.Entropy()/sim.nw.n_nodes};
 		seriesList.add(point);
 		
 	}

@@ -21,7 +21,7 @@ public class ActiveEdgesScatterPlot extends Plot<CultureDisseminationSimulation,
 		seriesList= new ArrayList<double[]>();
 		dataset = new DefaultXYDataset();
 		dataset.addSeries(DEFAULT_SERIES_KEY, new double [2][0]);
-		chart = ChartFactory.createScatterPlot("Interactive edges over time: "+simInfo(), "time", "edges", dataset,
+		chart = ChartFactory.createScatterPlot("Interactive edges over time: "+simInfo(), "time", "active edges", dataset,
 		PlotOrientation.VERTICAL, false, true, false);
 		return chart;
 	}

@@ -34,7 +34,7 @@ public class EntropyPlot extends StandAlonePlot {
 		int traits = invar_param;
 		
 		plotter = new ScatterPlotter("Entropy Plot", String
-				.format("L = %d, q = %d, Truncate = 10^%d, %d Ensembles ", network_size, traits, (int)Math.log10(max_epochs), simulation_count), series, "F", "Entropy");
+				.format("L = %d, q = %d, Truncate = 10^%d, %d Ensembles ", network_size, traits, (int)Math.log10(max_epochs), simulation_count), series, "F", "Entropy/node");
 		addStopPlotWindowListener();
 		plotter.pack();
 		plotter.setVisible(true);
@@ -52,7 +52,7 @@ public class EntropyPlot extends StandAlonePlot {
 		int features = invar_param;
 		
 		plotter = new ScatterPlotter("Entropy Plot", String
-				.format("L = %d, F = %d, Truncate = 10^%d, %d Ensembles", network_size, invar_param, (int)Math.log10(max_epochs), simulation_count), series, "q", "Entropy");
+				.format("L = %d, F = %d, Truncate = 10^%d, %d Ensembles", network_size, invar_param, (int)Math.log10(max_epochs), simulation_count), series, "q", "Entropy/node");
 		
 		addStopPlotWindowListener();
 		plotter.pack();
@@ -75,7 +75,7 @@ public class EntropyPlot extends StandAlonePlot {
 			sim.stop_after_epochs(max_epochs);
 			sim.setDefer_update(true);
 			sim.run();
-			entropy = sim.nw.Entropy();
+			entropy = sim.nw.Entropy()/sim.nw.n_nodes;
 //			absTime = sim.interactions();
 			sTimes[0][i] = features;
 			sTimes[1][i] = entropy;
@@ -97,7 +97,7 @@ public class EntropyPlot extends StandAlonePlot {
 			sim.stop_after_epochs(max_epochs);
 			sim.setDefer_update(true);
 			sim.run();
-			entropy = sim.nw.Entropy();
+			entropy = sim.nw.Entropy()/sim.nw.n_nodes;
 			
 			sTimes[0][i] = traits;
 			sTimes[1][i] = entropy;

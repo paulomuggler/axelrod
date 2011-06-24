@@ -21,7 +21,7 @@ public class LyapunovPlot extends Plot<CultureDisseminationSimulation, DefaultXY
 		seriesList= new ArrayList<double[]>();
 		dataset = new DefaultXYDataset();
 		dataset.addSeries(DEFAULT_SERIES_KEY, new double [2][0]);
-		chart = ChartFactory.createScatterPlot("Lyapunov Potential: "+simInfo(), "time", "E", dataset,
+		chart = ChartFactory.createScatterPlot("Lyapunov Potential: "+simInfo(), "time", "Energy/node", dataset,
 		PlotOrientation.VERTICAL, false, true, false);
 		return chart;
 	}
@@ -31,7 +31,7 @@ public class LyapunovPlot extends Plot<CultureDisseminationSimulation, DefaultXY
 			reallocate_series();
 		}
 		double[] point = { sim.current_epoch() + 1, 
-						   sim.nw.LyapunovPotential() + 2*sim.nw.n_nodes*sim.nw.features };
+						   ((double)sim.nw.LyapunovPotential() + 2.*sim.nw.n_nodes*sim.nw.features)/sim.nw.n_nodes };
 		seriesList.add(point);
 		
 	}

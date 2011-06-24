@@ -34,7 +34,7 @@ public class EnergyPlot extends StandAlonePlot {
 		int traits = invar_param;
 		
 		plotter = new ScatterPlotter("Energy Plot", String
-				.format("L = %d, q = %d, Truncate = 10^%d, %d Ensembles ", network_size, traits, (int)Math.log10(max_epochs), simulation_count), series, "F", "Energy per node");
+				.format("L = %d, q = %d, Truncate = 10^%d, %d Ensembles ", network_size, traits, (int)Math.log10(max_epochs), simulation_count), series, "F", "Energy/node");
 		addStopPlotWindowListener();
 		plotter.pack();
 		plotter.setVisible(true);
@@ -52,7 +52,7 @@ public class EnergyPlot extends StandAlonePlot {
 		int features = invar_param;
 		
 		plotter = new ScatterPlotter("Energy Plot", String
-				.format("L = %d, F = %d, Truncate = 10^%d, %d Ensembles", network_size, invar_param, (int)Math.log10(max_epochs), simulation_count), series, "q", "Energy per node");
+				.format("L = %d, F = %d, Truncate = 10^%d, %d Ensembles", network_size, invar_param, (int)Math.log10(max_epochs), simulation_count), series, "q", "Energy/node");
 		
 		addStopPlotWindowListener();
 		plotter.pack();
@@ -75,7 +75,7 @@ public class EnergyPlot extends StandAlonePlot {
 			sim.stop_after_epochs(max_epochs);
 			sim.setDefer_update(true);
 			sim.run();
-			energy = sim.nw.LyapunovPotential() + 2*sim.nw.n_nodes*sim.nw.features;
+			energy = sim.nw.LyapunovPotential() + 2.*sim.nw.n_nodes*sim.nw.features;
 //			absTime = sim.interactions();
 			sTimes[0][i] = features;
 			sTimes[1][i] = energy/sim.nw.n_nodes;
@@ -97,10 +97,12 @@ public class EnergyPlot extends StandAlonePlot {
 			sim.stop_after_epochs(max_epochs);
 			sim.setDefer_update(true);
 			sim.run();
-			energy = sim.nw.LyapunovPotential() + 2*sim.nw.n_nodes*sim.nw.features;
+			energy = sim.nw.LyapunovPotential() + 2.*sim.nw.n_nodes*sim.nw.features;
+
 			
 			sTimes[0][i] = traits;
-			sTimes[1][i] = energy/sim.nw.n_nodes;
+			sTimes[1][i] = (double)energy/sim.nw.n_nodes;
+//			sTimes[1][i] = (double)energy/sim.nw.n_nodes;
 		}
 		double average = Utils.array_average(sTimes[1]);
 		series[0][series_i] = sTimes[0][0];
