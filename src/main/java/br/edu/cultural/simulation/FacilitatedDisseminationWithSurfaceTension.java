@@ -3,6 +3,9 @@
  */
 package br.edu.cultural.simulation;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import br.edu.cultural.network.CulturalNetwork;
 import br.edu.cultural.network.Utils;
 
@@ -21,17 +24,28 @@ public class FacilitatedDisseminationWithSurfaceTension extends CultureDissemina
 
 		int nbr = -1;
 		int nbr_idx = rand.nextInt(nw.degree(node));
-
+		
+		Set<Integer> selectedNodes = new HashSet<Integer>();
+		for (int i = 0; i < nw.degree[node]; i++) {
+			selectedNodes.add(i);
+		}
+//		int count = 0;
+		
 		boolean interactive;
-		int count = 0;
 		do {
 			nbr = nw.node_neighbor(node, nbr_idx);
 			interactive = CulturalNetwork.is_interaction_possible(nw.states[node],
 					nw.states[nbr]);
-			nbr_idx = rand.nextInt(nw.degree(node));
-			count+=1;
-		} while (!interactive && count <= nw.degree(nbr));
-		if (count > nw.degree(nbr)){
+			nbr_idx = (Integer) selectedNodes.toArray()[rand.nextInt(selectedNodes.size())];
+			 selectedNodes.remove(nbr_idx);
+		} while (!interactive && selectedNodes.size() > 0);
+//			nbr_idx = rand.nextInt(nw.degree(node));
+//			count++;
+//		} while (!interactive && count <= nw.degree(nbr));
+//		if (count > nw.degree(nbr)){
+//			return;
+//		}
+		if (selectedNodes.size() == 0){
 			return;
 		}
 
