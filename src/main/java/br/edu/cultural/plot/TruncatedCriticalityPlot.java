@@ -28,7 +28,7 @@ public class TruncatedCriticalityPlot extends StandAlonePlot {
 		this.simulation_count = simulation_count;
 		this.vary_in_steps_of = vary_in_steps_of;
 		this.max_epochs = max_iterations;
-		series = new double[3][2][(var_param_upper - var_param_lower + 1)];
+		series = new double[3][2][(var_param_upper - var_param_lower + 1)/this.vary_in_steps_of];
 	}
 	
 	protected void run_with_variable_features() {
@@ -40,7 +40,7 @@ public class TruncatedCriticalityPlot extends StandAlonePlot {
 													String.format("L = %d, q = %d, Truncate = 10^%d, %d Ensembles", network_size, traits, (int)Math.log10(max_epochs), simulation_count),
 													new double[2][2], 
 													"F", 
-													"% edges");
+													"% edges (ro 0, ro a, ro F)");
 		addStopPlotWindowListener();
 		plotter.pack();
 		plotter.setVisible(true);
@@ -60,7 +60,7 @@ public class TruncatedCriticalityPlot extends StandAlonePlot {
 									 String.format("L = %d, F = %d, Truncate = 10^%d, %d Ensembles", network_size, features, (int)Math.log10(max_epochs), simulation_count),
 									 new double[2][2], 
 									 "q", 
-									 "% edges");
+									 "% edges (ro 0, ro a, ro F)");
 		addStopPlotWindowListener();
 		plotter.pack();
 		plotter.setVisible(true);
@@ -158,7 +158,7 @@ private void plot_point_features(int features, int traits) {
 	series[2][0][series_i] = features;
 	series[2][1][series_i] = overlap_all_average / (2*this.edges);
 	for(int i = 0; i < 3; i++){
-		plotter.addSeries(series[i], i);
+		plotter.addSeries(series[i], series_keys[i]);
 	}
 	series_i++;
 }

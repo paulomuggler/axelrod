@@ -57,8 +57,11 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 					lis.epoch();
 				}
 			}
-			if (iterations % 100000 == 0) {
-				nw.reset_interaction_list(false);
+//			if (iterations % 100000 == 0) {
+			if (nw.interactiveNodes.size() < 5*nw.refresh_rate){
+				if (iterations % 100 == 0){
+					nw.reset_interaction_list(true);
+				}
 			}
 		}
 	}

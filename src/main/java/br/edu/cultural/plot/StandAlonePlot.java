@@ -98,7 +98,7 @@ public abstract class StandAlonePlot implements Runnable {
 		SpinnerNumberModel steps_in_model = new SpinnerNumberModel(1, 1, 9999, 1);
 		final JSpinner steps_in = new JSpinner(steps_in_model);
 		
-		SpinnerNumberModel simulation_count_model = new SpinnerNumberModel(10, 1, 9999, 1);
+		SpinnerNumberModel simulation_count_model = new SpinnerNumberModel(10, 1, 99999, 1);
 		final JSpinner simulation_count_in = new JSpinner(simulation_count_model);
 		
 		final SpinnerNumberModel stop_spinner_model = new SpinnerNumberModel(10, 0, (int)Math.log10(Long.MAX_VALUE), 1);

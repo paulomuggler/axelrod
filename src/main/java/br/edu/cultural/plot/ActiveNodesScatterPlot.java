@@ -21,7 +21,7 @@ public class ActiveNodesScatterPlot extends Plot<CultureDisseminationSimulation,
 		seriesList= new ArrayList<double[]>();
 		dataset = new DefaultXYDataset();
 		dataset.addSeries(1, new double [2][0]);
-		chart = ChartFactory.createScatterPlot("Interactive nodes over time: "+simInfo(), "time", "nodes", dataset,
+		chart = ChartFactory.createScatterPlot("Interactive nodes over time: "+simInfo(), "time", "active nodes", dataset,
 		PlotOrientation.VERTICAL, false, true, false);
 		return chart;
 	}

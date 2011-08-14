@@ -33,7 +33,7 @@ public class PreCalcRgbPartitioner implements RgbPartitioner {
 		this.features = features;
 		this.traits = traits;
 		this.partitions = (int) Math.pow(this.traits, this.features);
-		if(this.partitions > 0x1000000){
+		if(this.partitions > 0x500000){
 			throw new IllegalArgumentException("Not enough colors in RGB space!");
 		}
 		partitioning = this.partitionRgbColorSpace(this.partitions);

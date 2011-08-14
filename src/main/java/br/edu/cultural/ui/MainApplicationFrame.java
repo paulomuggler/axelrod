@@ -55,9 +55,17 @@ import br.edu.cultural.plot.ActiveRoomScatterPlot;
 import br.edu.cultural.plot.ActiveRoomsHistogram;
 import br.edu.cultural.plot.CommonFeaturesScatterPlot;
 import br.edu.cultural.plot.CultureDistributionScatterPlot;
+import br.edu.cultural.plot.EnergyPlot;
+import br.edu.cultural.plot.EntropyPlot;
+import br.edu.cultural.plot.EntropyVsEnergyPlot;
+import br.edu.cultural.plot.EntropyTimePlot;
+import br.edu.cultural.plot.OrbitPlot;
 import br.edu.cultural.plot.OrderParametersScatterPlot;
+import br.edu.cultural.plot.LyapunovPlot;
+import br.edu.cultural.plot.RemainingTraitsPlot;
 import br.edu.cultural.plot.CriticalityPlot;
 import br.edu.cultural.plot.StandAlonePlot;
+import br.edu.cultural.plot.TimeToAbsortion;
 import br.edu.cultural.plot.TruncatedCriticalityPlot;
 import br.edu.cultural.simulation.CultureDisseminationSimulation;
 import br.edu.cultural.simulation.CultureDisseminationSimulation.SimulationState;
@@ -145,7 +153,11 @@ public class MainApplicationFrame extends JFrame {
 	private PlotAction activeRoomsHistogramAction;
 	private PlotAction commonFeaturesPlotAction;
 	private PlotAction orderParametersPlotAction;
-
+	private PlotAction lyapunovPlotAction;
+	private PlotAction remainingTraitsPlotAction;
+	private PlotAction entropyTimePlotAction;
+	private PlotAction orbitPlotAction;
+	
 	public MainApplicationFrame() {
 
 		setTitle(APP_TITLE);
@@ -447,6 +459,19 @@ public class MainApplicationFrame extends JFrame {
 		orderParametersPlotAction = new PlotAction("Order parameters plot",
 				"Order parameters - Scatter Plot", new OrderParametersScatterPlot());
 		
+		lyapunovPlotAction = new PlotAction("Lyapunov plot",
+				"Lyapunov Plot", new LyapunovPlot());
+
+		remainingTraitsPlotAction = new PlotAction("Remaining Traits plot",
+				"Remaining Traits Plot", new RemainingTraitsPlot());
+		
+		entropyTimePlotAction = new PlotAction("Entropy Time Series plot",
+				"Entropy Time Series Plot", new EntropyTimePlot());
+		
+		orbitPlotAction = new PlotAction("Orbit plot",
+				"Orbit Plot", new OrbitPlot());
+		
+		
 		// STANDALONE PLOTS
 		JMenu standalonePlots = new JMenu("Standalone Plots");
 		standalonePlots.add(new AbstractAction("Criticality Plot") {
@@ -454,9 +479,29 @@ public class MainApplicationFrame extends JFrame {
 				StandAlonePlot.start_from_dialog(MainApplicationFrame.this, CriticalityPlot.class);
 			}
 		});
+		standalonePlots.add(new AbstractAction("Time to Absortion Plot") {
+			public void actionPerformed(ActionEvent e) {
+				StandAlonePlot.start_from_dialog(MainApplicationFrame.this, TimeToAbsortion.class);
+			}
+		});
+		standalonePlots.add(new AbstractAction("Energy Plot") {
+			public void actionPerformed(ActionEvent e) {
+				StandAlonePlot.start_from_dialog(MainApplicationFrame.this, EnergyPlot.class);
+			}
+		});
 		standalonePlots.add(new AbstractAction("Truncated Criticality Plot") {
 			public void actionPerformed(ActionEvent e) {
 				StandAlonePlot.start_from_dialog(MainApplicationFrame.this, TruncatedCriticalityPlot.class);
+			}
+		});
+		standalonePlots.add(new AbstractAction("Entropy Plot") {
+			public void actionPerformed(ActionEvent e) {
+				StandAlonePlot.start_from_dialog(MainApplicationFrame.this, EntropyPlot.class);
+			}
+		});
+		standalonePlots.add(new AbstractAction("Entropy vs Energy Plot") {
+			public void actionPerformed(ActionEvent e) {
+				StandAlonePlot.start_from_dialog(MainApplicationFrame.this, EntropyVsEnergyPlot.class);
 			}
 		});
 		plotMenu.removeAll();
@@ -464,7 +509,7 @@ public class MainApplicationFrame extends JFrame {
 		plotsListModel.removeAllElements();
 		activePlotsListModel.removeAllElements();
 		PlotAction[] plotActions = { activeNodesPlotAction, activeEdgesPlotAction, cultureDistributionPlotAction,
-				activeRoomsPlotAction, activeRoomsHistogramAction, commonFeaturesPlotAction, orderParametersPlotAction };
+				activeRoomsPlotAction, activeRoomsHistogramAction, commonFeaturesPlotAction, orderParametersPlotAction, lyapunovPlotAction, remainingTraitsPlotAction, entropyTimePlotAction, orbitPlotAction};
 		for (PlotAction plot : plotActions) {
 			plotsListModel.addElement(plot);
 		}

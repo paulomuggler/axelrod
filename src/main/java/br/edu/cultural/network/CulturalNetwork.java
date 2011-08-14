@@ -469,4 +469,92 @@ public class CulturalNetwork {
 		}else
 			return n_nodes*2 - size*2;
 	}
+	
+	public int LyapunovPotential(){
+		int potential = 0;
+		for (int i = 0; i < this.n_nodes; i++){
+			for (int nbr_idx = 0; nbr_idx < this.degree(i); nbr_idx++){
+				if (i < this.adj_matrix[i][nbr_idx]){
+					potential -= this.overlap(i, this.adj_matrix[i][nbr_idx]);
+				}
+			}
+		}
+		return potential;
+	}
+	public int RemainingTraits(){
+		int rt = 0;
+		int q;
+		int F;
+		boolean[][] R = new boolean[this.traits][this.features];
+		for (q = 0; q < this.traits; q++){
+			for (F = 0; F < this.features; F++){
+				R[q][F] = false;
+			}
+		}
+		for (int i = 0; i < this.n_nodes; i++){
+			for(F = 0; F < this.features; F++){
+				R[this.states[i][F]][F] = true;	
+			}
+		}
+		for (q = 0; q < this.traits; q++){
+			for (F = 0; F < this.features; F++){
+				if(R[q][F] == true){
+					rt++;
+				}
+			}
+		}
+		return rt;
+	}
+	public double Entropy(){
+		double entropy = 0;
+		int[] domains = new int[this.n_nodes];
+		List<Integer> FirstList = new ArrayList<Integer>();  
+		List<Integer> SecondList = new ArrayList<Integer>();  
+		List<Integer> ClusterSizes = new ArrayList<Integer>(); 
+		Integer node;
+		Integer count = 0;
+		int nbr;
+		int nm;
+		double pm;
+		
+		
+		for (node = 0; node < this.n_nodes; node++){
+			FirstList.add(node);
+		}
+		for (nm = 0; nm < this.n_nodes; nm++){
+			domains[nm] = 0;
+		}
+		
+		while(!FirstList.isEmpty()){
+			node = FirstList.remove(0);
+			SecondList.add(node);
+			while(!SecondList.isEmpty()){
+				node = SecondList.remove(0);
+				for (int nbr_idx = 0; nbr_idx < this.degree(node.intValue()); nbr_idx++){
+					nbr = this.adj_matrix[node.intValue()][nbr_idx];
+					if(this.overlap(node.intValue(), nbr) == this.features){
+						if(FirstList.remove(new Integer(nbr)) == true){
+							SecondList.add(new Integer(nbr));
+						}
+					}
+				}
+				count++;
+			}
+			ClusterSizes.add(count);
+			count = 0;
+		}
+		while(!ClusterSizes.isEmpty()){
+			nm = ClusterSizes.remove(0).intValue();
+			domains[nm - 1] += nm;
+		}
+		for (nbr = 0; nbr < this.n_nodes; nbr++){
+			pm = (double) domains[nbr]/this.n_nodes;
+			if (pm != 0){
+				entropy -= pm*Math.log(pm);
+			}
+		}
+		
+		return entropy;
+	}
+	
 }

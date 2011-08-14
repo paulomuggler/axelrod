@@ -1,18 +1,15 @@
 package br.edu.cultural.plot;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
 import br.edu.cultural.network.CulturalNetwork;
 import br.edu.cultural.network.Utils;
 import br.edu.cultural.simulation.CultureDisseminationSimulation;
 
-public class CriticalityPlot extends StandAlonePlot {
+public class EntropyPlot extends StandAlonePlot {
 	
 	int series_i = 0;
 	double[][] series;
 	
-	public CriticalityPlot(
+	public EntropyPlot(
 			Class<? extends CultureDisseminationSimulation> simulation_type,
 			Boolean periodic_boundary, Integer network_size, Integer invar_param,
 			Integer var_param_lower, Integer var_param_upper,
@@ -36,8 +33,8 @@ public class CriticalityPlot extends StandAlonePlot {
 		int f_hi = var_param_upper;
 		int traits = invar_param;
 		
-		plotter = new ScatterPlotter("Criticality Plot", String
-				.format("L = %d, q = %d, Truncate = 10^%d, %d Ensembles ", network_size, traits, (int)Math.log10(max_epochs), simulation_count), series, "F", "Smax/N");
+		plotter = new ScatterPlotter("Entropy Plot", String
+				.format("L = %d, q = %d, Truncate = 10^%d, %d Ensembles ", network_size, traits, (int)Math.log10(max_epochs), simulation_count), series, "F", "Entropy/node");
 		addStopPlotWindowListener();
 		plotter.pack();
 		plotter.setVisible(true);
@@ -54,8 +51,8 @@ public class CriticalityPlot extends StandAlonePlot {
 		int q_hi = var_param_upper;
 		int features = invar_param;
 		
-		plotter = new ScatterPlotter("Criticality Plot", String
-				.format("L = %d, F = %d, Truncate = 10^%d, %d Ensembles", network_size, invar_param, (int)Math.log10(max_epochs), simulation_count), series, "q", "Smax/N");
+		plotter = new ScatterPlotter("Entropy Plot", String
+				.format("L = %d, F = %d, Truncate = 10^%d, %d Ensembles", network_size, invar_param, (int)Math.log10(max_epochs), simulation_count), series, "q", "Entropy/node");
 		
 		addStopPlotWindowListener();
 		plotter.pack();
@@ -68,7 +65,8 @@ public class CriticalityPlot extends StandAlonePlot {
 	}
 
 	private void plot_point_features(int features, int traits) {
-		double[][] cSizes = new double[2][simulation_count];
+		double[][] sTimes = new double[2][simulation_count];
+		double entropy;
 		for (int i = 0; i < simulation_count && !plot_aborted; i++) {
 			CultureDisseminationSimulation sim =
 				CultureDisseminationSimulation.factory(
@@ -77,21 +75,20 @@ public class CriticalityPlot extends StandAlonePlot {
 			sim.stop_after_epochs(max_epochs);
 			sim.setDefer_update(true);
 			sim.run();
-			Integer[] culture_sizes = new ArrayList<Integer>(sim.nw
-					.count_cultures().values()).toArray(new Integer[0]);
-			Arrays.sort(culture_sizes);
-			Integer largest_culture = (Integer) culture_sizes[culture_sizes.length - 1];
-			cSizes[0][i] = features;
-			cSizes[1][i] = ((double) largest_culture) / (sim.nw.size * sim.nw.size);
+			entropy = sim.nw.Entropy()/sim.nw.n_nodes;
+//			absTime = sim.interactions();
+			sTimes[0][i] = features;
+			sTimes[1][i] = entropy;
 		}
-		double average = Utils.array_average(cSizes[1]);
-		series[0][series_i] = cSizes[0][0];
+		double average = Utils.array_average(sTimes[1]);
+		series[0][series_i] = sTimes[0][0];
 		series[1][series_i] = average;
 		series_i++;
 		plotter.setSeries(series);
 	}
 	private void plot_point_traits(int features, int traits) {
-		double[][] cSizes = new double[2][simulation_count];
+		double[][] sTimes = new double[2][simulation_count];
+		double entropy;
 		for (int i = 0; i < simulation_count && !plot_aborted; i++) {
 			CultureDisseminationSimulation sim =
 				CultureDisseminationSimulation.factory(
@@ -100,17 +97,16 @@ public class CriticalityPlot extends StandAlonePlot {
 			sim.stop_after_epochs(max_epochs);
 			sim.setDefer_update(true);
 			sim.run();
-			Integer[] culture_sizes = new ArrayList<Integer>(sim.nw
-					.count_cultures().values()).toArray(new Integer[0]);
-			Arrays.sort(culture_sizes);
-			Integer largest_culture = (Integer) culture_sizes[culture_sizes.length - 1];
-			cSizes[0][i] = traits;
-			cSizes[1][i] = ((double) largest_culture) / (sim.nw.size * sim.nw.size);
+			entropy = sim.nw.Entropy()/sim.nw.n_nodes;
+			
+			sTimes[0][i] = traits;
+			sTimes[1][i] = entropy;
 		}
-		double average = Utils.array_average(cSizes[1]);
-		series[0][series_i] = cSizes[0][0];
+		double average = Utils.array_average(sTimes[1]);
+		series[0][series_i] = sTimes[0][0];
 		series[1][series_i] = average;
 		series_i++;
 		plotter.setSeries(series);
 	}
+
 }
