@@ -45,11 +45,13 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 			.synchronizedList(new ArrayList<SimulationEventListener>());
 	private boolean defer_update;
 
+	private boolean adjustTime = true;
+
 	public void run() {
 		this.start();
 		
 		while (!(this.state == SimulationState.FINISHED)) {
-			pause();
+			wait_if_paused();
 			throttle();
 			this.simulation_step();
 			if (this.iterations % (nw.n_nodes) == 0) {
@@ -108,9 +110,13 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 			return;
 		}
 		this.simulation_dynamic();
-		this.iterations++;
+		if(this.adjust_simulation_time()){
+			this.iterations += this.nw.n_nodes/this.nw.interactiveNodes.size();
+		}else{
+			this.iterations++;
+		}
 	}
-	
+
 	protected abstract void simulation_dynamic();
 
 	private void start() {
@@ -148,7 +154,7 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 	
 
 	/** Idle loop used to emulate the PAUSED state; */
-	private void pause() {
+	private void wait_if_paused() {
 		while (this.state == SimulationState.PAUSED) {
 			try {
 				Thread.sleep(33);
@@ -182,6 +188,18 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 	/** Toggle this simulation's optimization on/off */
 	public void toggle_defer_update_optimize() {
 		defer_update = !defer_update;
+	}
+	
+	public void toggle_adjust_simulation_time() {
+		this.adjustTime = !this.adjustTime ;
+	}
+	
+	public boolean adjust_simulation_time() {
+		return this.adjustTime;
+	}
+
+	public void set_adjust_simulation_time(boolean adjust) {
+		this.adjustTime = adjust;
 	}
 
 	/** adds a plot to the list of running plots */

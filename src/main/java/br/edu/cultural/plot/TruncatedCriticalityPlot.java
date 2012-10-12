@@ -16,7 +16,7 @@ public class TruncatedCriticalityPlot extends StandAlonePlot {
 			Class<? extends CultureDisseminationSimulation> simulation_type,
 			Boolean periodic_boundary, Integer network_size, Integer invar_param,
 			Integer var_param_lower, Integer var_param_upper,
-			Boolean is_features_variable, Integer simulation_count, Integer vary_in_steps_of, Long max_iterations) {
+			Boolean is_features_variable, Integer simulation_count, Integer vary_in_steps_of, Long max_iterations, Boolean adjust_time) {
 		super();
 		this.simulation_type = simulation_type;
 		this.periodic_boundary = periodic_boundary;
@@ -28,6 +28,7 @@ public class TruncatedCriticalityPlot extends StandAlonePlot {
 		this.simulation_count = simulation_count;
 		this.vary_in_steps_of = vary_in_steps_of;
 		this.max_epochs = max_iterations;
+		this.adjust_time = adjust_time;
 		series = new double[3][2][(var_param_upper - var_param_lower + 1)/this.vary_in_steps_of];
 	}
 	
@@ -80,6 +81,7 @@ public class TruncatedCriticalityPlot extends StandAlonePlot {
 						new CulturalNetwork(network_size, features, traits, this.periodic_boundary, NW_REFRESH_ADJUST));
 			sim.stop_after_epochs(max_epochs);
 			sim.setDefer_update(true);
+			sim.set_adjust_simulation_time(adjust_time);
 			if(this.edges == null) this.edges = sim.nw.n_edges();
 			sim.run();
 			for(int nd = 0; nd < sim.nw.n_nodes; nd++){

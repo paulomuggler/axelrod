@@ -13,7 +13,7 @@ public class TimeToAbsortion extends StandAlonePlot {
 			Class<? extends CultureDisseminationSimulation> simulation_type,
 			Boolean periodic_boundary, Integer network_size, Integer invar_param,
 			Integer var_param_lower, Integer var_param_upper,
-			Boolean is_features_variable, Integer simulation_count, Integer vary_in_steps_of, Long max_epochs) {
+			Boolean is_features_variable, Integer simulation_count, Integer vary_in_steps_of, Long max_epochs, Boolean adjust_time) {
 		super();
 		this.simulation_type = simulation_type;
 		this.periodic_boundary = periodic_boundary;
@@ -25,6 +25,7 @@ public class TimeToAbsortion extends StandAlonePlot {
 		this.simulation_count = simulation_count;
 		this.vary_in_steps_of = vary_in_steps_of;
 		this.max_epochs = max_epochs;
+		this.adjust_time = adjust_time;
 		series = new double[2][(var_param_upper - var_param_lower + 1)/this.vary_in_steps_of];
 	}
 	
@@ -74,6 +75,7 @@ public class TimeToAbsortion extends StandAlonePlot {
 						new CulturalNetwork(network_size, features, traits, this.periodic_boundary, NW_REFRESH_ADJUST));
 			sim.stop_after_epochs(max_epochs);
 			sim.setDefer_update(true);
+			sim.set_adjust_simulation_time(adjust_time);
 			sim.run();
 			absTime = sim.current_epoch();
 //			absTime = sim.interactions();

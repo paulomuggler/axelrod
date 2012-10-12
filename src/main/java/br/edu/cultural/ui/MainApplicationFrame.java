@@ -54,23 +54,24 @@ import br.edu.cultural.plot.ActiveNodesScatterPlot;
 import br.edu.cultural.plot.ActiveRoomScatterPlot;
 import br.edu.cultural.plot.ActiveRoomsHistogram;
 import br.edu.cultural.plot.CommonFeaturesScatterPlot;
+import br.edu.cultural.plot.CriticalityPlot;
 import br.edu.cultural.plot.CultureDistributionScatterPlot;
 import br.edu.cultural.plot.EnergyPlot;
 import br.edu.cultural.plot.EntropyPlot;
-import br.edu.cultural.plot.EntropyVsEnergyPlot;
 import br.edu.cultural.plot.EntropyTimePlot;
-import br.edu.cultural.plot.OrbitPlot;
-import br.edu.cultural.plot.OrderParametersScatterPlot;
+import br.edu.cultural.plot.EntropyVsEnergyPlot;
 import br.edu.cultural.plot.LyapunovPlot;
+import br.edu.cultural.plot.OrderParametersScatterPlot;
 import br.edu.cultural.plot.RemainingTraitsPlot;
-import br.edu.cultural.plot.CriticalityPlot;
 import br.edu.cultural.plot.StandAlonePlot;
 import br.edu.cultural.plot.TimeToAbsortion;
 import br.edu.cultural.plot.TruncatedCriticalityPlot;
+import br.edu.cultural.simulation.Config;
 import br.edu.cultural.simulation.CultureDisseminationSimulation;
 import br.edu.cultural.simulation.CultureDisseminationSimulation.SimulationState;
 import br.edu.cultural.simulation.SimulationEventListener;
 import br.edu.cultural.simulation.SimulationEventListener.SimulationEventAdapter;
+//import br.edu.cultural.plot.OrbitPlot;
 
 public class MainApplicationFrame extends JFrame {
 
@@ -88,6 +89,7 @@ public class MainApplicationFrame extends JFrame {
 	JComboBox simulation_type_in;
 	JCheckBox periodicBoundarySelect;
 	JCheckBox deferredUpdateSelect;
+	JCheckBox simulationTimeAdjustSelect;
 
 	JMenuBar menuBar = new JMenuBar();
 	JMenu fileMenu = new JMenu("File");
@@ -156,7 +158,6 @@ public class MainApplicationFrame extends JFrame {
 	private PlotAction lyapunovPlotAction;
 	private PlotAction remainingTraitsPlotAction;
 	private PlotAction entropyTimePlotAction;
-	private PlotAction orbitPlotAction;
 	
 	public MainApplicationFrame() {
 
@@ -175,6 +176,9 @@ public class MainApplicationFrame extends JFrame {
 		periodicBoundarySelect.setSelected(true);
 		
 		deferredUpdateSelect = new JCheckBox("Defer representation updates (optimization)");
+		
+		simulationTimeAdjustSelect = new JCheckBox("Adjust simulation time with L^2");
+
 
 		reset_simulation_button.addActionListener(reset_simulation);
 		toggle_simulation_button.addActionListener(toggle_simulation);
@@ -252,6 +256,9 @@ public class MainApplicationFrame extends JFrame {
 		simulationProperties.add(deferredUpdateSelect, "span3, grow, wrap");
 		simulationProperties.add(new JLabel("Network refresh adjust:"), "wrap");
 		simulationProperties.add(networkRefreshRateSlider, "span 3, grow, wrap, gapbottom 18");
+		simulationProperties.add(new JSeparator(SwingConstants.HORIZONTAL), "span 3, grow, wrap, gaptop 9, gapbottom 9");
+		
+		simulationProperties.add(simulationTimeAdjustSelect, "span3, grow, wrap");
 		simulationProperties.add(new JSeparator(SwingConstants.HORIZONTAL), "span 3, grow, wrap, gaptop 9, gapbottom 9");
 
 		controls.add(new JSeparator(SwingConstants.HORIZONTAL), "span 3, grow, wrap, gaptop 9, gapbottom 9");
@@ -410,6 +417,7 @@ public class MainApplicationFrame extends JFrame {
 			pane.remove(canvas);
 		}
 		deferredUpdateSelect.setSelected(true);
+		simulationTimeAdjustSelect.setSelected(true);
 		if(!colorRepresentation.isSelected() && !bordersRepresentation.isSelected()){
 			colorRepresentation.setSelected(true);
 		}
@@ -428,6 +436,7 @@ public class MainApplicationFrame extends JFrame {
 			};
 			sim.addListener(canvasRepaintListener);
 			sim.setDefer_update(deferredUpdateSelect.isSelected());
+			sim.set_adjust_simulation_time(simulationTimeAdjustSelect.isSelected());
 		}
 		simThr = new Thread(sim);
 		toggle_simulation_button.setText("Start");
@@ -468,10 +477,6 @@ public class MainApplicationFrame extends JFrame {
 		entropyTimePlotAction = new PlotAction("Entropy Time Series plot",
 				"Entropy Time Series Plot", new EntropyTimePlot());
 		
-		orbitPlotAction = new PlotAction("Orbit plot",
-				"Orbit Plot", new OrbitPlot());
-		
-		
 		// STANDALONE PLOTS
 		JMenu standalonePlots = new JMenu("Standalone Plots");
 		standalonePlots.add(new AbstractAction("Criticality Plot") {
@@ -509,7 +514,7 @@ public class MainApplicationFrame extends JFrame {
 		plotsListModel.removeAllElements();
 		activePlotsListModel.removeAllElements();
 		PlotAction[] plotActions = { activeNodesPlotAction, activeEdgesPlotAction, cultureDistributionPlotAction,
-				activeRoomsPlotAction, activeRoomsHistogramAction, commonFeaturesPlotAction, orderParametersPlotAction, lyapunovPlotAction, remainingTraitsPlotAction, entropyTimePlotAction, orbitPlotAction};
+				activeRoomsPlotAction, activeRoomsHistogramAction, commonFeaturesPlotAction, orderParametersPlotAction, lyapunovPlotAction, remainingTraitsPlotAction, entropyTimePlotAction};
 		for (PlotAction plot : plotActions) {
 			plotsListModel.addElement(plot);
 		}
@@ -569,6 +574,13 @@ public class MainApplicationFrame extends JFrame {
 					}
 				});
 				sim.setDefer_update(deferredUpdateSelect.isSelected());
+				
+				simulationTimeAdjustSelect.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						sim.set_adjust_simulation_time(simulationTimeAdjustSelect.isSelected());
+					}
+				});
 				
 			resetSimulation();
 		}

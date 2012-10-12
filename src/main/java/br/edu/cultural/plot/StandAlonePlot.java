@@ -103,12 +103,15 @@ public abstract class StandAlonePlot implements Runnable {
 		
 		final SpinnerNumberModel stop_spinner_model = new SpinnerNumberModel(10, 0, (int)Math.log10(Long.MAX_VALUE), 1);
 		JSpinner stop_after_iterations = new JSpinner(stop_spinner_model);
+		
+		final JCheckBox simulationTimeAdjustSelect = new JCheckBox("Adjust simulation time with L^2");
+		simulationTimeAdjustSelect.setSelected(true);
 	
 		final JDialog plotDialog = new JDialog(parent, "New Plot...");
 		
 		final JButton go = new JButton();
-		go.setText("Start.");
-		go.setAction(new AbstractAction("Start.") {
+		go.setText("Start");
+		go.setAction(new AbstractAction("Start") {
 			private static final long serialVersionUID = -9175379487336433833L;
 			@SuppressWarnings("unchecked")
 			@Override
@@ -117,7 +120,7 @@ public abstract class StandAlonePlot implements Runnable {
 				try {
 					pl = plot_type.getConstructor(Class.class, Boolean.class, Integer.class, Integer.class,
 							Integer.class, Integer.class,
-							Boolean.class, Integer.class, Integer.class, Long.class)
+							Boolean.class, Integer.class, Integer.class, Long.class, Boolean.class)
 							.newInstance((
 								Class<? extends CultureDisseminationSimulation>)simulation_type_in.getSelectedItem(), 
 								periodic_boundary_in.isSelected(),
@@ -128,7 +131,7 @@ public abstract class StandAlonePlot implements Runnable {
 								(features_is_variable.isSelected()),
 								((Number)simulation_count_in.getValue()).intValue(), 
 								((Number)steps_in.getValue()).intValue(),
-								(long)Math.pow(10, stop_spinner_model.getNumber().longValue()));
+								(long)Math.pow(10, stop_spinner_model.getNumber().longValue()), simulationTimeAdjustSelect.isSelected());
 					
 				// this stuff just hurts my eyes, really
 				} catch (IllegalArgumentException e1) {
@@ -190,6 +193,8 @@ public abstract class StandAlonePlot implements Runnable {
 		setup.add(stop_after_iterations, "");
 		setup.add(new JLabel("Monte Carlo steps."), "wrap");
 		setup.add(new JSeparator(SwingConstants.HORIZONTAL), "spanx 3, grow, wrap, gaptop 9, gapbottom 9");
+		setup.add(simulationTimeAdjustSelect, "span3, grow, wrap");
+		setup.add(new JSeparator(SwingConstants.HORIZONTAL), "span 3, grow, wrap, gaptop 9, gapbottom 9");
 		setup.add(go, "spanx 3, al center, wrap");
 		
 		plotDialog.add(setup);
@@ -226,6 +231,7 @@ public abstract class StandAlonePlot implements Runnable {
 	protected boolean is_features_variable;
 	protected int vary_in_steps_of;
 	protected long max_epochs;
+	protected boolean adjust_time;
 	protected Integer edges = null;
 	protected ScatterPlotter plotter = null;
 
