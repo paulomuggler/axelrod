@@ -55,6 +55,11 @@ public class CultureBordersCanvas extends CultureCanvas {
 					color = 0xFFFFFF;
 				}else{
 					color = (((int)rCos) * 0x10000 + ((int)gSin)* 0x100 + ((int)bCos));
+					if(this.nw.features == 2){
+						color = 0xFF0000;
+					}
+					
+	
 				}
 				
 				

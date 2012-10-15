@@ -38,7 +38,7 @@ public class CulturalNetwork {
 	public final int[][] states; // size^2 (~100kB)
 
 	/** Stores connectivity information */
-	final int[][] adj_matrix; // 8*size^2 (~100kB)
+	public final int[][] adj_matrix; // 8*size^2 (~100kB)
 
 	/** Gives the degree of each node */
 	public final int[] degree;
@@ -150,14 +150,17 @@ public class CulturalNetwork {
 			if (complete || (is_node_active[nd] == true)) {
 				is_node_active[nd] = false;
 				for (int nbr_idx = 0; nbr_idx < degree[nd]; nbr_idx++) {
-					int similarity = 0;
+					//int similarity = 0;
 					int nbr = adj_matrix[nd][nbr_idx];
-					for (int f = 0; f < features; f++){
-						if (states[nd][f] == states[nbr][f]){
-							similarity++;
-						}
-					}
-					if ((similarity > 0) && (similarity < features)) {
+					
+					//for (int f = 0; f < features; f++){
+					//	if (states[nd][f] == states[nbr][f]){
+					//		similarity++;
+					//	}
+					//}
+					
+					//if ((similarity > 0) && (similarity < features)) {
+					if(is_interaction_possible(states[nd], states[nbr])==true){
 						is_node_active[nd] = true;
 						interactiveNodes.add(nd);
 						break;
@@ -181,12 +184,13 @@ public class CulturalNetwork {
 		Integer interactive_edges = 0;
 		for (int nd = 0; nd < this.n_nodes; nd++) {
 			for (int nbr_idx = 0; nbr_idx < degree[nd]; nbr_idx++) {
-				int similarity = 0;
+				//int similarity = 0;
 				int nbr = adj_matrix[nd][nbr_idx];
-				for (int f = 0; f < features; f++)
-					if (states[nd][f] == states[nbr][f])
-						similarity++;
-				if ((similarity > 0) && (similarity < features)) {
+				//for (int f = 0; f < features; f++)
+				//	if (states[nd][f] == states[nbr][f])
+				//		similarity++;
+				//if ((similarity > 0) && (similarity < features)) {
+				if(is_interaction_possible(this.states[nd],this.states[nbr])){
 					interactive_edges++;
 				}
 			}

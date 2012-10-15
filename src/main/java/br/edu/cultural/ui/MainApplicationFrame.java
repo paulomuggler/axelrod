@@ -61,17 +61,19 @@ import br.edu.cultural.plot.EntropyPlot;
 import br.edu.cultural.plot.EntropyTimePlot;
 import br.edu.cultural.plot.EntropyVsEnergyPlot;
 import br.edu.cultural.plot.LyapunovPlot;
+import br.edu.cultural.plot.OrbitPlot;
 import br.edu.cultural.plot.OrderParametersScatterPlot;
 import br.edu.cultural.plot.RemainingTraitsPlot;
+import br.edu.cultural.plot.ChiPlot;
+import br.edu.cultural.plot.CultureSizesDistributed;
+import br.edu.cultural.plot.HistogramTransition;
 import br.edu.cultural.plot.StandAlonePlot;
 import br.edu.cultural.plot.TimeToAbsortion;
 import br.edu.cultural.plot.TruncatedCriticalityPlot;
-import br.edu.cultural.simulation.Config;
 import br.edu.cultural.simulation.CultureDisseminationSimulation;
 import br.edu.cultural.simulation.CultureDisseminationSimulation.SimulationState;
 import br.edu.cultural.simulation.SimulationEventListener;
 import br.edu.cultural.simulation.SimulationEventListener.SimulationEventAdapter;
-//import br.edu.cultural.plot.OrbitPlot;
 
 public class MainApplicationFrame extends JFrame {
 
@@ -158,6 +160,7 @@ public class MainApplicationFrame extends JFrame {
 	private PlotAction lyapunovPlotAction;
 	private PlotAction remainingTraitsPlotAction;
 	private PlotAction entropyTimePlotAction;
+	private PlotAction orbitPlotAction;
 	
 	public MainApplicationFrame() {
 
@@ -477,6 +480,10 @@ public class MainApplicationFrame extends JFrame {
 		entropyTimePlotAction = new PlotAction("Entropy Time Series plot",
 				"Entropy Time Series Plot", new EntropyTimePlot());
 		
+		orbitPlotAction = new PlotAction("Orbit plot",
+				"Orbit Plot", new OrbitPlot());
+		
+		
 		// STANDALONE PLOTS
 		JMenu standalonePlots = new JMenu("Standalone Plots");
 		standalonePlots.add(new AbstractAction("Criticality Plot") {
@@ -509,12 +516,27 @@ public class MainApplicationFrame extends JFrame {
 				StandAlonePlot.start_from_dialog(MainApplicationFrame.this, EntropyVsEnergyPlot.class);
 			}
 		});
+		standalonePlots.add(new AbstractAction("Histogram Transition") {
+			public void actionPerformed(ActionEvent e) {
+				StandAlonePlot.start_from_dialog(MainApplicationFrame.this, HistogramTransition.class);
+			}
+		});
+		standalonePlots.add(new AbstractAction("Chi Plot") {
+			public void actionPerformed(ActionEvent e) {
+				StandAlonePlot.start_from_dialog(MainApplicationFrame.this, ChiPlot.class);
+			}
+		});
+		standalonePlots.add(new AbstractAction("Culture Distribution Plot") {
+			public void actionPerformed(ActionEvent e) {
+				StandAlonePlot.start_from_dialog(MainApplicationFrame.this, CultureSizesDistributed.class);
+			}
+		});
 		plotMenu.removeAll();
 		plotMenu.add(standalonePlots);
 		plotsListModel.removeAllElements();
 		activePlotsListModel.removeAllElements();
 		PlotAction[] plotActions = { activeNodesPlotAction, activeEdgesPlotAction, cultureDistributionPlotAction,
-				activeRoomsPlotAction, activeRoomsHistogramAction, commonFeaturesPlotAction, orderParametersPlotAction, lyapunovPlotAction, remainingTraitsPlotAction, entropyTimePlotAction};
+				activeRoomsPlotAction, activeRoomsHistogramAction, commonFeaturesPlotAction, orderParametersPlotAction, lyapunovPlotAction, remainingTraitsPlotAction, entropyTimePlotAction, orbitPlotAction};
 		for (PlotAction plot : plotActions) {
 			plotsListModel.addElement(plot);
 		}

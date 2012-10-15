@@ -3,8 +3,8 @@
  */
 package br.edu.cultural.simulation;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import br.edu.cultural.network.CulturalNetwork;
 import br.edu.cultural.network.Utils;
@@ -23,31 +23,32 @@ public class FacilitatedDisseminationWithSurfaceTension extends CultureDissemina
 		int node = nw.random_interactive_node();
 
 		int nbr = -1;
-		int nbr_idx = rand.nextInt(nw.degree(node));
 		
-		Set<Integer> selectedNodes = new HashSet<Integer>();
-		for (int i = 0; i < nw.degree[node]; i++) {
-			selectedNodes.add(i);
+
+		//boolean interactive;
+		//int count = 0;
+		int actvcount = 0;
+		
+		final List<Integer> actvNbrhd = new ArrayList<Integer>();
+		for(int d=0; d < nw.degree(node); d++){
+			if(CulturalNetwork.is_interaction_possible(nw.states[node], nw.states[nw.node_neighbor(node, d)])){	
+				actvNbrhd.add(new Integer(nw.node_neighbor(node, d)));
+				actvcount++;
+			}
 		}
-//		int count = 0;
-		
-		boolean interactive;
-		do {
-			nbr = nw.node_neighbor(node, nbr_idx);
-			interactive = CulturalNetwork.is_interaction_possible(nw.states[node],
-					nw.states[nbr]);
-			nbr_idx = (Integer) selectedNodes.toArray()[rand.nextInt(selectedNodes.size())];
-			 selectedNodes.remove(nbr_idx);
-		} while (!interactive && selectedNodes.size() > 0);
-//			nbr_idx = rand.nextInt(nw.degree(node));
-//			count++;
-//		} while (!interactive && count <= nw.degree(nbr));
-//		if (count > nw.degree(nbr)){
-//			return;
-//		}
-		if (selectedNodes.size() == 0){
+		if(actvcount == 0){
+			if (this.adjust_simulation_time()){
+				this.iterations -= (this.nw.n_nodes/this.nw.interactiveNodes.size());	
+			}
+			else{
+				this.iterations--;
+			}
 			return;
 		}
+		int nbr_idx = rand.nextInt(actvcount);
+		nbr = actvNbrhd.get(nbr_idx).intValue();
+		
+
 
 		int rand_f = rand.nextInt(nw.features);
 
@@ -60,7 +61,7 @@ public class FacilitatedDisseminationWithSurfaceTension extends CultureDissemina
 				}
 			}
 
-//			if (diff_count > 0) {
+
 			int i = rand.nextInt(diff_count);
 			int f = diff_features[i];
 
@@ -68,7 +69,7 @@ public class FacilitatedDisseminationWithSurfaceTension extends CultureDissemina
 			nw.states[nbr][f] = nw.states[node][f];
 			int[] newState = Utils.copyArray(nw.states[nbr]);
 			interacted(nbr, oldState, newState);
-//			}
+
 		}
 	}
 }
