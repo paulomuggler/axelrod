@@ -105,11 +105,19 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 
 	/** Performs a single step of the simulation */
 	public void simulation_step() {
+		
 		if ((this.nw.interactive_nodes().size() == 0) || (this.current_epoch() >= stop_after_epochs)) {
 			this.finish();
 			return;
 		}
+		
 		this.simulation_dynamic();
+		
+		if ((this.nw.interactive_nodes().size() == 0) || (this.current_epoch() >= stop_after_epochs)) {
+			this.finish();
+			return;
+		}
+		
 		if(this.adjust_simulation_time()){
 			this.iterations += this.nw.n_nodes/this.nw.interactiveNodes.size();
 		}else{
