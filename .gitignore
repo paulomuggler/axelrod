@@ -2,7 +2,7 @@ tmp/
 target/
 test_save_nw.txt
 *~
-.settings/org.eclipse.jdt.core.prefs
-.classpath
-.project
+*.settings/*
+*.classpath
+*.project
 release/binaries/
