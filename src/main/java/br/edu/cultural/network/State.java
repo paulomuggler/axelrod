@@ -127,4 +127,12 @@ public class State {
 		return state;
 	}
 
+	public static int[] random_node_state_voter(int traits) {
+		int[] state = new int[2];
+		state[0] = 0;
+		state[1] = rand.nextInt(traits);
+		return state;
+	}
+	
+	
 }

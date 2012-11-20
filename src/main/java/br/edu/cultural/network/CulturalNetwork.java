@@ -303,6 +303,14 @@ public class CulturalNetwork {
 		}
 		this.reset_interaction_list(true);
 	}
+	
+	public void voter_starting_distribution() {
+		for (int nd = 0; nd < this.n_nodes; nd++) {
+			states[nd] = State.random_node_state_voter(traits);
+		}
+		this.reset_interaction_list(true);
+	}
+	
 
 	public void bubble_random_starting_distribution(int bubble_radius,
 			int[] state) {

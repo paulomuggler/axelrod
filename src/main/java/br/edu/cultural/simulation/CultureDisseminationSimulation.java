@@ -22,7 +22,10 @@ public abstract class CultureDisseminationSimulation implements Runnable {
                                 AxelrodSimulation.class,
                                 BelousovZhabotinskySimulation.class,
                                 KupermanSimulationOneFeatureOverlap.class,
-                                KupermanSimulationOverallOverlap.class
+                                KupermanSimulationOverallOverlap.class,
+                                VoterSimulation.class,
+                                VoterTensionSimulation.class,
+                                IsingSimulation.class
                                 };
 
 	public CulturalNetwork nw;
