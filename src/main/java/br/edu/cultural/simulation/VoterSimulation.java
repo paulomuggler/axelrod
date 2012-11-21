@@ -20,7 +20,7 @@ public class VoterSimulation extends CultureDisseminationSimulation {
 
 	public VoterSimulation(CulturalNetwork nw) {
 		super(nw);
-		nw.voter_starting_distribution();
+//		nw.voter_starting_distribution();
 	}
 
 	protected void simulation_dynamic() {

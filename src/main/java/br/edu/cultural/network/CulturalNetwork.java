@@ -31,7 +31,7 @@ public class CulturalNetwork {
 	public final int features;
 	public final int traits;
 	public final boolean periodicBoundary;
-	
+
 	public int refresh_rate;
 
 	/** The network state representation */
@@ -46,15 +46,20 @@ public class CulturalNetwork {
 	/** Stores all nodes that may interact */
 	public final List<Integer> interactiveNodes = new ArrayList<Integer>();
 
-	/** This list is used by some plots which are only interested in certain nodes in the network. */
-	// TODO: Refactor. Should be in the Plot class structure somehow. 
-	// Refactoring the save to file solution to have a broader scope would probably help with this.
+	/**
+	 * This list is used by some plots which are only interested in certain
+	 * nodes in the network.
+	 */
+	// TODO: Refactor. Should be in the Plot class structure somehow.
+	// Refactoring the save to file solution to have a broader scope would
+	// probably help with this.
 	public final List<Integer> nodes_to_listen = new ArrayList<Integer>();
 
 	/** Stores the activity state of each node */
 	public final boolean[] is_node_active;
 
-	public CulturalNetwork(int size, int features, int traits, boolean periodicBoundary, int refreshAdjust) {
+	public CulturalNetwork(int size, int features, int traits,
+			boolean periodicBoundary, int refreshAdjust) {
 		this.size = size;
 		this.n_nodes = size * size;
 		this.features = features;
@@ -67,47 +72,55 @@ public class CulturalNetwork {
 		this.is_node_active = new boolean[this.n_nodes];
 		this.degree = new int[this.n_nodes];
 		this.init_adj_matrix(periodicBoundary);
-		this.random_starting_distribution();
-	}
-	
-	private int calc_update_rate(int refreshAdjust) {
-		return (int) Math.floor((refreshAdjust*this.features*(1+Math.sqrt(1+4*0.2*this.interactiveNodes.size()/25.0))/2.0));
+		// this.random_starting_distribution();
+		int[] state1 = { 0, 1 };
+		int[] state2 = { 0, 0 };
+
+		this.bubble(this.size / 4, state1, state2);
 	}
 
-	public CulturalNetwork(File f) throws IOException{
-		if(f.exists() && f.canRead()){
+	private int calc_update_rate(int refreshAdjust) {
+		return (int) Math.floor((refreshAdjust
+				* this.features
+				* (1 + Math.sqrt(1 + 4 * 0.2 * this.interactiveNodes.size()
+						/ 25.0)) / 2.0));
+	}
+
+	public CulturalNetwork(File f) throws IOException {
+		if (f.exists() && f.canRead()) {
 			FileReader fr = new FileReader(f);
 			BufferedReader r = new BufferedReader(fr);
 			String[] params = r.readLine().split(":");
-			
+
 			this.size = Integer.parseInt(params[0]);
 			this.n_nodes = size * size;
 			this.features = Integer.parseInt(params[1]);
 			this.traits = Integer.parseInt(params[2]);
 			this.periodicBoundary = Boolean.parseBoolean(params[3]);
 			this.refresh_rate = calc_update_rate(100);
-			
+
 			this.states = new int[this.n_nodes][this.features];
 			this.adj_matrix = new int[this.n_nodes][MAX_DEGREE];
 			this.is_node_active = new boolean[this.n_nodes];
 			this.degree = new int[this.n_nodes];
-			
+
 			for (int i = 0; i < this.n_nodes; i++) {
 				String[] stateStr = r.readLine().toString().split(":");
-				int[] state = new int [stateStr.length];
+				int[] state = new int[stateStr.length];
 				for (int j = 0; j < stateStr.length; j++) {
 					state[j] = Integer.parseInt(stateStr[j]);
 				}
 				System.arraycopy(state, 0, this.states[i], 0, this.features);
 			}
 			String line = r.readLine();
-			if (line != null && line.startsWith("monitor:")){
-				String[] monitor = line.substring(line.indexOf("[")+1, line.indexOf("]")).split(",");
+			if (line != null && line.startsWith("monitor:")) {
+				String[] monitor = line.substring(line.indexOf("[") + 1,
+						line.indexOf("]")).split(",");
 				for (String s : monitor) {
 					this.nodes_to_listen.add(Integer.parseInt(s));
 				}
 			}
-		}else {
+		} else {
 			throw new IOException("File does not exist or read not allowed");
 		}
 		this.init_adj_matrix(periodicBoundary);
@@ -121,22 +134,26 @@ public class CulturalNetwork {
 			degree[nd] = 0;
 			int i = nd / size;
 			int j = nd % size;
-			
-			if(periodicBoundary){
-				adj_matrix[nd][degree[nd]++] = j + (i == 0 ? this.size - 1 : i - 1) * size; // up
-				adj_matrix[nd][degree[nd]++] = (j == 0 ? this.size -1 : j - 1) + (i * size); // left
-				adj_matrix[nd][degree[nd]++] = j + (i == size - 1 ? 0 : i + 1) * size; // down
-				adj_matrix[nd][degree[nd]++] = (j == size - 1 ? 0 : j + 1) + (i * size); // right
-			}else {
+
+			if (periodicBoundary) {
+				adj_matrix[nd][degree[nd]++] = j
+						+ (i == 0 ? this.size - 1 : i - 1) * size; // up
+				adj_matrix[nd][degree[nd]++] = (j == 0 ? this.size - 1 : j - 1)
+						+ (i * size); // left
+				adj_matrix[nd][degree[nd]++] = j + (i == size - 1 ? 0 : i + 1)
+						* size; // down
+				adj_matrix[nd][degree[nd]++] = (j == size - 1 ? 0 : j + 1)
+						+ (i * size); // right
+			} else {
 				if (i > 0) // not on line 0
 					adj_matrix[nd][degree[nd]++] = j + (i - 1) * size; // up
-				
+
 				if (j > 0) // not on column 0
 					adj_matrix[nd][degree[nd]++] = (j - 1) + (i * size); // left
-				
+
 				if (i < size - 1) // not on last line
 					adj_matrix[nd][degree[nd]++] = j + (i + 1) * size; // down
-				
+
 				if (j < size - 1) // not on last column
 					adj_matrix[nd][degree[nd]++] = (j + 1) + (i * size); // right
 			}
@@ -146,21 +163,21 @@ public class CulturalNetwork {
 	public void reset_interaction_list(boolean complete) {
 		this.interactiveNodes.clear();
 		for (int nd = 0; nd < this.n_nodes; nd++) {
-//			if (complete || interactiveNodes.contains(nd)) {
+			// if (complete || interactiveNodes.contains(nd)) {
 			if (complete || (is_node_active[nd] == true)) {
 				is_node_active[nd] = false;
 				for (int nbr_idx = 0; nbr_idx < degree[nd]; nbr_idx++) {
-					//int similarity = 0;
+					// int similarity = 0;
 					int nbr = adj_matrix[nd][nbr_idx];
-					
-					//for (int f = 0; f < features; f++){
-					//	if (states[nd][f] == states[nbr][f]){
-					//		similarity++;
-					//	}
-					//}
-					
-					//if ((similarity > 0) && (similarity < features)) {
-					if(is_interaction_possible(states[nd], states[nbr])==true){
+
+					// for (int f = 0; f < features; f++){
+					// if (states[nd][f] == states[nbr][f]){
+					// similarity++;
+					// }
+					// }
+
+					// if ((similarity > 0) && (similarity < features)) {
+					if (is_interaction_possible(states[nd], states[nbr]) == true) {
 						is_node_active[nd] = true;
 						interactiveNodes.add(nd);
 						break;
@@ -169,7 +186,7 @@ public class CulturalNetwork {
 			}
 		}
 	}
-	
+
 	public Map<Integer, Integer> count_cultures() {
 		Map<Integer, Integer> cultureSizes = new HashMap<Integer, Integer>();
 		for (int nd = 0; nd < n_nodes; nd++) {
@@ -179,18 +196,18 @@ public class CulturalNetwork {
 		}
 		return cultureSizes;
 	}
-	
-	public Integer count_interactive_edges(){
+
+	public Integer count_interactive_edges() {
 		Integer interactive_edges = 0;
 		for (int nd = 0; nd < this.n_nodes; nd++) {
 			for (int nbr_idx = 0; nbr_idx < degree[nd]; nbr_idx++) {
-				//int similarity = 0;
+				// int similarity = 0;
 				int nbr = adj_matrix[nd][nbr_idx];
-				//for (int f = 0; f < features; f++)
-				//	if (states[nd][f] == states[nbr][f])
-				//		similarity++;
-				//if ((similarity > 0) && (similarity < features)) {
-				if(is_interaction_possible(this.states[nd],this.states[nbr])){
+				// for (int f = 0; f < features; f++)
+				// if (states[nd][f] == states[nbr][f])
+				// similarity++;
+				// if ((similarity > 0) && (similarity < features)) {
+				if (is_interaction_possible(this.states[nd], this.states[nbr])) {
 					interactive_edges++;
 				}
 			}
@@ -212,8 +229,8 @@ public class CulturalNetwork {
 
 			is_node_active[nbr] = false;
 			interactiveNodes.remove(new Integer(nbr));
-			
-			if(!interactiveNodes.contains(nd)){
+
+			if (!interactiveNodes.contains(nd)) {
 				if (is_interaction_possible(nd_state, nbr_state)) {
 					is_node_active[nd] = true;
 					interactiveNodes.add(nd);
@@ -224,7 +241,8 @@ public class CulturalNetwork {
 			}
 
 			for (int k1 = 0; k1 < degree[nbr] && is_node_active[nbr] == false; k1++) {
-//			for (int k1 = 0; k1 < degree[nbr] && !interactiveNodes.contains(nbr); k1++) {
+				// for (int k1 = 0; k1 < degree[nbr] &&
+				// !interactiveNodes.contains(nbr); k1++) {
 				int nbr_nbr = this.adj_matrix[nbr][k1];
 				int[] nbr_nbr_state = this.states[nbr_nbr];
 
@@ -303,79 +321,35 @@ public class CulturalNetwork {
 		}
 		this.reset_interaction_list(true);
 	}
-	
+
 	public void voter_starting_distribution() {
 		for (int nd = 0; nd < this.n_nodes; nd++) {
 			states[nd] = State.random_node_state_voter(traits);
 		}
 		this.reset_interaction_list(true);
 	}
-	
 
-	public void bubble_random_starting_distribution(int bubble_radius,
-			int[] state) {
+	public void bubble(int radius, int[] state1, int[] state2) {
 
-		 for (int nd = 0; nd < this.n_nodes; nd++) {
-		 states[nd] = State.random_node_state(features, traits);
-		 }
+		int r2 = radius * radius;
 
 		int lin_centro = this.size / 2;
 		int col_centro = this.size / 2;
-		int no_centro = col_centro + lin_centro * this.size;
 
-		System.arraycopy(state, 0, this.states[no_centro], 0, this.features);
-
-		bubble_radius -= bubble_radius % 2;
-		int step_size = 1;
-		int lin_atual = lin_centro;
-		int col_atual = col_centro;
-		int no_atual = col_atual + lin_atual * this.size;
-
-		while (true) {
-
-			// cima
-			int to = lin_atual - step_size;
-			while (lin_atual > to) {
-				lin_atual--;
-				no_atual = col_atual + lin_atual * this.size;
-				System.arraycopy(state, 0, this.states[no_atual], 0,
-						this.features);
+		for (int i = 0; i < this.size; i++) {
+			int magy = (i - lin_centro) * (i - lin_centro);
+			for (int j = 0; j < this.size; j++) {
+				int magx = (j - col_centro) * (j - col_centro);
+				if (magx + magy <= r2) {
+					System.arraycopy(state1, 0, this.states[j + i * this.size],
+							0, this.features);
+				} else {
+					System.arraycopy(state2, 0, this.states[j + i * this.size],
+							0, this.features);
+				}
 			}
-
-			// esquerda
-			to = col_atual - step_size;
-			while (col_atual > to) {
-				col_atual--;
-				no_atual = col_atual + lin_atual * this.size;
-				System.arraycopy(state, 0, this.states[no_atual], 0,
-						this.features);
-			}
-
-			if (bubble_radius > 2 && step_size < bubble_radius - 1)
-				step_size++;
-
-			// baixo
-			to = lin_atual + step_size;
-			while (lin_atual < to) {
-				lin_atual++;
-				no_atual = col_atual + lin_atual * this.size;
-				System.arraycopy(state, 0, this.states[no_atual], 0,
-						this.features);
-			}
-
-			if (step_size == bubble_radius - 1)
-				break;
-
-			// direita
-			to = col_atual + step_size;
-			while (col_atual < to) {
-				col_atual++;
-				no_atual = col_atual + lin_atual * this.size;
-				System.arraycopy(state, 0, this.states[no_atual], 0,
-						this.features);
-			}
-			step_size++;
 		}
+
 		this.reset_interaction_list(true);
 	}
 
@@ -431,10 +405,11 @@ public class CulturalNetwork {
 			return -1;
 		return adj_matrix[node][nbrIdx];
 	}
-	
-	public void save_to_file(File f) throws IOException{
-		if(!f.exists()) f.createNewFile();
-		if(f.canWrite()){
+
+	public void save_to_file(File f) throws IOException {
+		if (!f.exists())
+			f.createNewFile();
+		if (f.canWrite()) {
 			FileWriter fw = new FileWriter(f);
 			fw.write(String.valueOf(this.size));
 			fw.write(':');
@@ -445,17 +420,20 @@ public class CulturalNetwork {
 			fw.write(String.valueOf(this.periodicBoundary));
 			fw.write('\n');
 			for (int i = 0; i < states.length; i++) {
-				int [] state = states[i];
+				int[] state = states[i];
 				for (int j = 0; j < state.length; j++) {
 					fw.write(String.valueOf(state[j]));
-					if(j != state.length -1) fw.write(':');
+					if (j != state.length - 1)
+						fw.write(':');
 				}
 				fw.write('\n');
 			}
-			if(!nodes_to_listen.isEmpty()) fw.write("monitor:[");
+			if (!nodes_to_listen.isEmpty())
+				fw.write("monitor:[");
 			for (Integer node : nodes_to_listen) {
 				fw.write(Integer.toString(node));
-				fw.write(nodes_to_listen.indexOf(node) == nodes_to_listen.size() -1 ? ']' : ',');
+				fw.write(nodes_to_listen.indexOf(node) == nodes_to_listen
+						.size() - 1 ? ']' : ',');
 			}
 			fw.close();
 		}
@@ -464,8 +442,8 @@ public class CulturalNetwork {
 	public void setRefreshAdjust(int refreshAdjust) {
 		this.refresh_rate = calc_update_rate(refreshAdjust);
 	}
-	
-	public Integer overlap(int node, int nbr){
+
+	public Integer overlap(int node, int nbr) {
 		Integer overlap = 0;
 		for (int f = 0; f < features; f++) {
 			if (states[node][f] == states[nbr][f]) {
@@ -474,78 +452,79 @@ public class CulturalNetwork {
 		}
 		return overlap;
 	}
-	
-	public int n_edges(){
-		if (periodicBoundary){
-			return n_nodes*2;
-		}else
-			return n_nodes*2 - size*2;
+
+	public int n_edges() {
+		if (periodicBoundary) {
+			return n_nodes * 2;
+		} else
+			return n_nodes * 2 - size * 2;
 	}
-	
-	public int LyapunovPotential(){
+
+	public int LyapunovPotential() {
 		int potential = 0;
-		for (int i = 0; i < this.n_nodes; i++){
-			for (int nbr_idx = 0; nbr_idx < this.degree(i); nbr_idx++){
-				if (i < this.adj_matrix[i][nbr_idx]){
+		for (int i = 0; i < this.n_nodes; i++) {
+			for (int nbr_idx = 0; nbr_idx < this.degree(i); nbr_idx++) {
+				if (i < this.adj_matrix[i][nbr_idx]) {
 					potential -= this.overlap(i, this.adj_matrix[i][nbr_idx]);
 				}
 			}
 		}
 		return potential;
 	}
-	public int RemainingTraits(){
+
+	public int RemainingTraits() {
 		int rt = 0;
 		int q;
 		int F;
 		boolean[][] R = new boolean[this.traits][this.features];
-		for (q = 0; q < this.traits; q++){
-			for (F = 0; F < this.features; F++){
+		for (q = 0; q < this.traits; q++) {
+			for (F = 0; F < this.features; F++) {
 				R[q][F] = false;
 			}
 		}
-		for (int i = 0; i < this.n_nodes; i++){
-			for(F = 0; F < this.features; F++){
-				R[this.states[i][F]][F] = true;	
+		for (int i = 0; i < this.n_nodes; i++) {
+			for (F = 0; F < this.features; F++) {
+				R[this.states[i][F]][F] = true;
 			}
 		}
-		for (q = 0; q < this.traits; q++){
-			for (F = 0; F < this.features; F++){
-				if(R[q][F] == true){
+		for (q = 0; q < this.traits; q++) {
+			for (F = 0; F < this.features; F++) {
+				if (R[q][F] == true) {
 					rt++;
 				}
 			}
 		}
 		return rt;
 	}
-	public double Entropy(){
+
+	public double Entropy() {
 		double entropy = 0;
 		int[] domains = new int[this.n_nodes];
-		List<Integer> FirstList = new ArrayList<Integer>();  
-		List<Integer> SecondList = new ArrayList<Integer>();  
-		List<Integer> ClusterSizes = new ArrayList<Integer>(); 
+		List<Integer> FirstList = new ArrayList<Integer>();
+		List<Integer> SecondList = new ArrayList<Integer>();
+		List<Integer> ClusterSizes = new ArrayList<Integer>();
 		Integer node;
 		Integer count = 0;
 		int nbr;
 		int nm;
 		double pm;
-		
-		
-		for (node = 0; node < this.n_nodes; node++){
+
+		for (node = 0; node < this.n_nodes; node++) {
 			FirstList.add(node);
 		}
-		for (nm = 0; nm < this.n_nodes; nm++){
+		for (nm = 0; nm < this.n_nodes; nm++) {
 			domains[nm] = 0;
 		}
-		
-		while(!FirstList.isEmpty()){
+
+		while (!FirstList.isEmpty()) {
 			node = FirstList.remove(0);
 			SecondList.add(node);
-			while(!SecondList.isEmpty()){
+			while (!SecondList.isEmpty()) {
 				node = SecondList.remove(0);
-				for (int nbr_idx = 0; nbr_idx < this.degree(node.intValue()); nbr_idx++){
+				for (int nbr_idx = 0; nbr_idx < this.degree(node.intValue()); nbr_idx++) {
 					nbr = this.adj_matrix[node.intValue()][nbr_idx];
-					if(this.overlap(node.intValue(), nbr) == this.features){
-						if(FirstList.remove(new Integer(nbr)) == true){
+					if (this.overlap(node.intValue(), nbr) == this.features) {
+						if (FirstList.remove(new Integer(nbr)) == true) {
 							SecondList.add(new Integer(nbr));
 						}
 					}
@@ -555,18 +534,18 @@ public class CulturalNetwork {
 			ClusterSizes.add(count);
 			count = 0;
 		}
-		while(!ClusterSizes.isEmpty()){
+		while (!ClusterSizes.isEmpty()) {
 			nm = ClusterSizes.remove(0).intValue();
 			domains[nm - 1] += nm;
 		}
-		for (nbr = 0; nbr < this.n_nodes; nbr++){
-			pm = (double) domains[nbr]/this.n_nodes;
-			if (pm != 0){
-				entropy -= pm*Math.log(pm);
+		for (nbr = 0; nbr < this.n_nodes; nbr++) {
+			pm = (double) domains[nbr] / this.n_nodes;
+			if (pm != 0) {
+				entropy -= pm * Math.log(pm);
 			}
 		}
-		
+
 		return entropy;
 	}
-	
+
 }
