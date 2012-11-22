@@ -57,11 +57,19 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 			wait_if_paused();
 			throttle();
 			this.simulation_step();
-			if (this.iterations % (nw.n_nodes) == 0) {
+			
+			if(thatEpoch < thisEpoch){
 				for (SimulationEventListener lis : listeners) {
 					lis.epoch();
 				}
+				thatEpoch = thisEpoch;
 			}
+			
+//			if (this.iterations % (nw.n_nodes) == 0) {
+//				for (SimulationEventListener lis : listeners) {
+//					lis.epoch();
+//				}
+//			}
 //			if (iterations % 100000 == 0) {
 			if (nw.interactiveNodes.size() < 5*nw.refresh_rate){
 				if (iterations % 100 == 0){
@@ -106,8 +114,12 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 		}
 	}
 
+	long thatEpoch = 0;
+	long thisEpoch = 0;
+	
 	/** Performs a single step of the simulation */
 	public void simulation_step() {
+		
 		
 		if ((this.nw.interactive_nodes().size() == 0) || (this.current_epoch() >= stop_after_epochs)) {
 			this.finish();
@@ -126,12 +138,14 @@ public abstract class CultureDisseminationSimulation implements Runnable {
 		}else{
 			this.iterations++;
 		}
+		thisEpoch = this.current_epoch();
 	}
 
 	protected abstract void simulation_dynamic();
 
 	private void start() {
 		this.iterations = 0;
+		thatEpoch = 0;
 		this.sim_start_ms = System.currentTimeMillis();
 		this.state = SimulationState.RUNNING;
 		for (SimulationEventListener lis : listeners) {

@@ -147,6 +147,7 @@ public class MainApplicationFrame extends JFrame {
 	JTextArea console_out;
 
 	public CultureCanvas canvas;
+	public JLabel timeDisplay;
 	public CultureDisseminationSimulation sim;
 	Thread simThr = new Thread(sim);
 
@@ -327,6 +328,7 @@ public class MainApplicationFrame extends JFrame {
 		System.setOut(new PrintStream(new TextAreaOutputStream(console_out)));
 		System.setErr(new PrintStream(new TextAreaOutputStream(console_out)));
 		pane.add(scrollOut, BorderLayout.SOUTH);
+		
 	}
 
 	private ChangeListener speedSliderChangeHandler() {
@@ -415,12 +417,19 @@ public class MainApplicationFrame extends JFrame {
 
 	@SuppressWarnings("serial")
 	private void resetSimulation() {
+		timeDisplay = new JLabel();
+		final String timeDisplayFormat1 = "<html><FONT COLOR=WHITE SIZE=10>";
+		final String timeDisplayFormat2 = "</FONT> </html>";
+		timeDisplay.setText(timeDisplayFormat1+"0"+timeDisplayFormat2);
+		
 		Container pane = this.getContentPane();
 		if (canvas != null) {
 			pane.remove(canvas);
 		}
+		
 		deferredUpdateSelect.setSelected(true);
 		simulationTimeAdjustSelect.setSelected(true);
+		
 		if(!colorRepresentation.isSelected() && !bordersRepresentation.isSelected()){
 			colorRepresentation.setSelected(true);
 		}
@@ -431,13 +440,29 @@ public class MainApplicationFrame extends JFrame {
 			}else{
 				canvas = new CultureBordersCanvas(CANVAS_HEIGHT, sim.nw);
 			}
+			canvas.add(timeDisplay);
 			pane.add(canvas, BorderLayout.CENTER);
+//			pane.add(timeDisplay, BorderLayout.CENTER);
 			SimulationEventListener canvasRepaintListener = new SimulationEventAdapter() {
 				public void interaction(int i, int j, int[] oldState, int[] newState) {
 					canvas.repaint();
 				}
 			};
 			sim.addListener(canvasRepaintListener);
+			
+			SimulationEventListener updateTimeLIstener = new SimulationEventAdapter() {
+				
+				public void started() {
+					timeDisplay.setText(timeDisplayFormat1+"0"+timeDisplayFormat2);
+				};
+				
+				public void epoch() {
+					timeDisplay.setText(timeDisplayFormat1+MainApplicationFrame.this.sim.current_epoch()+timeDisplayFormat1);
+				}
+			};
+			
+			sim.addListener(canvasRepaintListener);
+			sim.addListener(updateTimeLIstener);
 			sim.setDefer_update(deferredUpdateSelect.isSelected());
 			sim.set_adjust_simulation_time(simulationTimeAdjustSelect.isSelected());
 		}
