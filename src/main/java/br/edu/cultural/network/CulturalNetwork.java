@@ -72,11 +72,11 @@ public class CulturalNetwork {
 		this.is_node_active = new boolean[this.n_nodes];
 		this.degree = new int[this.n_nodes];
 		this.init_adj_matrix(periodicBoundary);
-		// this.random_starting_distribution();
+		 this.random_starting_distribution();
 		int[] state1 = { 0, 1 };
 		int[] state2 = { 0, 0 };
 
-		this.bubble(this.size / 4, state1, state2);
+//		this.bubble(this.size / 4, state1, state2);
 	}
 
 	private int calc_update_rate(int refreshAdjust) {

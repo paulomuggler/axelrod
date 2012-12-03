@@ -440,7 +440,7 @@ public class MainApplicationFrame extends JFrame {
 			}else{
 				canvas = new CultureBordersCanvas(CANVAS_HEIGHT, sim.nw);
 			}
-			canvas.add(timeDisplay);
+//			canvas.add(timeDisplay);
 			pane.add(canvas, BorderLayout.CENTER);
 //			pane.add(timeDisplay, BorderLayout.CENTER);
 			SimulationEventListener canvasRepaintListener = new SimulationEventAdapter() {
@@ -462,7 +462,7 @@ public class MainApplicationFrame extends JFrame {
 			};
 			
 			sim.addListener(canvasRepaintListener);
-			sim.addListener(updateTimeLIstener);
+//			sim.addListener(updateTimeLIstener);
 			sim.setDefer_update(deferredUpdateSelect.isSelected());
 			sim.set_adjust_simulation_time(simulationTimeAdjustSelect.isSelected());
 		}
