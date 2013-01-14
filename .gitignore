@@ -1,8 +1,0 @@
-tmp/
-target/
-test_save_nw.txt
-*~
-*.settings/*
-*.classpath
-*.project
-release/binaries/
